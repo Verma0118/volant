@@ -1,0 +1,567 @@
+{
+  "nodes": [
+    {
+      "id": "g0",
+      "type": "group",
+      "label": "Business Model & Pricing",
+      "x": 0,
+      "y": 0,
+      "width": 660,
+      "height": 420,
+      "color": "1"
+    },
+    {
+      "id": "n_briefing_aarav_verma",
+      "type": "file",
+      "file": "graphify/obsidian/Aarav Verma (Co-founder).md",
+      "x": 20,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_briefing_fleet_ops_saas",
+      "type": "file",
+      "file": "graphify/obsidian/B2B Fleet Ops SaaS Platform.md",
+      "x": 220,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_investor_pipeline",
+      "type": "file",
+      "file": "graphify/obsidian/Investor Pipeline (Pre-seed).md",
+      "x": 420,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_openq_pricing",
+      "type": "file",
+      "file": "graphify/obsidian/Open Q Is $200\u2013500aircraftmonth Right.md",
+      "x": 20,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_briefing_saas_pricing",
+      "type": "file",
+      "file": "graphify/obsidian/SaaS Pricing Hypothesis ($200\u2013500aircraftmonth).md",
+      "x": 220,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_positioning_samsara_analogy",
+      "type": "file",
+      "file": "graphify/obsidian/Samsara Analogy (Core Positioning).md",
+      "x": 420,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_briefing_tharun",
+      "type": "file",
+      "file": "graphify/obsidian/Tharun (Co-founder).md",
+      "x": 20,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g1",
+      "type": "group",
+      "label": "Market Strategy & Bridge",
+      "x": 740,
+      "y": 0,
+      "width": 660,
+      "height": 420,
+      "color": "2"
+    },
+    {
+      "id": "n_briefing_bridge_strategy",
+      "type": "file",
+      "file": "graphify/obsidian/Bridge Strategy (Drones \u2192 eVTOL).md",
+      "x": 760,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_positioning_drone_operators",
+      "type": "file",
+      "file": "graphify/obsidian/Drone Fleet Operators (Bridge Market).md",
+      "x": 960,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_evtol_lilium",
+      "type": "file",
+      "file": "graphify/obsidian/Lilium (bankrupt \u2014 market risk signal).md",
+      "x": 1160,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_openq_bridge_funding",
+      "type": "file",
+      "file": "graphify/obsidian/Open Q Staying Funded While eVTOL Matures.md",
+      "x": 760,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_positioning_statement",
+      "type": "file",
+      "file": "graphify/obsidian/Positioning Statement (Draft).md",
+      "x": 960,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_positioning_evtol_operators",
+      "type": "file",
+      "file": "graphify/obsidian/eVTOL Air Taxi Operators (Primary Market).md",
+      "x": 1160,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_evtol_market_timeline",
+      "type": "file",
+      "file": "graphify/obsidian/eVTOL Market Timeline (2025\u20132030).md",
+      "x": 760,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g2",
+      "type": "group",
+      "label": "Product & Compliance",
+      "x": 1480,
+      "y": 0,
+      "width": 660,
+      "height": 420,
+      "color": "3"
+    },
+    {
+      "id": "n_evtol_bvlos",
+      "type": "file",
+      "file": "graphify/obsidian/BVLOS Rules (Drone Compliance).md",
+      "x": 1500,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dashboard_compliance_log",
+      "type": "file",
+      "file": "graphify/obsidian/Compliance Log View (FAA Reporting).md",
+      "x": 1700,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_evtol_faa_compliance",
+      "type": "file",
+      "file": "graphify/obsidian/FAA Part 135 Compliance.md",
+      "x": 1900,
+      "y": 80,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dashboard_fleet_overview",
+      "type": "file",
+      "file": "graphify/obsidian/Fleet Overview Dashboard View.md",
+      "x": 1500,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_dashboard_maintenance_tracker",
+      "type": "file",
+      "file": "graphify/obsidian/Maintenance Tracker View.md",
+      "x": 1700,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_evtol_oem_api_question",
+      "type": "file",
+      "file": "graphify/obsidian/OEM Telemetry API Access (Critical Unknown).md",
+      "x": 1900,
+      "y": 160,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_openq_oem_api",
+      "type": "file",
+      "file": "graphify/obsidian/Open Q Will OEMs Open Telemetry APIs.md",
+      "x": 1500,
+      "y": 240,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g3",
+      "type": "group",
+      "label": "Archer Aviation Outreach",
+      "x": 0,
+      "y": 500,
+      "width": 660,
+      "height": 400,
+      "color": "4"
+    },
+    {
+      "id": "n_evtol_archer_aviation",
+      "type": "file",
+      "file": "graphify/obsidian/Archer Aviation.md",
+      "x": 20,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_archer_outreach_goal",
+      "type": "file",
+      "file": "graphify/obsidian/Archer Outreach Goal (Validate Problem + Plant Flag).md",
+      "x": 220,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_openq_archer_champion",
+      "type": "file",
+      "file": "graphify/obsidian/Open Q Who Owns Fleet Ops at Archer.md",
+      "x": 420,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_briefing_pitch_deck",
+      "type": "file",
+      "file": "graphify/obsidian/Pitch Deck (in progress).md",
+      "x": 20,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "n_archer_contact_rushil",
+      "type": "file",
+      "file": "graphify/obsidian/Rushil's Father (Archer Manager, Active Contact).md",
+      "x": 220,
+      "y": 660,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g4",
+      "type": "group",
+      "label": "Joby Aviation",
+      "x": 740,
+      "y": 500,
+      "width": 600,
+      "height": 400,
+      "color": "5"
+    },
+    {
+      "id": "n_evtol_joby_aviation",
+      "type": "file",
+      "file": "graphify/obsidian/Joby Aviation.md",
+      "x": 760,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g5",
+      "type": "group",
+      "label": "Wisk Aero",
+      "x": 1480,
+      "y": 500,
+      "width": 600,
+      "height": 400,
+      "color": "6"
+    },
+    {
+      "id": "n_evtol_wisk_aero",
+      "type": "file",
+      "file": "graphify/obsidian/Wisk Aero (Boeing-backed).md",
+      "x": 1500,
+      "y": 580,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g6",
+      "type": "group",
+      "label": "Beta Technologies",
+      "x": 0,
+      "y": 980,
+      "width": 600,
+      "height": 400,
+      "color": "1"
+    },
+    {
+      "id": "n_evtol_beta_technologies",
+      "type": "file",
+      "file": "graphify/obsidian/Beta Technologies.md",
+      "x": 20,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g7",
+      "type": "group",
+      "label": "Mission Dispatch",
+      "x": 740,
+      "y": 980,
+      "width": 600,
+      "height": 400,
+      "color": "2"
+    },
+    {
+      "id": "n_dashboard_mission_dispatch",
+      "type": "file",
+      "file": "graphify/obsidian/Mission Dispatch View.md",
+      "x": 760,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    },
+    {
+      "id": "g8",
+      "type": "group",
+      "label": "Analytics",
+      "x": 1480,
+      "y": 980,
+      "width": 600,
+      "height": 400,
+      "color": "3"
+    },
+    {
+      "id": "n_dashboard_analytics",
+      "type": "file",
+      "file": "graphify/obsidian/Analytics View (Utilization & Cost).md",
+      "x": 1500,
+      "y": 1060,
+      "width": 180,
+      "height": 60
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_briefing_fleet_ops_saas_positioning_samsara_analogy",
+      "fromNode": "n_briefing_fleet_ops_saas",
+      "toNode": "n_positioning_samsara_analogy",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_fleet_ops_saas_briefing_bridge_strategy",
+      "fromNode": "n_briefing_fleet_ops_saas",
+      "toNode": "n_briefing_bridge_strategy",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_fleet_ops_saas_briefing_aarav_verma",
+      "fromNode": "n_briefing_fleet_ops_saas",
+      "toNode": "n_briefing_aarav_verma",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_fleet_ops_saas_briefing_tharun",
+      "fromNode": "n_briefing_fleet_ops_saas",
+      "toNode": "n_briefing_tharun",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_fleet_ops_saas_positioning_statement",
+      "fromNode": "n_briefing_fleet_ops_saas",
+      "toNode": "n_positioning_statement",
+      "label": "rationale_for [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_fleet_ops_saas_investor_pipeline",
+      "fromNode": "n_briefing_fleet_ops_saas",
+      "toNode": "n_investor_pipeline",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_bridge_strategy_positioning_drone_operators",
+      "fromNode": "n_briefing_bridge_strategy",
+      "toNode": "n_positioning_drone_operators",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_bridge_strategy_positioning_evtol_operators",
+      "fromNode": "n_briefing_bridge_strategy",
+      "toNode": "n_positioning_evtol_operators",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_bridge_strategy_openq_bridge_funding",
+      "fromNode": "n_briefing_bridge_strategy",
+      "toNode": "n_openq_bridge_funding",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_saas_pricing_openq_pricing",
+      "fromNode": "n_briefing_saas_pricing",
+      "toNode": "n_openq_pricing",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_briefing_pitch_deck_evtol_archer_aviation",
+      "fromNode": "n_briefing_pitch_deck",
+      "toNode": "n_evtol_archer_aviation",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_evtol_archer_aviation_openq_archer_champion",
+      "fromNode": "n_evtol_archer_aviation",
+      "toNode": "n_openq_archer_champion",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_evtol_archer_aviation_archer_contact_rushil",
+      "fromNode": "n_evtol_archer_aviation",
+      "toNode": "n_archer_contact_rushil",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_evtol_archer_aviation_archer_outreach_goal",
+      "fromNode": "n_evtol_archer_aviation",
+      "toNode": "n_archer_outreach_goal",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_evtol_lilium_evtol_market_timeline",
+      "fromNode": "n_evtol_lilium",
+      "toNode": "n_evtol_market_timeline",
+      "label": "conceptually_related_to [EXTRACTED]"
+    },
+    {
+      "id": "e_positioning_drone_operators_positioning_statement",
+      "fromNode": "n_positioning_drone_operators",
+      "toNode": "n_positioning_statement",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_positioning_drone_operators_openq_bridge_funding",
+      "fromNode": "n_positioning_drone_operators",
+      "toNode": "n_openq_bridge_funding",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_positioning_evtol_operators_positioning_statement",
+      "fromNode": "n_positioning_evtol_operators",
+      "toNode": "n_positioning_statement",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_positioning_statement_investor_pipeline",
+      "fromNode": "n_positioning_statement",
+      "toNode": "n_investor_pipeline",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_openq_archer_champion_archer_outreach_goal",
+      "fromNode": "n_openq_archer_champion",
+      "toNode": "n_archer_outreach_goal",
+      "label": "references [EXTRACTED]"
+    },
+    {
+      "id": "e_evtol_oem_api_question_openq_oem_api",
+      "fromNode": "n_evtol_oem_api_question",
+      "toNode": "n_openq_oem_api",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_briefing_bridge_strategy_evtol_market_timeline",
+      "fromNode": "n_briefing_bridge_strategy",
+      "toNode": "n_evtol_market_timeline",
+      "label": "rationale_for [INFERRED]"
+    },
+    {
+      "id": "e_evtol_faa_compliance_dashboard_compliance_log",
+      "fromNode": "n_evtol_faa_compliance",
+      "toNode": "n_dashboard_compliance_log",
+      "label": "semantically_similar_to [INFERRED]"
+    },
+    {
+      "id": "e_openq_pricing_investor_pipeline",
+      "fromNode": "n_openq_pricing",
+      "toNode": "n_investor_pipeline",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_briefing_bridge_strategy_openq_oem_api",
+      "fromNode": "n_briefing_bridge_strategy",
+      "toNode": "n_openq_oem_api",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_evtol_oem_api_question_dashboard_fleet_overview",
+      "fromNode": "n_evtol_oem_api_question",
+      "toNode": "n_dashboard_fleet_overview",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_briefing_saas_pricing_positioning_samsara_analogy",
+      "fromNode": "n_briefing_saas_pricing",
+      "toNode": "n_positioning_samsara_analogy",
+      "label": "rationale_for [INFERRED]"
+    },
+    {
+      "id": "e_evtol_faa_compliance_dashboard_maintenance_tracker",
+      "fromNode": "n_evtol_faa_compliance",
+      "toNode": "n_dashboard_maintenance_tracker",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_evtol_oem_api_question_dashboard_maintenance_tracker",
+      "fromNode": "n_evtol_oem_api_question",
+      "toNode": "n_dashboard_maintenance_tracker",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_briefing_bridge_strategy_evtol_lilium",
+      "fromNode": "n_briefing_bridge_strategy",
+      "toNode": "n_evtol_lilium",
+      "label": "rationale_for [INFERRED]"
+    },
+    {
+      "id": "e_evtol_bvlos_dashboard_compliance_log",
+      "fromNode": "n_evtol_bvlos",
+      "toNode": "n_dashboard_compliance_log",
+      "label": "conceptually_related_to [INFERRED]"
+    },
+    {
+      "id": "e_evtol_bvlos_positioning_drone_operators",
+      "fromNode": "n_evtol_bvlos",
+      "toNode": "n_positioning_drone_operators",
+      "label": "semantically_similar_to [INFERRED]"
+    }
+  ]
+}

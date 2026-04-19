@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Operations Software — Autonomous Aviation Research</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --navy:   #0a1628;
+    --blue:   #1a3a6e;
+    --accent: #2f7ef5;
+    --light:  #f0f4ff;
+    --muted:  #8899aa;
+    --white:  #ffffff;
+    --border: #dde4f0;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #e8ecf2;
+    color: var(--navy);
+  }
+
+  /* ── Slide container ── */
+  .deck {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .slide {
+    width: 1056px;
+    height: 594px; /* 16:10 — renders well as PDF letter landscape */
+    margin: 0 auto;
+    background: var(--white);
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Accent bar ── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent);
+  }
+
+  /* ── Cover slide ── */
+  .slide-cover {
+    background: var(--navy);
+    color: var(--white);
+    justify-content: center;
+    align-items: flex-start;
+    padding: 72px 80px;
+  }
+  .slide-cover::before { background: var(--accent); }
+
+  .cover-tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 28px;
+  }
+
+  .cover-title {
+    font-size: 42px;
+    font-weight: 700;
+    line-height: 1.15;
+    max-width: 620px;
+    margin-bottom: 24px;
+  }
+
+  .cover-title span {
+    color: var(--accent);
+  }
+
+  .cover-sub {
+    font-size: 16px;
+    color: #8fa8cc;
+    max-width: 540px;
+    line-height: 1.6;
+    margin-bottom: 48px;
+  }
+
+  .cover-authors {
+    display: flex;
+    gap: 40px;
+  }
+
+  .author-block .name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .author-block .role {
+    font-size: 13px;
+    color: #8fa8cc;
+    margin-top: 2px;
+  }
+
+  .cover-logo {
+    position: absolute;
+    bottom: 44px;
+    right: 80px;
+    font-size: 12px;
+    color: #4a6080;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── Content slides ── */
+  .slide-content {
+    padding: 52px 80px 48px;
+    justify-content: space-between;
+  }
+
+  .slide-number {
+    position: absolute;
+    bottom: 28px;
+    right: 40px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .slide-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .slide-heading {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.2;
+    margin-bottom: 36px;
+    max-width: 700px;
+  }
+
+  .slide-heading em {
+    font-style: normal;
+    color: var(--accent);
+  }
+
+  /* ── Two-col layout ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    flex: 1;
+    align-items: start;
+  }
+
+  /* ── Stat blocks ── */
+  .stat-row {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 36px;
+  }
+
+  .stat-block {
+    background: var(--light);
+    border-radius: 10px;
+    padding: 20px 24px;
+    flex: 1;
+    border-left: 3px solid var(--accent);
+  }
+
+  .stat-block .stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-block .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  /* ── Body copy ── */
+  .body-text {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #2a3a50;
+    max-width: 860px;
+  }
+
+  .body-text p { margin-bottom: 14px; }
+  .body-text p:last-child { margin-bottom: 0; }
+
+  /* ── List items ── */
+  .item-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .item-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: #2a3a50;
+  }
+
+  .item-list li .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    margin-top: 6px;
+  }
+
+  /* ── Comparison table (slide 2) ── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .compare-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 2px solid var(--border);
+  }
+
+  .compare-table td {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.5;
+    color: #2a3a50;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  .compare-table td:first-child {
+    font-weight: 600;
+    color: var(--navy);
+    width: 160px;
+  }
+
+  .compare-table .highlight-row td {
+    background: var(--light);
+  }
+
+  .compare-table .tag-accent {
+    display: inline-block;
+    background: #e8f0fe;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+
+  /* ── Question cards (slide 6) ── */
+  .question-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+  }
+
+  .q-card {
+    background: var(--light);
+    border-radius: 10px;
+    padding: 20px 24px;
+    border-left: 3px solid var(--accent);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .q-card .q-num {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    line-height: 1.3;
+  }
+
+  .q-card .q-text {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #2a3a50;
+  }
+
+  .q-card .q-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* ── Timeline (slide 4) ── */
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+    padding-left: 28px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .tl-item {
+    position: relative;
+    padding-bottom: 22px;
+    padding-left: 20px;
+  }
+
+  .tl-item:last-child { padding-bottom: 0; }
+
+  .tl-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 6px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--white);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  .tl-item .tl-date {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 3px;
+  }
+
+  .tl-item .tl-text {
+    font-size: 14px;
+    color: #2a3a50;
+    line-height: 1.5;
+  }
+
+  /* ── Footer bar ── */
+  .footer-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 40px;
+    background: var(--navy);
+    display: flex;
+    align-items: center;
+    padding: 0 80px;
+    justify-content: space-between;
+  }
+
+  .footer-bar .footer-name {
+    font-size: 11px;
+    color: #4a6080;
+    letter-spacing: 0.06em;
+  }
+
+  .footer-bar .footer-tag {
+    font-size: 11px;
+    color: #4a6080;
+  }
+
+  /* ── Callout box ── */
+  .callout {
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 10px;
+    padding: 24px 28px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .callout strong { color: var(--accent); }
+
+  /* ── Print / PDF styles ── */
+  @media print {
+    body { background: white; }
+
+    .slide {
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      page-break-after: always;
+      page-break-inside: avoid;
+    }
+
+    @page {
+      size: landscape;
+      margin: 0;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="deck">
+
+  <!-- ─────────────────────────────────────────
+       SLIDE 1 — COVER
+  ───────────────────────────────────────── -->
+  <div class="slide slide-cover">
+    <div class="cover-tag">Research Inquiry · April 2026</div>
+    <div class="cover-title">Fleet Operations Software<br>for <span>Autonomous Aviation</span></div>
+    <div class="cover-sub">
+      We're researching whether the software infrastructure for managing
+      eVTOL and drone fleets at scale exists today — and how leading
+      companies like Archer are approaching this problem.
+    </div>
+    <div class="cover-authors">
+      <div class="author-block">
+        <div class="name">Aarav Verma</div>
+        <div class="role">Aerospace Engineering, UIUC</div>
+      </div>
+      <div class="author-block">
+        <div class="name">Tharun</div>
+        <div class="role">Materials Science, UIUC</div>
+      </div>
+    </div>
+    <div class="cover-logo">UNIVERSITY OF ILLINOIS · URBANA-CHAMPAIGN</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SLIDE 2 — THE ANALOGY
+  ───────────────────────────────────────── -->
+  <div class="slide slide-content">
+    <div>
+      <div class="slide-label">The Analogy</div>
+      <div class="slide-heading">Samsara solved this for trucking.<br><em>We don't think aviation has its equivalent yet.</em></div>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Samsara (Trucking)</th>
+          <th>Aviation Today</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fleet visibility</td>
+          <td>Real-time GPS, status dashboard</td>
+          <td>Fragmented — ADS-B, OEM portals, manual logs</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Maintenance tracking</td>
+          <td>Automated alerts, mileage-based scheduling</td>
+          <td>Spreadsheets or generic MRO tools built for fixed-wing</td>
+        </tr>
+        <tr>
+          <td>Compliance logging</td>
+          <td>Automated HOS, DOT reporting</td>
+          <td>Manual FAA documentation, no aviation-native tooling</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>Dispatch</td>
+          <td>Route optimization, driver assignment</td>
+          <td>Ad hoc — phone calls, internal spreadsheets</td>
+        </tr>
+        <tr>
+          <td>Platform</td>
+          <td>$25B company, purpose-built for ops</td>
+          <td><strong>Purpose-built aviation equivalent: unclear</strong> <span class="tag-accent">open question</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-bar">
+      <span class="footer-name">Verma · Tharun — UIUC</span>
+      <span class="footer-tag">Fleet Operations Software Research · April 2026</span>
+    </div>
+    <div class="slide-number">2</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SLIDE 3 — THE PROBLEM SPACE
+  ───────────────────────────────────────── -->
+  <div class="slide slide-content">
+    <div>
+      <div class="slide-label">The Problem Space</div>
+      <div class="slide-heading">Operating aircraft at scale is fundamentally<br>different from operating <em>one aircraft.</em></div>
+    </div>
+
+    <div class="two-col">
+      <ul class="item-list">
+        <li>
+          <div class="dot"></div>
+          <div><strong>Fleet status at a glance</strong> — knowing which aircraft are in flight, charging, in maintenance, or grounded across an entire operation simultaneously</div>
+        </li>
+        <li>
+          <div class="dot"></div>
+          <div><strong>Battery & power cycle management</strong> — eVTOL-specific: tracking charge state, cycle count, degradation across a fleet, scheduling around charging infrastructure</div>
+        </li>
+        <li>
+          <div class="dot"></div>
+          <div><strong>Maintenance tracking</strong> — flight-hour-based scheduling, unscheduled incident logging, parts inventory, airworthiness documentation</div>
+        </li>
+      </ul>
+      <ul class="item-list">
+        <li>
+          <div class="dot"></div>
+          <div><strong>FAA compliance logging</strong> — Part 135 reporting, pilot certifications, airworthiness records, incident documentation — all audit-ready</div>
+        </li>
+        <li>
+          <div class="dot"></div>
+          <div><strong>Mission dispatch</strong> — assigning aircraft to routes, managing crew, handling weather holds and re-routing at scale</div>
+        </li>
+        <li>
+          <div class="dot"></div>
+          <div><strong>Utilization analytics</strong> — cost per flight hour, downtime rates, revenue per aircraft — the operational data operators need to be profitable</div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="footer-bar">
+      <span class="footer-name">Verma · Tharun — UIUC</span>
+      <span class="footer-tag">Fleet Operations Software Research · April 2026</span>
+    </div>
+    <div class="slide-number">3</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SLIDE 4 — WHY THIS MATTERS NOW
+  ───────────────────────────────────────── -->
+  <div class="slide slide-content">
+    <div>
+      <div class="slide-label">Market Timing</div>
+      <div class="slide-heading">The window to build this right is <em>before</em> commercial<br>operations begin — not during.</div>
+    </div>
+
+    <div class="two-col">
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-date">Now — 2025</div>
+          <div class="tl-text">Flight testing, certification, pre-commercial ops. Small fleets, manageable manually. The software gap isn't painful yet.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">2025 — 2027</div>
+          <div class="tl-text">First commercial routes (LA, NYC, Dubai). 10–30 aircraft per operator. Manual ops become a liability. The software need becomes urgent.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">2028 — 2030</div>
+          <div class="tl-text">Fleet scaling. 100+ aircraft. Operators who don't have purpose-built software by this point are flying blind.</div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-date">Today</div>
+          <div class="tl-text"><strong>Drone fleet operators</strong> already face this problem at scale. They're the proof of concept — and the bridge market.</div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px;">
+        <div class="callout">
+          <strong>Why drones matter:</strong> Commercial drone operators — inspection, delivery, enterprise — are running fleets of 20–200 aircraft today. The ops software problem is identical to eVTOL, just with smaller aircraft. Solving it for drones now validates the platform for eVTOL at scale.
+        </div>
+        <div class="stat-row" style="margin-bottom:0;">
+          <div class="stat-block">
+            <div class="stat-value">$25B</div>
+            <div class="stat-label">Samsara market cap — trucking equivalent</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-value">2027</div>
+            <div class="stat-label">Projected first large-scale commercial eVTOL ops</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span class="footer-name">Verma · Tharun — UIUC</span>
+      <span class="footer-tag">Fleet Operations Software Research · April 2026</span>
+    </div>
+    <div class="slide-number">4</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SLIDE 5 — WHO WE ARE
+  ───────────────────────────────────────── -->
+  <div class="slide slide-content">
+    <div>
+      <div class="slide-label">Who We Are</div>
+      <div class="slide-heading">Two UIUC engineers building toward<br>an <em>aviation-native operations platform.</em></div>
+    </div>
+
+    <div class="two-col">
+      <ul class="item-list">
+        <li>
+          <div class="dot"></div>
+          <div><strong>Aerospace engineering background</strong> — we understand the domain: airworthiness requirements, FAA certification pathways, the difference between fixed-wing and eVTOL maintenance profiles</div>
+        </li>
+        <li>
+          <div class="dot"></div>
+          <div><strong>We've identified the gap</strong> — existing fleet software is either built for trucking (Samsara, Motive), generic enterprise ops tools, or OEM-proprietary. Nothing purpose-built for autonomous aviation operations</div>
+        </li>
+        <li>
+          <div class="dot"></div>
+          <div><strong>Early-stage concept</strong> — we're at the research and validation stage. We're not here to sell anything. We want to understand how leading companies are thinking about this before we build the wrong thing.</div>
+        </li>
+        <li>
+          <div class="dot"></div>
+          <div><strong>Focused on the operator</strong> — dispatch managers, operations centers, maintenance coordinators. The people running the day-to-day, not the pilots.</div>
+        </li>
+      </ul>
+
+      <div class="callout" style="height: fit-content;">
+        <strong>Our research question:</strong><br><br>
+        Does purpose-built fleet operations software exist for eVTOL operators today — or is this problem being solved with internal tools, adapted trucking software, or manual processes?<br><br>
+        We believe the honest answer to this question shapes everything about what gets built next.
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span class="footer-name">Verma · Tharun — UIUC</span>
+      <span class="footer-tag">Fleet Operations Software Research · April 2026</span>
+    </div>
+    <div class="slide-number">5</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       SLIDE 6 — THE ASK
+  ───────────────────────────────────────── -->
+  <div class="slide slide-content">
+    <div>
+      <div class="slide-label">Why We're Reaching Out to Archer</div>
+      <div class="slide-heading">Three questions — and an open door<br>if any of this <em>resonates internally.</em></div>
+    </div>
+
+    <div class="question-cards">
+      <div class="q-card">
+        <div class="q-num">01</div>
+        <div>
+          <div class="q-text"><strong>Does Archer have — or plan to build — purpose-built fleet operations software?</strong></div>
+          <div class="q-sub">We're trying to understand whether this is a problem Archer is solving internally, sourcing externally, or hasn't prioritized yet.</div>
+        </div>
+      </div>
+      <div class="q-card">
+        <div class="q-num">02</div>
+        <div>
+          <div class="q-text"><strong>If it's being built in-house, is there an appetite to work with an outside team on specific components?</strong></div>
+          <div class="q-sub">We're not assuming the answer is yes — we're genuinely asking. Some operators want full control. Others prefer to focus engineering resources on the aircraft itself.</div>
+        </div>
+      </div>
+      <div class="q-card">
+        <div class="q-num">03</div>
+        <div>
+          <div class="q-text"><strong>Who at Archer would be the right person to continue this conversation?</strong></div>
+          <div class="q-sub">If this resonates with anyone who sees it, we'd welcome an introduction — even just a 20-minute call to pressure-test our thinking.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span class="footer-name">aaravverma · tharun@illinois.edu · UIUC</span>
+      <span class="footer-tag">Fleet Operations Software Research · April 2026</span>
+    </div>
+    <div class="slide-number">6</div>
+  </div>
+
+</div>
+</body>
+</html>

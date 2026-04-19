@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Ops SaaS — Full Stack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg1:#ffffff; --bg2:#f5f5f3; --border:#e0e0d8;
+  --text1:#1a1a1a; --text2:#666660; --text3:#999990;
+  --blue:#3b8bd4; --green:#00c47a; --amber:#f5a623; --purple:#9b8fe8; --red:#e05252;
+  --blue-tint:rgba(59,139,212,0.08); --green-tint:rgba(0,196,122,0.08);
+  --amber-tint:rgba(245,166,35,0.08); --purple-tint:rgba(155,143,232,0.08);
+  --red-tint:rgba(224,82,82,0.08);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg1:#0d0d0d; --bg2:#1a1a1a; --border:#2a2a2a;
+  --text1:#e8e8e0; --text2:#999990; --text3:#555550;
+}}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg1);font-family:'JetBrains Mono',monospace;color:var(--text1);padding:24px;}
+.wrap{max-width:920px;margin:0 auto;}
+
+/* Header */
+.hdr{text-align:center;margin-bottom:18px;}
+.hdr h1{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--text1);margin-bottom:4px;}
+.hdr p{font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;}
+
+/* Tabs */
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px;}
+.tab{font-family:'JetBrains Mono',monospace;font-size:9px;padding:7px 4px;border:0.5px solid var(--border);border-radius:6px;cursor:pointer;background:transparent;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase;text-align:center;line-height:1.4;transition:all 0.2s;}
+.tab:hover{border-color:var(--text2);color:var(--text2);}
+.tab.active{background:var(--bg2);border-color:var(--text1);color:var(--text1);}
+
+/* Main grid */
+.main-grid{display:grid;grid-template-columns:1fr 80px 1fr;gap:0;}
+
+/* Column box */
+.col-box{border:0.5px solid var(--border);border-radius:10px;overflow:hidden;}
+.col-hdr{padding:7px 11px;border-bottom:0.5px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:7px;}
+.col-dot{width:7px;height:7px;border-radius:50%;}
+.col-lbl{font-size:8px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;}
+.col-body{padding:10px;background:var(--bg1);min-height:360px;}
+
+/* Idle */
+.fe-idle{display:flex;flex-direction:column;align-items:center;justify-content:center;height:340px;gap:8px;}
+.blink-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:blink 1.5s infinite alternate;}
+@keyframes blink{from{opacity:1;}to{opacity:0.2;}}
+.idle-txt{font-size:9px;color:var(--text3);text-align:center;line-height:1.7;}
+
+/* FE elements */
+.fe-lbl{font-size:8px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;margin-bottom:5px;margin-top:8px;}
+.fe-lbl:first-child{margin-top:0;}
+.fe-card{border:0.5px solid var(--border);border-radius:6px;padding:7px 9px;background:var(--bg2);margin-bottom:4px;transition:all 0.3s;}
+.fe-card.hi-blue{border-color:var(--blue);background:var(--blue-tint);}
+.fe-card.hi-green{border-color:var(--green);background:var(--green-tint);}
+.fe-card.hi-amber{border-color:var(--amber);background:var(--amber-tint);}
+.fe-card.hi-red{border-color:var(--red);background:var(--red-tint);}
+.fe-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.fe-name{font-size:10px;font-weight:500;color:var(--text1);}
+.fe-badge{font-size:8px;padding:2px 7px;border-radius:3px;}
+.b-green{background:var(--green-tint);color:var(--green);}
+.b-amber{background:var(--amber-tint);color:var(--amber);}
+.b-red{background:var(--red-tint);color:var(--red);}
+.b-gray{background:var(--bg2);color:var(--text3);border:0.5px solid var(--border);}
+.b-blue{background:var(--blue-tint);color:var(--blue);}
+.b-purple{background:var(--purple-tint);color:var(--purple);}
+.bat-track{height:3px;background:var(--border);border-radius:2px;margin-top:4px;}
+.bat-fill{height:3px;border-radius:2px;}
+.fe-meta{font-size:8px;color:var(--text3);display:flex;gap:8px;margin-top:3px;}
+
+/* Mini map */
+.mini-map{border:0.5px solid var(--border);border-radius:6px;background:var(--bg2);height:80px;position:relative;overflow:hidden;margin-bottom:8px;}
+.map-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:18px 18px;opacity:0.3;}
+.map-ac{position:absolute;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);font-size:7px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.5);}
+.map-pulse{position:absolute;width:10px;height:10px;border-radius:50%;border:1.5px solid;transform:translate(-50%,-50%);animation:mp 2s infinite;}
+@keyframes mp{0%{transform:translate(-50%,-50%) scale(1);opacity:0.7;}100%{transform:translate(-50%,-50%) scale(2.8);opacity:0;}}
+
+/* Mission rows */
+.mission-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--border);font-size:9px;}
+.mission-row:last-child{border:none;}
+.mr-name{color:var(--text2);flex:1;}
+
+/* Alerts */
+.alert-banner{border:0.5px solid;border-radius:5px;padding:6px 9px;margin-bottom:6px;font-size:9px;line-height:1.5;}
+.alert-green{border-color:var(--green);background:var(--green-tint);color:var(--green);}
+.alert-red{border-color:var(--red);background:var(--red-tint);color:var(--red);}
+.alert-blue{border-color:var(--blue);background:var(--blue-tint);color:var(--blue);}
+.alert-amber{border-color:var(--amber);background:var(--amber-tint);color:var(--amber);}
+
+/* Middle col */
+.mid-col{display:flex;flex-direction:column;align-items:center;padding-top:52px;width:80px;position:relative;}
+.flow-label{font-size:8px;letter-spacing:0.5px;color:var(--text3);text-align:center;padding:3px 6px;border:0.5px solid var(--border);border-radius:4px;background:var(--bg2);white-space:nowrap;opacity:0;transition:opacity 0.3s;margin:2px 0;text-transform:uppercase;}
+.flow-arrow{font-size:14px;color:var(--text3);opacity:0;transition:opacity 0.3s;line-height:1;}
+.flow-label.show,.flow-arrow.show{opacity:1;}
+.lit-blue{color:var(--blue)!important;border-color:var(--blue)!important;background:var(--blue-tint)!important;}
+.lit-green{color:var(--green)!important;border-color:var(--green)!important;background:var(--green-tint)!important;}
+.lit-amber{color:var(--amber)!important;border-color:var(--amber)!important;background:var(--amber-tint)!important;}
+.lit-purple{color:var(--purple)!important;border-color:var(--purple)!important;background:var(--purple-tint)!important;}
+.pt{width:2px;height:40px;border-radius:2px;background:var(--border);position:relative;margin:0 auto;}
+.pb{width:10px;height:10px;border-radius:50%;position:absolute;left:-4px;top:0;opacity:0;}
+@keyframes fwd{0%{opacity:1;top:0;}100%{opacity:0;top:36px;}}
+@keyframes bck{0%{opacity:1;top:36px;}100%{opacity:0;top:0;}}
+.go-fwd{animation:fwd 0.6s ease-in forwards;}
+.go-back{animation:bck 0.6s ease-out forwards;}
+.mid-spacer{height:8px;}
+
+/* Stack nodes */
+.snode{border:0.5px solid var(--border);border-radius:6px;padding:7px 9px;background:var(--bg2);position:relative;overflow:hidden;transition:all 0.35s;}
+.snode::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:transparent;transition:background 0.35s;}
+.snode.lit-blue{border-color:rgba(59,139,212,0.33);background:var(--blue-tint);}
+.snode.lit-blue::before{background:var(--blue);}
+.snode.lit-green{border-color:rgba(0,196,122,0.33);background:var(--green-tint);}
+.snode.lit-green::before{background:var(--green);}
+.snode.lit-amber{border-color:rgba(245,166,35,0.33);background:var(--amber-tint);}
+.snode.lit-amber::before{background:var(--amber);}
+.snode.lit-purple{border-color:rgba(155,143,232,0.33);background:var(--purple-tint);}
+.snode.lit-purple::before{background:var(--purple);}
+.sn-top{display:flex;justify-content:space-between;align-items:center;}
+.sn-name{font-size:10px;font-weight:500;color:var(--text1);}
+.sn-tech{font-size:8px;color:var(--text3);}
+.sn-desc{font-size:9px;color:var(--text2);margin-top:3px;line-height:1.5;max-height:0;overflow:hidden;transition:max-height 0.4s;}
+.snode.lit-blue .sn-desc,.snode.lit-green .sn-desc,.snode.lit-amber .sn-desc,.snode.lit-purple .sn-desc{max-height:50px;}
+
+/* Connectors */
+.be-conn{height:10px;display:flex;align-items:center;justify-content:center;position:relative;}
+.conn-line{width:0.5px;height:10px;background:var(--border);}
+.conn-dot{width:7px;height:7px;border-radius:50%;position:absolute;left:50%;transform:translateX(-50%);top:0;opacity:0;}
+@keyframes cdrop{0%{opacity:1;top:0;}100%{opacity:0.1;top:9px;}}
+.conn-dot.go{animation:cdrop 0.5s ease-in forwards;}
+
+/* Mini nodes */
+.mnode{border:0.5px solid var(--border);border-radius:5px;padding:5px 6px;transition:all 0.3s;background:var(--bg2);}
+.mnode.lit-blue{border-color:rgba(59,139,212,0.4);background:var(--blue-tint);}
+.mnode.lit-green{border-color:rgba(0,196,122,0.4);background:var(--green-tint);}
+.mnode.lit-amber{border-color:rgba(245,166,35,0.4);background:var(--amber-tint);}
+.mnode.lit-purple{border-color:rgba(155,143,232,0.4);background:var(--purple-tint);}
+.mn-name{font-size:9px;font-weight:500;color:var(--text1);}
+.mn-tech{font-size:8px;color:var(--text3);}
+
+.sec-lbl{font-size:8px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;text-align:center;padding:4px 0 3px;}
+.mg2{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin:2px 0;}
+.mg3{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;margin:2px 0;}
+
+.lat-tag{display:inline-block;font-size:8px;padding:2px 7px;border-radius:3px;margin-top:4px;opacity:0;transition:opacity 0.4s;background:var(--green-tint);color:var(--green);border:0.5px solid var(--green);}
+.lat-tag.show{opacity:1;}
+
+/* Log */
+.logbox{border:0.5px solid var(--border);border-radius:8px;overflow:hidden;margin-top:10px;}
+.log-hdr{padding:6px 11px;border-bottom:0.5px solid var(--border);background:var(--bg2);display:flex;align-items:center;gap:7px;}
+.log-blink{width:6px;height:6px;border-radius:50%;background:var(--green);animation:logblink 1.5s infinite;}
+@keyframes logblink{0%,100%{opacity:1;}50%{opacity:0.2;}}
+.log-hdr span{font-size:8px;letter-spacing:1.5px;color:var(--text3);text-transform:uppercase;}
+.log-body{padding:7px 11px;background:var(--bg1);min-height:40px;max-height:80px;overflow-y:auto;}
+.log-entry{display:flex;gap:7px;font-size:9px;padding:2px 0;border-bottom:0.5px solid var(--border);opacity:0;transition:opacity 0.3s;align-items:baseline;}
+.log-entry:last-child{border:none;}
+.log-entry.show{opacity:1;}
+.log-ts{color:var(--text3);flex-shrink:0;font-size:8px;}
+.lm-blue{color:#3b8bd4;}.lm-green{color:#00c47a;}.lm-amber{color:#f5a623;}.lm-purple{color:#9b8fe8;}.lm-dim{color:var(--text3);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hdr">
+    <h1>Fleet Ops SaaS — Full Stack</h1>
+    <p>B2B software for eVTOL operators · $200–500 per aircraft per month</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab" onclick="run('map',this)">Fleet Map<br>GET /positions</button>
+    <button class="tab" onclick="run('assign',this)">Mission Dispatch<br>POST /assign</button>
+    <button class="tab" onclick="run('conflict',this)">Deconfliction<br>Auto-detect</button>
+    <button class="tab" onclick="run('laanc',this)">LAANC Auth<br>FAA API</button>
+  </div>
+
+  <div class="main-grid">
+
+    <!-- LEFT -->
+    <div class="col-box">
+      <div class="col-hdr">
+        <div class="col-dot" style="background:#3b8bd4"></div>
+        <span class="col-lbl">Operator Dashboard — React + Mapbox</span>
+      </div>
+      <div class="col-body" id="fe-panel">
+        <div class="fe-idle">
+          <div class="blink-dot"></div>
+          <div class="idle-txt">Select a scenario to see<br>what the operator sees and<br>what the software does behind it</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MIDDLE -->
+    <div class="mid-col">
+      <span class="flow-label" id="fl-req">REQUEST</span>
+      <span class="flow-arrow" id="fa-req">→</span>
+      <div class="pt" id="pt-fwd"><div class="pb" id="pb-fwd"></div></div>
+      <div class="mid-spacer"></div>
+      <div class="pt" id="pt-back"><div class="pb" id="pb-back"></div></div>
+      <span class="flow-arrow" id="fa-res">←</span>
+      <span class="flow-label" id="fl-res">RESPONSE</span>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="col-box">
+      <div class="col-hdr">
+        <div class="col-dot" style="background:#00c47a"></div>
+        <span class="col-lbl">Backend Tech Stack</span>
+      </div>
+      <div class="col-body">
+
+        <div class="snode" id="sn-react">
+          <div class="sn-top"><span class="sn-name">Data ingestion</span><span class="sn-tech">Node.js + Express</span></div>
+          <div class="sn-desc">Aircraft telemetry arrives via MAVLink (drones), ADS-B/OEM API (eVTOL). Kafka handles high-throughput event streaming across multiple simultaneous aircraft.</div></div>
+        </div>
+        <div class="be-conn"><div class="conn-line"></div><div class="conn-dot" id="d0"></div></div>
+
+        <div class="snode" id="sn-api">
+          <div class="sn-top"><span class="sn-name">API gateway</span><span class="sn-tech">Node.js + Express</span></div>
+          <div class="sn-desc">Routes each request to the right service. Like a receptionist directing data to the correct team.</div>
+        </div>
+        <div class="be-conn"><div class="conn-line"></div><div class="conn-dot" id="d1"></div></div>
+
+        <div class="sec-lbl">Core software features</div>
+        <div class="mg2">
+          <div class="mnode" id="sv-orch"><div class="mn-name">Load fleet map</div><div class="mn-tech">Redis · Socket.io</div></div>
+          <div class="mnode" id="sv-decon"><div class="mn-name">Assign mission</div><div class="mn-tech">BullMQ + Redis</div></div>
+          <div class="mnode" id="sv-laanc"><div class="mn-name">Conflict detected</div><div class="mn-tech">Routing algorithm</div></div>
+          <div class="mnode" id="sv-maint"><div class="mn-name">Request LAANC</div><div class="mn-tech">FAA API client</div></div>
+        </div>
+        <div class="be-conn"><div class="conn-line"></div><div class="conn-dot" id="d2"></div></div>
+
+        <div class="sec-lbl">Data storage</div>
+        <div class="mg3">
+          <div class="mnode" id="db-redis"><div class="mn-name">Redis</div><div class="mn-tech">Live positions</div></div>
+          <div class="mnode" id="db-pg"><div class="mn-name">PostgreSQL</div><div class="mn-tech">Missions · logs</div></div>
+          <div class="mnode" id="db-ts"><div class="mn-name">TimescaleDB</div><div class="mn-tech">Battery history</div></div>
+        </div>
+        <div class="be-conn"><div class="conn-line"></div><div class="conn-dot" id="d3"></div></div>
+
+        <div class="snode" id="sn-ws">
+          <div class="sn-top"><span class="sn-name">WebSocket stream</span><span class="sn-tech">Socket.io</span></div>
+          <div class="sn-desc">Pushes live updates back to the operator dashboard without them needing to refresh.</div>
+        </div>
+        <div class="be-conn"><div class="conn-line"></div><div class="conn-dot" id="d4"></div></div>
+
+        <div class="snode" id="sn-out">
+          <div class="sn-top"><span class="sn-name">Operator dashboard</span><span class="sn-tech">React re-render</span></div>
+          <div class="sn-desc">The operator sees everything update in real time. Priced at $200–500 per aircraft per month.</div>
+          <div><span class="lat-tag" id="lat"></span></div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="logbox">
+    <div class="log-hdr"><div class="log-blink"></div><span>System Log</span></div>
+    <div class="log-body" id="log-body"></div>
+  </div>
+
+</div>
+<script>
+const COLORS={blue:'#3b8bd4',green:'#00c47a',amber:'#f5a623',purple:'#9b8fe8'};
+const CLS={blue:'lit-blue',green:'lit-green',amber:'lit-amber',purple:'lit-purple'};
+
+const FE={
+  map:`<div class="fe-lbl">Live fleet map</div>
+<div class="mini-map"><div class="map-grid-bg"></div>
+<div class="map-ac" style="left:22%;top:35%;background:#3b8bd4">✈</div>
+<div class="map-pulse" style="left:22%;top:35%;border-color:#3b8bd4"></div>
+<div class="map-ac" style="left:55%;top:55%;background:#f5a623">✈</div>
+<div class="map-pulse" style="left:55%;top:55%;border-color:#f5a623"></div>
+<div class="map-ac" style="left:75%;top:25%;background:#00c47a">✈</div>
+<div class="map-ac" style="left:40%;top:70%;background:#888">✈</div>
+<div class="map-ac" style="left:68%;top:65%;background:#00c47a">✈</div></div>
+<div class="fe-lbl">Aircraft status</div>
+<div class="fe-card hi-blue"><div class="fe-row"><span class="fe-name">AC-01</span><span class="fe-badge b-green">Active</span></div><div class="bat-track"><div class="bat-fill" style="width:82%;background:#00c47a"></div></div><div class="fe-meta"><span>82%</span><span>340ft</span><span>87kts</span></div></div>
+<div class="fe-card hi-blue"><div class="fe-row"><span class="fe-name">AC-02</span><span class="fe-badge b-amber">Low battery</span></div><div class="bat-track"><div class="bat-fill" style="width:18%;background:#f5a623"></div></div><div class="fe-meta"><span>18%</span><span>210ft</span><span>64kts</span></div></div>
+<div class="fe-card"><div class="fe-row"><span class="fe-name">AC-04</span><span class="fe-badge b-gray">Idle</span></div><div class="bat-track"><div class="bat-fill" style="width:95%;background:#00c47a"></div></div><div class="fe-meta"><span>95%</span><span>At vertiport</span></div></div>`,
+
+  assign:`<div class="fe-lbl">Mission dispatch</div>
+<div class="fe-card"><div class="fe-row"><span class="fe-name">M-005</span><span class="fe-badge b-gray">Queued</span></div><div class="fe-meta">Medical Ctr → Downtown</div><div class="fe-meta"><span>Depart 09:45</span><span>ETA 10:02</span></div></div>
+<div class="fe-card hi-green"><div class="fe-row"><span class="fe-name">AC-04 assigned ✓</span><span class="fe-badge b-green">Active</span></div><div class="bat-track"><div class="bat-fill" style="width:95%;background:#00c47a"></div></div><div class="fe-meta"><span>Deconfliction: clear</span></div></div>
+<div class="fe-lbl">Active missions</div>
+<div class="mission-row"><span class="mr-name">Downtown → Vertiport N</span><span class="fe-badge b-green">AC-01</span></div>
+<div class="mission-row"><span class="mr-name">Airport → Medical Ctr</span><span class="fe-badge b-amber">AC-02</span></div>
+<div class="mission-row" style="background:var(--green-tint)"><span class="mr-name">Medical Ctr → Downtown</span><span class="fe-badge b-green">AC-04 ✓</span></div>
+<div style="margin-top:6px"><div class="alert-banner alert-green">✓ Deconfliction passed — no route conflicts</div></div>`,
+
+  conflict:`<div class="alert-banner alert-red">⚠ CONFLICT — AC-01 + AC-03 · Corridor A3 · 340ft · Departure hold</div>
+<div class="fe-lbl">Affected aircraft</div>
+<div class="fe-card hi-red"><div class="fe-row"><span class="fe-name">AC-01</span><span class="fe-badge b-red">Conflict</span></div><div class="fe-meta"><span>Corridor A3</span><span>340ft</span><span>HOLD</span></div></div>
+<div class="fe-card hi-red"><div class="fe-row"><span class="fe-name">AC-03</span><span class="fe-badge b-red">Conflict</span></div><div class="fe-meta"><span>Corridor A3</span><span>340ft</span><span>HOLD</span></div></div>
+<div class="fe-lbl">Resolution options</div>
+<div class="fe-card">Option A: Reroute AC-03 → Corridor A3-alt at 280ft</div>
+<div class="fe-card">Option B: Stagger AC-03 departure by 8 minutes</div>`,
+
+  laanc:`<div class="fe-lbl">LAANC authorization</div>
+<div class="fe-card"><div class="fe-row"><span class="fe-name">AC-05 — Requesting</span><span class="fe-badge b-blue">Pending</span></div><div class="fe-meta"><span>Class B</span><span>Corridor C2</span><span>350ft</span></div></div>
+<div class="fe-card hi-blue"><div class="fe-row"><span class="fe-name">AC-05 — Approved ✓</span><span class="fe-badge b-green">Cleared</span></div><div class="fe-meta"><span>Class B</span><span>350ft</span><span>Exp 10:45</span></div></div>
+<div class="fe-lbl">Authorization log</div>
+<div class="mission-row"><span class="mr-name">AC-01 · Class B · Corridor A3</span><span class="fe-badge b-green">Approved</span></div>
+<div class="mission-row"><span class="mr-name">AC-02 · Class B · Corridor B1</span><span class="fe-badge b-green">Approved</span></div>
+<div class="mission-row" style="background:var(--blue-tint)"><span class="mr-name">AC-05 · Class B · Corridor C2</span><span class="fe-badge b-green">Just approved</span></div>
+<div style="margin-top:6px"><div class="alert-banner alert-blue">Manual FAA form: 5–10 min. Our software: 1.4s.</div></div>`
+};
+
+const S={
+  map:{color:'blue',reqLabel:'GET positions',resLabel:'Live map data',fe:FE.map,steps:[
+    {nodes:['sn-react'],svcs:[],dbs:[],logs:[{c:'lm-blue',m:'GET /fleet/positions'},{c:'lm-dim',m:'Auth verified'}]},
+    {nodes:['sn-api'],svcs:['sv-orch'],dbs:['db-redis'],logs:[{c:'lm-blue',m:'API gateway → Dispatch & routing'},{c:'lm-green',m:'Redis: 6 positions in 1.8ms'}]},
+    {nodes:['sn-ws'],svcs:[],dbs:[],logs:[{c:'lm-green',m:'WebSocket streams to Mapbox'},{c:'lm-green',m:'Markers re-rendered'}]},
+    {nodes:['sn-out'],svcs:[],dbs:[],lat:'~180ms',logs:[{c:'lm-green',m:'✓ Fleet map live — 6 aircraft displayed'}]}
+  ]},
+  assign:{color:'green',reqLabel:'POST assign',resLabel:'Mission confirmed',fe:FE.assign,steps:[
+    {nodes:['sn-react'],svcs:[],dbs:[],logs:[{c:'lm-blue',m:'POST /missions/assign {M-005, AC-04}'},{c:'lm-blue',m:'Sent to gateway'}]},
+    {nodes:['sn-api'],svcs:['sv-orch','sv-decon'],dbs:[],logs:[{c:'lm-blue',m:'Gateway → Dispatch + Deconfliction'},{c:'lm-purple',m:'Checking M-005 against 5 active routes...'}]},
+    {nodes:['sn-api'],svcs:['sv-decon'],dbs:['db-pg','db-redis'],logs:[{c:'lm-green',m:'No conflicts on M-005'},{c:'lm-green',m:'PostgreSQL: AC-04 assigned'},{c:'lm-green',m:'Redis: state → active'}]},
+    {nodes:['sn-out'],svcs:[],dbs:[],lat:'~210ms',logs:[{c:'lm-green',m:'✓ Mission board updated — AC-04 dispatched'}]}
+  ]},
+  conflict:{color:'amber',reqLabel:'AUTO-DETECT',resLabel:'Alert pushed',fe:FE.conflict,steps:[
+    {nodes:['sn-api'],svcs:['sv-decon'],dbs:['db-redis'],logs:[{c:'lm-amber',m:'Deconfliction: scheduled 30s check running'},{c:'lm-amber',m:'Redis: AC-01 + AC-03 — Corridor A3 overlap at 340ft'}]},
+    {nodes:['sn-api'],svcs:['sv-orch','sv-decon'],dbs:['db-pg'],logs:[{c:'lm-amber',m:'CONFLICT: A3 · 340ft · T+4min'},{c:'lm-amber',m:'Departure hold — logged to PostgreSQL'}]},
+    {nodes:['sn-ws'],svcs:[],dbs:[],logs:[{c:'lm-amber',m:'WebSocket pushes alert instantly'},{c:'lm-dim',m:'Operator notified in ~50ms'}]},
+    {nodes:['sn-out'],svcs:[],dbs:[],lat:'~50ms',logs:[{c:'lm-amber',m:'⚠ Conflict shown — operator prompted to resolve'}]}
+  ]},
+  laanc:{color:'purple',reqLabel:'POST LAANC req',resLabel:'FAA approved',fe:FE.laanc,steps:[
+    {nodes:['sn-react'],svcs:[],dbs:[],logs:[{c:'lm-blue',m:'POST /laanc/request {AC-05, ClassB-C2, 350ft}'},{c:'lm-blue',m:'Sent'}]},
+    {nodes:['sn-api'],svcs:['sv-laanc'],dbs:[],logs:[{c:'lm-blue',m:'Gateway → LAANC compliance service'},{c:'lm-purple',m:'FAA API called'}]},
+    {nodes:['sn-api'],svcs:['sv-laanc'],dbs:['db-pg'],logs:[{c:'lm-green',m:'FAA: APPROVED — AC-05 · 350ft · Exp 10:45'},{c:'lm-green',m:'PostgreSQL: auth saved'}]},
+    {nodes:['sn-out'],svcs:[],dbs:[],lat:'~1.4s',logs:[{c:'lm-green',m:'✓ AC-05 cleared for Class B airspace'}]}
+  ]}
+};
+
+let running=false;
+const allNodes=['sn-react','sn-api','sn-ws','sn-out'];
+const allServices=['sv-orch','sv-decon','sv-laanc','sv-maint'];
+const allDbs=['db-redis','db-pg','db-ts'];
+const litCls=['lit-blue','lit-green','lit-amber','lit-purple'];
+
+function clearAll(){
+  [...allNodes,...allServices,...allDbs].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove(...litCls);
+  });
+  const lat=document.getElementById('lat');
+  lat.classList.remove('show'); lat.textContent='';
+  document.getElementById('log-body').innerHTML='';
+  resetFlow();
+}
+function resetFlow(){
+  ['fl-req','fl-res','fa-req','fa-res'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('show',...litCls);
+  });
+  ['pt-fwd','pt-back'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove(...litCls);
+  });
+}
+function fireFlow(color,dir){
+  if(dir==='fwd'){
+    ['fl-req','fa-req'].forEach(id=>{const el=document.getElementById(id);el.classList.add('show','lit-'+color);});
+    document.getElementById('pt-fwd').classList.add('lit-'+color);
+    const pb=document.getElementById('pb-fwd');
+    pb.style.background=COLORS[color]; pb.classList.remove('go-fwd'); void pb.offsetWidth; pb.classList.add('go-fwd');
+    setTimeout(()=>pb.classList.remove('go-fwd'),700);
+  } else {
+    ['fl-res','fa-res'].forEach(id=>{const el=document.getElementById(id);el.classList.add('show','lit-'+color);});
+    document.getElementById('pt-back').classList.add('lit-'+color);
+    const pb=document.getElementById('pb-back');
+    pb.style.background=COLORS[color]; pb.classList.remove('go-back'); void pb.offsetWidth; pb.classList.add('go-back');
+    setTimeout(()=>pb.classList.remove('go-back'),700);
+  }
+}
+function pulseConn(id,color){
+  const el=document.getElementById(id); if(!el) return;
+  el.style.background=COLORS[color]; el.classList.remove('go'); void el.offsetWidth; el.classList.add('go');
+  setTimeout(()=>{el.classList.remove('go');el.style.background='';},700);
+}
+function addLogs(entries){
+  const ts=new Date().toTimeString().slice(0,8);
+  const body=document.getElementById('log-body');
+  entries.forEach(e=>{
+    const div=document.createElement('div'); div.className='log-entry';
+    div.innerHTML=`<span class="log-ts">${ts}</span><span class="${e.c}">${e.m}</span>`;
+    body.appendChild(div); setTimeout(()=>div.classList.add('show'),50);
+  });
+  body.scrollTop=body.scrollHeight;
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+async function run(key,btn){
+  if(running) return; running=true;
+  clearAll();
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const s=S[key];
+  document.getElementById('fl-req').textContent=s.reqLabel;
+  document.getElementById('fl-res').textContent=s.resLabel;
+  document.getElementById('fe-panel').innerHTML=s.fe;
+  fireFlow(s.color,'fwd');
+  for(let i=0;i<s.steps.length;i++){
+    await sleep(700);
+    pulseConn('d'+i,s.color);
+    await sleep(280);
+    const step=s.steps[i];
+    step.nodes.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add(CLS[s.color]);});
+    step.svcs.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add(CLS[s.color]);});
+    step.dbs.forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('lit-green');});
+    if(step.lat){const lat=document.getElementById('lat');lat.textContent=step.lat;lat.classList.add('show');}
+    addLogs(step.logs);
+    if(i===s.steps.length-1){await sleep(400);fireFlow(s.color,'back');}
+  }
+  running=false;
+}
+</script>
+</body>
+</html>

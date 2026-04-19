@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fleet Ops SaaS — Archer Deck (Content)</title>
+<style>
+  body { font-family: sans-serif; max-width: 860px; margin: 0 auto; padding: 40px 32px; background: #fff; color: #111; }
+  .slide { border: 1px solid #ddd; border-radius: 8px; padding: 40px; margin-bottom: 48px; page-break-after: always; }
+  .slide-num { font-size: 11px; color: #999; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .slide-tag { font-size: 11px; color: #2f7ef5; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  h1 { font-size: 32px; font-weight: 700; line-height: 1.2; margin-bottom: 12px; }
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+  h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; margin-top: 20px; }
+  p  { font-size: 15px; line-height: 1.7; color: #333; margin-bottom: 12px; }
+  .sub { font-size: 16px; color: #555; line-height: 1.6; margin-bottom: 24px; }
+  .authors { margin-top: 32px; }
+  .authors p { font-size: 14px; color: #555; margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 14px; }
+  th { text-align: left; padding: 8px 12px; background: #f5f5f5; border-bottom: 2px solid #ddd; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666; }
+  td { padding: 10px 12px; border-bottom: 1px solid #eee; vertical-align: top; line-height: 1.5; }
+  tr:last-child td { border-bottom: none; }
+  td.label { font-weight: 600; width: 180px; }
+  ul { margin: 8px 0 16px 20px; }
+  li { font-size: 15px; line-height: 1.7; color: #333; margin-bottom: 6px; }
+  .callout { background: #f0f4ff; border-left: 4px solid #2f7ef5; padding: 16px 20px; border-radius: 4px; margin: 20px 0; font-size: 15px; line-height: 1.6; color: #1a2a4a; }
+  .stat-row { display: flex; gap: 24px; margin: 20px 0; flex-wrap: wrap; }
+  .stat { background: #f5f5f5; border-radius: 6px; padding: 16px 20px; flex: 1; min-width: 140px; }
+  .stat .val { font-size: 26px; font-weight: 700; color: #111; }
+  .stat .lbl { font-size: 12px; color: #777; margin-top: 2px; }
+  .q-block { border: 1px solid #ddd; border-radius: 6px; padding: 16px 20px; margin-bottom: 12px; }
+  .q-block .num { font-size: 22px; font-weight: 700; color: #2f7ef5; float: left; margin-right: 14px; line-height: 1.2; }
+  .q-block .q-text { font-size: 15px; font-weight: 600; line-height: 1.4; overflow: hidden; }
+  .q-block .q-sub { font-size: 13px; color: #777; margin-top: 6px; line-height: 1.5; overflow: hidden; }
+  .tl { margin: 16px 0; }
+  .tl-item { display: flex; gap: 20px; margin-bottom: 16px; }
+  .tl-date { font-size: 11px; font-weight: 700; color: #2f7ef5; text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; padding-top: 2px; min-width: 100px; }
+  .tl-text { font-size: 14px; color: #333; line-height: 1.6; }
+  @media print {
+    body { padding: 0; }
+    .slide { border: none; border-radius: 0; padding: 48px 56px; margin: 0; }
+    @page { size: landscape; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 1 — COVER
+═══════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-num">Slide 1 — Cover</div>
+  <div class="slide-tag">Research Inquiry · April 2026</div>
+
+  <h1>Fleet Operations Software<br>for Autonomous Aviation</h1>
+
+  <p class="sub">
+    We're researching whether the software infrastructure for managing eVTOL and drone
+    fleets at scale exists today — and how leading companies like Archer are approaching
+    this problem.
+  </p>
+
+  <div class="authors">
+    <p><strong>Aarav Verma</strong> — Aerospace Engineering, UIUC</p>
+    <p><strong>Tharun</strong> — Materials Science, UIUC</p>
+    <p style="margin-top:8px; color:#999; font-size:13px;">University of Illinois Urbana-Champaign</p>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 2 — THE ANALOGY
+═══════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-num">Slide 2 — The Analogy</div>
+  <div class="slide-tag">The Market Parallel</div>
+
+  <h2>Samsara solved this for trucking.<br>We don't think aviation has its equivalent yet.</h2>
+
+  <p>Samsara is a $25B company that built fleet telematics, route optimization, compliance tracking, and dispatch tools for truck operators. The problem they solved for trucking is the same problem autonomous aviation operators are about to face — but no equivalent platform exists for aircraft.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>Samsara — Trucking</th>
+        <th>Aviation Today</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">Fleet visibility</td>
+        <td>Real-time GPS dashboard, status per vehicle</td>
+        <td>Fragmented — ADS-B readers, OEM portals, manual logs. No unified view.</td>
+      </tr>
+      <tr>
+        <td class="label">Maintenance tracking</td>
+        <td>Automated alerts, mileage-based scheduling</td>
+        <td>Spreadsheets or MRO tools built for fixed-wing aircraft, not eVTOL battery cycles</td>
+      </tr>
+      <tr>
+        <td class="label">Compliance logging</td>
+        <td>Automated HOS and DOT reporting</td>
+        <td>Manual FAA documentation — Part 135 records, incident logs done by hand</td>
+      </tr>
+      <tr>
+        <td class="label">Dispatch</td>
+        <td>Route optimization, driver assignment</td>
+        <td>Ad hoc — phone calls, internal spreadsheets, no deconfliction tooling</td>
+      </tr>
+      <tr>
+        <td class="label">Platform status</td>
+        <td>$25B purpose-built company</td>
+        <td><strong>Purpose-built aviation equivalent: does not appear to exist.</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    The competitive landscape includes FlytBase, AlarisPro, AirData UAV, and Aloft — none architected for both drone fleets today and eVTOL at commercial scale. OEMs like Archer are investing in software (Palantir, NVIDIA IGX Thor, SpaceX Starlink) — but those investments target autonomy, flight controls, and onboard AI. The fleet operations management layer — dispatch, maintenance tracking, compliance logging — remains unsolved. The gap is real.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 3 — THE PROBLEM IN DETAIL
+═══════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-num">Slide 3 — The Problem</div>
+  <div class="slide-tag">What Gets Hard at Scale</div>
+
+  <h2>Operating 30 aircraft is not just 30x harder than operating one.<br>It's a different category of problem.</h2>
+
+  <p>When an operator is managing a fleet in commercial service, six problems appear simultaneously — none of which existing software handles well in an aviation context:</p>
+
+  <h3>1. Fleet visibility</h3>
+  <p>Knowing which aircraft are in-flight, charging, in maintenance, or grounded across an entire operation — in real time. Not refreshing a spreadsheet. Not calling a crew chief.</p>
+
+  <h3>2. Battery and power cycle management</h3>
+  <p>eVTOL-specific: tracking state of charge, cycle count, and battery degradation across a fleet. Scheduling around charging infrastructure. Flagging aircraft approaching replacement thresholds before they fail mid-mission.</p>
+
+  <h3>3. Maintenance tracking</h3>
+  <p>Flight-hour-based maintenance scheduling, unscheduled incident logging, parts inventory, airworthiness documentation — all tied to FAA-compliant records. Not adapted from fixed-wing MRO software.</p>
+
+  <h3>4. Regulatory compliance</h3>
+  <p>FAA Part 135 reporting for air taxi operations, LAANC airspace authorization (currently 5–10 min manual paperwork, should be ~1.4 seconds automated), pilot certification tracking, audit trail for every flight.</p>
+
+  <h3>5. Mission dispatch</h3>
+  <p>Assigning aircraft to routes based on battery level, location, airspace availability, and crew readiness. Handling deconfliction when multiple aircraft are operating in the same airspace. Automated re-routing on weather holds.</p>
+
+  <h3>6. Utilization analytics</h3>
+  <p>Cost per flight hour, aircraft downtime rates, revenue per aircraft, fleet utilization — the financial data operators need to know if their operation is profitable. Currently calculated manually if at all.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 4 — MARKET TIMING
+═══════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-num">Slide 4 — Market Timing</div>
+  <div class="slide-tag">Why Now</div>
+
+  <h2>The window to build this right is before commercial operations begin — not during.</h2>
+
+  <div class="tl">
+    <div class="tl-item">
+      <div class="tl-date">Now — 2025</div>
+      <div class="tl-text">Flight testing, certification, pre-commercial ops. Fleets are small and manageable manually. The software gap isn't painful yet — but the infrastructure decisions are being made right now.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">2026 — Now</div>
+      <div class="tl-text">First commercial eVTOL routes are beginning this year. Archer is operating Midnight in the U.S. (FAA eIPP program) and UAE. 10–30 aircraft per operator. Manual ops processes become a liability. Operators without purpose-built tooling are flying blind.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">2028 — 2030</div>
+      <div class="tl-text">Fleet scaling. 100+ aircraft per operator. Software built for small fleets doesn't scale. Operators who built the right infrastructure early have a significant operational and cost advantage.</div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-date">Today (Bridge)</div>
+      <div class="tl-text">Drone fleet operators — commercial inspection, delivery, enterprise — are already running fleets of 20–200 aircraft and facing this exact problem. Same software, smaller aircraft. Solving it for drones now validates the platform before eVTOL scale arrives.</div>
+    </div>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat">
+      <div class="val">$5.67B</div>
+      <div class="lbl">eVTOL fleet management market by 2033 (31.2% CAGR) — Market Intelo, Aug 2025</div>
+    </div>
+    <div class="stat">
+      <div class="val">#1</div>
+      <div class="lbl">Software & digital services — fastest-growing segment of the eVTOL market</div>
+    </div>
+    <div class="stat">
+      <div class="val">$25B</div>
+      <div class="lbl">Samsara's market cap — the trucking equivalent that already exists</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Lilium's bankruptcy in 2023</strong> is a data point, not a death sentence for the market. It illustrates that eVTOL operators who don't solve the operational and financial efficiency problem early won't survive scale. That's exactly the problem fleet ops software addresses.
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 5 — WHAT WE'RE BUILDING
+═══════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-num">Slide 5 — The Product Concept</div>
+  <div class="slide-tag">What We're Building</div>
+
+  <h2>A single operator dashboard that gives aviation ops teams real-time control of their entire fleet.</h2>
+
+  <p>Think of it as the operations center software layer — not an avionics system, not a booking platform. The tool that the dispatch manager, maintenance coordinator, and operations director use to run the day-to-day.</p>
+
+  <h3>Core views (MVP hypothesis)</h3>
+  <table>
+    <thead>
+      <tr><th>View</th><th>What it does</th><th>Why it matters</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="label">Fleet Overview</td>
+        <td>All aircraft, real-time status: in-flight, charging, maintenance, grounded</td>
+        <td>Operators need a single source of truth for fleet state</td>
+      </tr>
+      <tr>
+        <td class="label">Mission Dispatch</td>
+        <td>Assign aircraft to routes, manage crew, handle holds and re-routing</td>
+        <td>Manual dispatch doesn't scale past ~5 aircraft</td>
+      </tr>
+      <tr>
+        <td class="label">Maintenance Tracker</td>
+        <td>Flight hours, battery cycles, scheduled vs. unscheduled maintenance, work orders</td>
+        <td>Predictive maintenance is one of the highest-value ops tools in aviation</td>
+      </tr>
+      <tr>
+        <td class="label">Compliance Log</td>
+        <td>FAA Part 135/107 records, LAANC authorizations, incident logs, audit trail</td>
+        <td>Compliance can't be an afterthought — it needs to be built in from day one</td>
+      </tr>
+      <tr>
+        <td class="label">Analytics</td>
+        <td>Cost per flight hour, utilization rates, downtime, fleet revenue performance</td>
+        <td>Operators flying blind on unit economics won't survive commercial scale</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Business model hypothesis</h3>
+  <p>SaaS subscription: <strong>$200–500 per aircraft per month.</strong> Basis: Samsara's full-platform fleet management runs ~$100–150/vehicle/month for trucking. Aviation operators carry significantly higher compliance, airspace, and safety liability — the platform value justifies a premium over trucking equivalents. Unvalidated — this is what we're testing with operators.</p>
+
+  <h3>Technical approach</h3>
+  <p>React + Mapbox frontend. Node.js/Express API. Apache Kafka for high-throughput telemetry streaming. Redis for live state. PostgreSQL + TimescaleDB for structured records and battery history. MAVLink for drones. ADS-B + OEM API integration for eVTOL. Built on AWS with SOC2 compliance in mind from the start.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 6 — WHO WE ARE
+═══════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-num">Slide 6 — Who We Are</div>
+  <div class="slide-tag">The Team</div>
+
+  <h2>Two UIUC engineers who understand both the domain and the software problem.</h2>
+
+  <p><strong>Aarav Verma</strong> — Aerospace Engineering, UIUC. Leading product vision, outreach, and pitch materials. Understands the FAA regulatory landscape, eVTOL certification pathways, and the operational differences between drone and eVTOL fleet management.</p>
+
+  <p><strong>Tharun</strong> — Materials Science, UIUC. Co-founder. Background relevant to battery degradation modeling and materials-level understanding of eVTOL hardware constraints — directly applicable to the SOC/SOH tracking and maintenance prediction components of the platform.</p>
+
+  <div class="callout">
+    <strong>Why we're reaching out to Archer specifically:</strong> You're the furthest along on the path to commercial operations. The software infrastructure decisions being made at Archer right now — build vs. buy, OEM-proprietary vs. open integration — will shape how the whole industry approaches this. We want to understand how you're thinking about it before we build the wrong thing.
+  </div>
+
+  <p>We're at the research and early-build stage. We're not here to pitch a finished product. We're here because getting in front of the right people at the right companies before everyone is flying at scale is the only way to build something actually useful.</p>
+</div>
+
+
+<!-- ═══════════════════════════════════════════
+     SLIDE 7 — THE ASK
+═══════════════════════════════════════════ -->
+<div class="slide">
+  <div class="slide-num">Slide 7 — The Ask</div>
+  <div class="slide-tag">Why We're Reaching Out</div>
+
+  <h2>Three questions — and an open door if any of this resonates.</h2>
+
+  <div class="q-block">
+    <div class="num">01</div>
+    <div class="q-text">Does Archer have — or plan to build — purpose-built fleet operations software?</div>
+    <div class="q-sub">We're aware Archer has partnered with Palantir, NVIDIA, and SpaceX on software — but those appear to cover autonomy, flight controls, and connectivity. We're asking specifically about the fleet operations layer: dispatch, maintenance tracking, FAA compliance logging. Is that being built in-house, sourced externally, or not yet prioritized?</div>
+  </div>
+
+  <div class="q-block">
+    <div class="num">02</div>
+    <div class="q-text">If it's being built in-house, is there appetite to work with an outside team on specific components — or to pilot a third-party platform?</div>
+    <div class="q-sub">We're not assuming yes. Some operators will want full control and build everything internally. Others will want to focus engineering resources on the aircraft and partner for ops software. We're genuinely asking which camp Archer is in.</div>
+  </div>
+
+  <div class="q-block">
+    <div class="num">03</div>
+    <div class="q-text">Who at Archer would be the right person to continue this conversation?</div>
+    <div class="q-sub">We're looking for whoever owns the fleet operations or digital technology roadmap — someone like the Director of Digital Technology Program Management or a senior engineer on the ops software side. Even a 20-minute conversation would help us build the right thing.</div>
+  </div>
+
+  <p style="margin-top:24px; font-size:14px; color:#555;">
+    We're not asking for funding, partnership commitments, or anything commercial. Just a conversation with the right person.
+  </p>
+
+  <p style="font-size:14px; color:#555;">
+    <strong>Aarav Verma</strong> &nbsp;·&nbsp; Aerospace Engineering, UIUC &nbsp;·&nbsp; [email] &nbsp;·&nbsp; [phone]
+  </p>
+</div>
+
+</body>
+</html>

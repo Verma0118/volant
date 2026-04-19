@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FleetOps — Live Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset ────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'JetBrains Mono', 'Courier New', monospace;
+      font-size: 13px;
+      background: #0a0f1a;
+      color: #e2eaf8;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ── Tokens ───────────────────────────────────────── */
+    :root {
+      --bg:        #0a0f1a;
+      --surface:   #111827;
+      --border:    #1e2d45;
+      --text:      #e2eaf8;
+      --muted:     #4a6080;
+      --blue:      #3b8bd4;
+      --green:     #00c47a;
+      --amber:     #f5a623;
+      --red:       #e05252;
+      --t:         160ms ease;
+    }
+
+    /* ── Root layout ─────────────────────────────────── */
+    .layout {
+      display: flex;
+      flex: 1;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* ─────────────────────────────────────────────────
+       COLUMN 1 — SIDEBAR
+    ───────────────────────────────────────────────── */
+    .sidebar {
+      width: 200px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* Wordmark */
+    .sidebar-brand { margin-bottom: 20px; }
+    .brand-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+    }
+    .brand-sub {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 3px;
+      letter-spacing: 0.04em;
+    }
+
+    /* Divider */
+    .sidebar-divider {
+      height: 1px;
+      background: var(--border);
+      margin-bottom: 16px;
+    }
+
+    /* Section label */
+    .sidebar-section-label {
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 12px;
+      margin-bottom: 6px;
+    }
+
+    /* Nav */
+    nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background var(--t), color var(--t);
+      border: 1px solid transparent;
+      user-select: none;
+    }
+    .nav-item:hover {
+      background: var(--border);
+      color: var(--text);
+    }
+    .nav-item:focus-visible {
+      outline: 1px solid var(--blue);
+      outline-offset: 1px;
+    }
+    .nav-item.active {
+      background: #1e2d45;
+      color: var(--blue);
+      border-color: rgba(59,139,212,0.15);
+    }
+    .nav-item svg {
+      width: 13px; height: 13px;
+      flex-shrink: 0;
+      opacity: 0.7;
+    }
+    .nav-item.active svg { opacity: 1; }
+
+    /* Sidebar footer */
+    .sidebar-footer {
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      flex-shrink: 0;
+      box-shadow: 0 0 5px rgba(0,196,122,0.5);
+    }
+
+    /* ─────────────────────────────────────────────────
+       COLUMN 2 — MAP
+    ───────────────────────────────────────────────── */
+    .map-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      min-width: 0;
+      position: relative;
+    }
+
+    /* Top bar */
+    .map-topbar {
+      height: 44px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+    }
+    .map-title {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .pill-group { display: flex; align-items: center; gap: 6px; }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 3px;
+      border-width: 0.5px;
+      border-style: solid;
+      letter-spacing: 0.04em;
+    }
+    .pill-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .pill-green { color: var(--green); border-color: rgba(0,196,122,0.4); background: rgba(0,196,122,0.06); }
+    .pill-green .pill-dot { background: var(--green); }
+    .pill-blue  { color: var(--blue);  border-color: rgba(59,139,212,0.4); background: rgba(59,139,212,0.06); }
+    .pill-blue .pill-dot  { background: var(--blue); }
+    .pill-amber { color: var(--amber); border-color: rgba(245,166,35,0.4); background: rgba(245,166,35,0.06); }
+    .pill-amber .pill-dot { background: var(--amber); }
+
+    /* Map area */
+    .map-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background-image:
+        linear-gradient(rgba(30,45,69,0.13) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30,45,69,0.13) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* Swiss grid overlay — thicker lines every 5 cells */
+    .map-area::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(30,45,69,0.22) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(30,45,69,0.22) 1px, transparent 1px);
+      background-size: 200px 200px;
+    }
+
+    /* Aircraft dots */
+    .ac-dot-wrap {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 10;
+    }
+    .ac-dot {
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      position: relative;
+      z-index: 2;
+      transition: transform var(--t), box-shadow var(--t);
+    }
+    .ac-dot-wrap:hover .ac-dot {
+      transform: scale(1.3);
+    }
+    .ac-dot-wrap:focus-visible { outline: none; }
+    .ac-dot-wrap:focus-visible .ac-dot {
+      box-shadow: 0 0 0 2px var(--blue);
+    }
+    .ac-label {
+      position: absolute;
+      top: 16px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .ac-dot-wrap.selected .ac-label { color: var(--text); }
+
+    /* Pulse ring — active aircraft only */
+    .pulse-ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      z-index: 1;
+      animation: pulse-anim 2s cubic-bezier(0.4,0,0.6,1) infinite;
+    }
+    @keyframes pulse-anim {
+      0%   { transform: translate(-50%,-50%) scale(1); opacity: 0.6; }
+      100% { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
+    }
+
+    /* Conflict SVG overlay */
+    #conflict-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 5;
+      transition: opacity 400ms ease;
+    }
+
+    /* Legend */
+    .map-legend {
+      position: absolute;
+      bottom: 16px; left: 16px;
+      background: rgba(17,24,39,0.88);
+      border: 1px solid var(--border);
+      padding: 9px 12px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .legend-label {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 9px; color: var(--muted);
+    }
+    .legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Coordinates readout */
+    .map-coords {
+      position: absolute;
+      bottom: 16px; right: 16px;
+      font-size: 8px; color: var(--muted);
+      letter-spacing: 0.08em;
+      z-index: 20;
+      background: rgba(17,24,39,0.7);
+      border: 1px solid var(--border);
+      padding: 5px 9px;
+    }
+
+    /* ─────────────────────────────────────────────────
+       COLUMN 3 — AIRCRAFT PANEL
+    ───────────────────────────────────────────────── */
+    .panel-col {
+      width: 280px;
+      flex-shrink: 0;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .panel-title {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-count {
+      font-size: 9px;
+      font-weight: 600;
+      color: var(--blue);
+      letter-spacing: 0.04em;
+    }
+
+    .panel-cards {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .panel-cards::-webkit-scrollbar { width: 3px; }
+    .panel-cards::-webkit-scrollbar-track { background: transparent; }
+    .panel-cards::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    /* Aircraft card */
+    .ac-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: 3px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: border-color var(--t), background var(--t);
+      position: relative;
+      overflow: hidden;
+    }
+    .ac-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--status-color, var(--muted));
+    }
+    .ac-card:hover { background: rgba(30,45,69,0.3); }
+    .ac-card:focus-visible { outline: 1px solid var(--blue); outline-offset: 1px; }
+    .ac-card.selected {
+      border-color: var(--status-color, var(--blue));
+      box-shadow: 0 0 0 1px var(--status-color, var(--blue)), inset 0 0 12px rgba(59,139,212,0.04);
+    }
+    .ac-card.selected { background: rgba(30,45,69,0.25); }
+
+    /* Card row 1 */
+    .card-row1 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .card-id {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.04em;
+    }
+    .status-badge {
+      font-size: 8px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 2px;
+      border-width: 0.5px;
+      border-style: solid;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* Battery bar */
+    .card-bat-track {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      border-radius: 1px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .card-bat-fill {
+      height: 100%;
+      border-radius: 1px;
+      transition: width 600ms ease;
+    }
+
+    /* Card stats row */
+    .card-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+    }
+    .stat-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat-col:not(:first-child) {
+      padding-left: 8px;
+      border-left: 1px solid var(--border);
+    }
+    .stat-key {
+      font-size: 8px;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .stat-val {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.02em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Panel footer */
+    .panel-footer {
+      padding: 12px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .resolve-btn {
+      width: 100%;
+      padding: 10px;
+      background: rgba(224,82,82,0.1);
+      border: 0.5px solid var(--red);
+      color: var(--red);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background var(--t), color var(--t);
+      border-radius: 3px;
+      text-align: left;
+    }
+    .resolve-btn:hover { background: rgba(224,82,82,0.18); }
+    .resolve-btn:focus-visible { outline: 1px solid var(--red); outline-offset: 2px; }
+    .resolve-btn.resolved {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(0,196,122,0.08);
+      cursor: default;
+    }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <aside class="sidebar" aria-label="Navigation">
+
+    <div class="sidebar-brand">
+      <div class="brand-name">FleetOps</div>
+      <div class="brand-sub">B2B SaaS · eVTOL</div>
+    </div>
+
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">Operations</div>
+
+    <nav role="navigation" aria-label="Main menu">
+      <div class="nav-item active" tabindex="0" role="button" aria-current="page" onclick="setNav(this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="1.5" fill="currentColor" stroke="none"/><line x1="8" y1="2" x2="8" y2="4"/><line x1="8" y1="12" x2="8" y2="14"/><line x1="2" y1="8" x2="4" y2="8"/><line x1="12" y1="8" x2="14" y2="8"/></svg>
+        Live Map
+      </div>
+      <div class="nav-item" tabindex="0" role="button" onclick="setNav(this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+        Fleet Status
+      </div>
+      <div class="nav-item" tabindex="0" role="button" onclick="setNav(this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 8h10M8 3l5 5-5 5"/></svg>
+        Mission Dispatch
+      </div>
+      <div class="nav-item" tabindex="0" role="button" onclick="setNav(this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M2 4h12v2l-2 6H4L2 6V4z"/><path d="M6 4V3a2 2 0 0 1 4 0v1"/></svg>
+        Compliance Log
+      </div>
+      <div class="nav-item" tabindex="0" role="button" onclick="setNav(this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5"/><path d="M8 5v3l2 2"/></svg>
+        Maintenance Tracker
+      </div>
+      <div class="nav-item" tabindex="0" role="button" onclick="setNav(this)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M3 3h10v2L8 9 3 5V3z"/><path d="M3 9v4h10V9"/></svg>
+        Analytics
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="status-indicator">
+        <div class="status-dot" aria-hidden="true"></div>
+        3 aircraft online
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAP ─────────────────────────────────────── -->
+  <main class="map-col" aria-label="Live fleet map">
+
+    <!-- Top bar -->
+    <div class="map-topbar">
+      <span class="map-title">Live Fleet Map</span>
+      <div class="pill-group" role="list" aria-label="Zone status">
+        <div class="pill pill-green" role="listitem">
+          <div class="pill-dot" aria-hidden="true"></div>
+          Zone A — Active
+        </div>
+        <div class="pill pill-blue" role="listitem">
+          <div class="pill-dot" aria-hidden="true"></div>
+          LAANC: Auth'd
+        </div>
+        <div class="pill pill-amber" role="listitem">
+          <div class="pill-dot" aria-hidden="true"></div>
+          1 Alert
+        </div>
+      </div>
+    </div>
+
+    <!-- Map area -->
+    <div class="map-area" id="mapArea" role="region" aria-label="Aircraft positions">
+
+      <!-- Conflict SVG line -->
+      <svg id="conflict-overlay" aria-label="Conflict between AC-01 and AC-04" role="img">
+        <defs>
+          <filter id="red-glow">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+        <!-- Line calculated from positions: AC-01 at 22%,35% — AC-04 at 70%,28% -->
+        <!-- These are rendered in JS after layout -->
+        <line id="conflict-line"
+          stroke="#e05252" stroke-width="1" stroke-dasharray="5 4"
+          filter="url(#red-glow)" opacity="0.7"/>
+        <text id="conflict-label"
+          font-family="'JetBrains Mono', monospace"
+          font-size="9" fill="#e05252" font-weight="600"
+          letter-spacing="0.06em">⚠ CONFLICT</text>
+      </svg>
+
+      <!-- Aircraft dots (positions from plan) -->
+      <div class="ac-dot-wrap" style="left:22%;top:35%;" id="dot-AC-01"
+           tabindex="0" role="button" aria-label="Aircraft AC-01, active"
+           onclick="selectAircraft('AC-01')" onkeydown="if(event.key==='Enter')selectAircraft('AC-01')">
+        <div class="pulse-ring" style="background:rgba(0,196,122,0.4);" aria-hidden="true"></div>
+        <div class="ac-dot" style="background:#00c47a;box-shadow:0 0 6px rgba(0,196,122,0.5);" aria-hidden="true"></div>
+        <div class="ac-label">AC-01</div>
+      </div>
+
+      <div class="ac-dot-wrap" style="left:55%;top:50%;" id="dot-AC-02"
+           tabindex="0" role="button" aria-label="Aircraft AC-02, low battery"
+           onclick="selectAircraft('AC-02')" onkeydown="if(event.key==='Enter')selectAircraft('AC-02')">
+        <div class="ac-dot" style="background:#f5a623;box-shadow:0 0 6px rgba(245,166,35,0.4);" aria-hidden="true"></div>
+        <div class="ac-label">AC-02</div>
+      </div>
+
+      <div class="ac-dot-wrap" style="left:38%;top:62%;" id="dot-AC-03"
+           tabindex="0" role="button" aria-label="Aircraft AC-03, active"
+           onclick="selectAircraft('AC-03')" onkeydown="if(event.key==='Enter')selectAircraft('AC-03')">
+        <div class="pulse-ring" style="background:rgba(0,196,122,0.4);" aria-hidden="true"></div>
+        <div class="ac-dot" style="background:#00c47a;box-shadow:0 0 6px rgba(0,196,122,0.5);" aria-hidden="true"></div>
+        <div class="ac-label">AC-03</div>
+      </div>
+
+      <div class="ac-dot-wrap" style="left:70%;top:28%;" id="dot-AC-04"
+           tabindex="0" role="button" aria-label="Aircraft AC-04, conflict"
+           onclick="selectAircraft('AC-04')" onkeydown="if(event.key==='Enter')selectAircraft('AC-04')">
+        <div class="ac-dot" style="background:#e05252;box-shadow:0 0 8px rgba(224,82,82,0.5);" id="dot-AC-04-circle" aria-hidden="true"></div>
+        <div class="ac-label" id="dot-AC-04-label">AC-04</div>
+      </div>
+
+      <div class="ac-dot-wrap" style="left:15%;top:55%;" id="dot-AC-05"
+           tabindex="0" role="button" aria-label="Aircraft AC-05, active"
+           onclick="selectAircraft('AC-05')" onkeydown="if(event.key==='Enter')selectAircraft('AC-05')">
+        <div class="pulse-ring" style="background:rgba(0,196,122,0.4);" aria-hidden="true"></div>
+        <div class="ac-dot" style="background:#00c47a;box-shadow:0 0 6px rgba(0,196,122,0.5);" aria-hidden="true"></div>
+        <div class="ac-label">AC-05</div>
+      </div>
+
+      <div class="ac-dot-wrap" style="left:62%;top:70%;" id="dot-AC-06"
+           tabindex="0" role="button" aria-label="Aircraft AC-06, idle"
+           onclick="selectAircraft('AC-06')" onkeydown="if(event.key==='Enter')selectAircraft('AC-06')">
+        <div class="ac-dot" style="background:#4a6080;" aria-hidden="true"></div>
+        <div class="ac-label">AC-06</div>
+      </div>
+
+      <!-- Legend -->
+      <div class="map-legend" aria-label="Map legend" role="note">
+        <div class="legend-label">Status</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#00c47a;" aria-hidden="true"></div>Active</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f5a623;" aria-hidden="true"></div>Low battery</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#e05252;" aria-hidden="true"></div>Conflict</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#4a6080;" aria-hidden="true"></div>Idle</div>
+      </div>
+
+      <!-- Coords readout -->
+      <div class="map-coords" aria-hidden="true">
+        40°42'46"N  74°00'21"W
+      </div>
+
+    </div><!-- /map-area -->
+  </main>
+
+  <!-- ── AIRCRAFT PANEL ────────────────────────────── -->
+  <aside class="panel-col" aria-label="Aircraft status panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span>Aircraft Status</span>
+        <span class="panel-count">6 TRACKED</span>
+      </div>
+    </div>
+
+    <div class="panel-cards" id="panelCards" role="list">
+
+      <!-- AC-01 -->
+      <div class="ac-card" id="card-AC-01" style="--status-color:#00c47a"
+           tabindex="0" role="listitem" aria-label="AC-01 status card"
+           onclick="selectAircraft('AC-01')" onkeydown="if(event.key==='Enter')selectAircraft('AC-01')">
+        <div class="card-row1">
+          <span class="card-id">AC-01</span>
+          <span class="status-badge" style="color:#00c47a;border-color:rgba(0,196,122,0.4);background:rgba(0,196,122,0.08);">Active</span>
+        </div>
+        <div class="card-bat-track"><div class="card-bat-fill" style="width:82%;background:#00c47a;"></div></div>
+        <div class="card-stats">
+          <div class="stat-col"><span class="stat-key">Alt</span><span class="stat-val">340ft</span></div>
+          <div class="stat-col"><span class="stat-key">Spd</span><span class="stat-val">87kts</span></div>
+          <div class="stat-col"><span class="stat-key">Bat</span><span class="stat-val">82%</span></div>
+        </div>
+      </div>
+
+      <!-- AC-02 -->
+      <div class="ac-card" id="card-AC-02" style="--status-color:#f5a623"
+           tabindex="0" role="listitem" aria-label="AC-02 status card"
+           onclick="selectAircraft('AC-02')" onkeydown="if(event.key==='Enter')selectAircraft('AC-02')">
+        <div class="card-row1">
+          <span class="card-id">AC-02</span>
+          <span class="status-badge" style="color:#f5a623;border-color:rgba(245,166,35,0.4);background:rgba(245,166,35,0.08);">Low Bat</span>
+        </div>
+        <div class="card-bat-track"><div class="card-bat-fill" style="width:18%;background:#f5a623;"></div></div>
+        <div class="card-stats">
+          <div class="stat-col"><span class="stat-key">Alt</span><span class="stat-val">210ft</span></div>
+          <div class="stat-col"><span class="stat-key">Spd</span><span class="stat-val">64kts</span></div>
+          <div class="stat-col"><span class="stat-key">Bat</span><span class="stat-val">18%</span></div>
+        </div>
+      </div>
+
+      <!-- AC-03 -->
+      <div class="ac-card" id="card-AC-03" style="--status-color:#00c47a"
+           tabindex="0" role="listitem" aria-label="AC-03 status card"
+           onclick="selectAircraft('AC-03')" onkeydown="if(event.key==='Enter')selectAircraft('AC-03')">
+        <div class="card-row1">
+          <span class="card-id">AC-03</span>
+          <span class="status-badge" style="color:#00c47a;border-color:rgba(0,196,122,0.4);background:rgba(0,196,122,0.08);">Active</span>
+        </div>
+        <div class="card-bat-track"><div class="card-bat-fill" style="width:71%;background:#00c47a;"></div></div>
+        <div class="card-stats">
+          <div class="stat-col"><span class="stat-key">Alt</span><span class="stat-val">280ft</span></div>
+          <div class="stat-col"><span class="stat-key">Spd</span><span class="stat-val">79kts</span></div>
+          <div class="stat-col"><span class="stat-key">Bat</span><span class="stat-val">71%</span></div>
+        </div>
+      </div>
+
+      <!-- AC-04 -->
+      <div class="ac-card" id="card-AC-04" style="--status-color:#e05252"
+           tabindex="0" role="listitem" aria-label="AC-04 status card, conflict"
+           onclick="selectAircraft('AC-04')" onkeydown="if(event.key==='Enter')selectAircraft('AC-04')">
+        <div class="card-row1">
+          <span class="card-id">AC-04</span>
+          <span class="status-badge" id="badge-AC-04" style="color:#e05252;border-color:rgba(224,82,82,0.4);background:rgba(224,82,82,0.08);">Conflict</span>
+        </div>
+        <div class="card-bat-track"><div class="card-bat-fill" style="width:65%;background:#00c47a;"></div></div>
+        <div class="card-stats">
+          <div class="stat-col"><span class="stat-key">Alt</span><span class="stat-val">340ft</span></div>
+          <div class="stat-col"><span class="stat-key">Spd</span><span class="stat-val">91kts</span></div>
+          <div class="stat-col"><span class="stat-key">Bat</span><span class="stat-val">65%</span></div>
+        </div>
+      </div>
+
+      <!-- AC-05 -->
+      <div class="ac-card" id="card-AC-05" style="--status-color:#00c47a"
+           tabindex="0" role="listitem" aria-label="AC-05 status card"
+           onclick="selectAircraft('AC-05')" onkeydown="if(event.key==='Enter')selectAircraft('AC-05')">
+        <div class="card-row1">
+          <span class="card-id">AC-05</span>
+          <span class="status-badge" style="color:#00c47a;border-color:rgba(0,196,122,0.4);background:rgba(0,196,122,0.08);">Active</span>
+        </div>
+        <div class="card-bat-track"><div class="card-bat-fill" style="width:55%;background:#00c47a;"></div></div>
+        <div class="card-stats">
+          <div class="stat-col"><span class="stat-key">Alt</span><span class="stat-val">190ft</span></div>
+          <div class="stat-col"><span class="stat-key">Spd</span><span class="stat-val">55kts</span></div>
+          <div class="stat-col"><span class="stat-key">Bat</span><span class="stat-val">55%</span></div>
+        </div>
+      </div>
+
+      <!-- AC-06 -->
+      <div class="ac-card" id="card-AC-06" style="--status-color:#4a6080"
+           tabindex="0" role="listitem" aria-label="AC-06 status card, idle"
+           onclick="selectAircraft('AC-06')" onkeydown="if(event.key==='Enter')selectAircraft('AC-06')">
+        <div class="card-row1">
+          <span class="card-id">AC-06</span>
+          <span class="status-badge" style="color:#4a6080;border-color:rgba(74,96,128,0.4);background:rgba(74,96,128,0.06);">Idle</span>
+        </div>
+        <div class="card-bat-track"><div class="card-bat-fill" style="width:95%;background:#00c47a;"></div></div>
+        <div class="card-stats">
+          <div class="stat-col"><span class="stat-key">Alt</span><span class="stat-val">0ft</span></div>
+          <div class="stat-col"><span class="stat-key">Spd</span><span class="stat-val">0kts</span></div>
+          <div class="stat-col"><span class="stat-key">Bat</span><span class="stat-val">95%</span></div>
+        </div>
+      </div>
+
+    </div><!-- /panel-cards -->
+
+    <div class="panel-footer">
+      <button class="resolve-btn" id="resolveBtn" onclick="resolveConflict()" aria-label="Resolve conflict with AC-04">
+        Resolve Conflict →
+      </button>
+    </div>
+  </aside>
+
+</div><!-- /layout -->
+
+<script>
+  // ── Nav selection ──────────────────────────────────
+  function setNav(el) {
+    document.querySelectorAll('.nav-item').forEach(n => {
+      n.classList.remove('active');
+      n.removeAttribute('aria-current');
+    });
+    el.classList.add('active');
+    el.setAttribute('aria-current', 'page');
+  }
+
+  // ── Aircraft selection ─────────────────────────────
+  let selectedAC = null;
+
+  function selectAircraft(id) {
+    // Deselect all
+    document.querySelectorAll('.ac-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.ac-dot-wrap').forEach(d => d.classList.remove('selected'));
+
+    if (selectedAC === id) {
+      selectedAC = null;
+      return;
+    }
+
+    selectedAC = id;
+    const card = document.getElementById('card-' + id);
+    const dot  = document.getElementById('dot-' + id);
+
+    if (card) {
+      card.classList.add('selected');
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    if (dot) dot.classList.add('selected');
+  }
+
+  // ── Conflict line ──────────────────────────────────
+  function drawConflictLine() {
+    const map = document.getElementById('mapArea');
+    const w   = map.offsetWidth;
+    const h   = map.offsetHeight;
+
+    // AC-01: 22% left, 35% top
+    const x1 = w * 0.22;
+    const y1 = h * 0.35;
+    // AC-04: 70% left, 28% top
+    const x2 = w * 0.70;
+    const y2 = h * 0.28;
+
+    const line = document.getElementById('conflict-line');
+    line.setAttribute('x1', x1);
+    line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2);
+    line.setAttribute('y2', y2);
+
+    // Midpoint label
+    const mx = (x1 + x2) / 2 - 28;
+    const my = (y1 + y2) / 2 - 6;
+    const lbl = document.getElementById('conflict-label');
+    lbl.setAttribute('x', mx);
+    lbl.setAttribute('y', my);
+  }
+
+  drawConflictLine();
+  window.addEventListener('resize', drawConflictLine);
+
+  // ── Resolve conflict ───────────────────────────────
+  function resolveConflict() {
+    const btn = document.getElementById('resolveBtn');
+    if (btn.classList.contains('resolved')) return;
+
+    // Update AC-04 card
+    const card = document.getElementById('card-AC-04');
+    card.style.setProperty('--status-color', '#00c47a');
+
+    const badge = document.getElementById('badge-AC-04');
+    badge.textContent = 'Active';
+    badge.style.color = '#00c47a';
+    badge.style.borderColor = 'rgba(0,196,122,0.4)';
+    badge.style.background  = 'rgba(0,196,122,0.08)';
+
+    // Update dot on map
+    const dot = document.getElementById('dot-AC-04-circle');
+    dot.style.background  = '#00c47a';
+    dot.style.boxShadow   = '0 0 6px rgba(0,196,122,0.5)';
+
+    // Add pulse ring to AC-04 dot (now active)
+    const dotWrap = document.getElementById('dot-AC-04');
+    const ring = document.createElement('div');
+    ring.className = 'pulse-ring';
+    ring.style.background = 'rgba(0,196,122,0.4)';
+    ring.setAttribute('aria-hidden', 'true');
+    dotWrap.insertBefore(ring, dot);
+    dotWrap.setAttribute('aria-label', 'Aircraft AC-04, active');
+
+    // Remove conflict line
+    const overlay = document.getElementById('conflict-overlay');
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.style.display = 'none', 400);
+
+    // Update amber pill → green
+    const alertPill = document.querySelector('.pill-amber');
+    if (alertPill) {
+      alertPill.className = 'pill pill-green';
+      alertPill.innerHTML = '<div class="pill-dot" aria-hidden="true"></div>0 Alerts';
+    }
+
+    // Update sidebar count
+    document.querySelector('.status-indicator').innerHTML =
+      '<div class="status-dot" aria-hidden="true"></div>4 aircraft online';
+
+    // Resolve button state
+    btn.textContent = 'Conflict Resolved ✓';
+    btn.classList.add('resolved');
+    btn.setAttribute('aria-label', 'Conflict resolved');
+  }
+</script>
+</body>
+</html>
