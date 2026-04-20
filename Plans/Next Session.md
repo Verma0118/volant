@@ -1,5 +1,5 @@
 ---
-date: 2026-04-19
+date: 2026-04-20
 type: context-brief
 active_blueprint: Plans/slice-1-fleet-overview.md
 active_slice: 1
@@ -14,7 +14,13 @@ tags: [next-session, build, slice-1]
 
 ## First Action
 
-Ask: "Did you send the Archer email?" — he was sending it tonight (Apr 19) to Rushil's dad at Archer Aviation. Email is at `Outreach/Emails/Archer - Rushil Dad - Concept Email.md`. Still needs `[Name]` + `[phone]` filled in. He may have already left for India — confirm status before moving on.
+**START SLICE 1 STEP 1.** Archer email and deck assumed sent Apr 20. No need to ask — go straight to building.
+
+Activate `search-first` first (verify Docker Compose Redis 7 + Postgres 15 patterns, Vite + React scaffold), then build `platform/` scaffold per blueprint Step 1 exit criteria:
+- `docker compose up -d` → both containers healthy
+- `npm run dev` in backend → "PostgreSQL connected", "Redis connected", server on :3001
+- `curl http://localhost:3001/health` → `{ status: "ok" }`
+- `npm run dev` in frontend → Vite on :5173, blank React app loads
 
 ---
 
