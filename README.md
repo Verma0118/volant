@@ -1,8 +1,8 @@
-# Fleet OS — Autonomous Aviation Fleet Operations Platform
+# Volant — Autonomous Aviation Fleet Operations Platform
 
 > "What Samsara built for trucking, we're building for autonomous aviation."
 
-Fleet OS is a B2B SaaS fleet operations platform for drone and eVTOL operators — real-time fleet visibility, mission dispatch, airspace compliance, and predictive maintenance in one system built specifically for aviation.
+Volant is a B2B SaaS fleet operations platform for drone and eVTOL operators — real-time fleet visibility, mission dispatch, airspace compliance, and predictive maintenance in one system built specifically for aviation.
 
 ---
 
@@ -66,7 +66,7 @@ This bridges the timing risk: drone revenue funds the company while the eVTOL ma
 
 - **$5.67B** — eVTOL fleet management software market by 2033, 31.2% CAGR (Market Intelo, Aug 2025)
 - **$1.35B → $28.6B** — eVTOL aircraft market, 54.9% CAGR 2023–2030 (Morgan Stanley, McKinsey)
-- **$25B** — Samsara market cap (the trucking comparable)
+- **~$17B** — Samsara market cap Apr 2026 (the trucking comparable)
 
 ---
 
