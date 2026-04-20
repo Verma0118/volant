@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fleet Ops SaaS — Architecture</title>
+<title>Volant — Platform Architecture</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -198,6 +198,23 @@ body {
   margin-top: 10px;
 }
 
+/* ─── Slice badges ───────────────────────────────────────────── */
+.slice-badge {
+  display: inline-block;
+  font-size: 7px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  margin-top: 8px;
+  font-weight: 500;
+}
+.s1 { background: rgba(0,196,122,0.15); color: var(--green); border: 0.5px solid rgba(0,196,122,0.4); }
+.s2 { background: rgba(59,139,212,0.12); color: var(--blue); border: 0.5px solid rgba(59,139,212,0.35); }
+.s3 { background: rgba(240,160,32,0.12); color: var(--amber); border: 0.5px solid rgba(240,160,32,0.35); }
+.s4 { background: rgba(155,100,220,0.12); color: #9b6fe8; border: 0.5px solid rgba(155,100,220,0.35); }
+.s5 { background: rgba(220,100,100,0.1); color: #d07070; border: 0.5px solid rgba(220,100,100,0.3); }
+
 /* ─── Arrow zones ─────────────────────────────────────────────── */
 .az {
   display: flex;
@@ -292,10 +309,10 @@ body {
 
   <!-- ── Header ── -->
   <div class="hdr">
-    <div class="eyebrow">eVTOL Startup 25/26 &nbsp;·&nbsp; Technical Architecture</div>
-    <div class="title">Fleet Ops <span class="acc">SaaS</span></div>
+    <div class="eyebrow">Volant &nbsp;·&nbsp; Platform Architecture &nbsp;·&nbsp; Full 5-Slice MVP</div>
+    <div class="title">Volant <span class="acc">Platform</span></div>
     <div class="subtitle-row">
-      <span class="subtitle-txt">B2B software for eVTOL &amp; drone operators</span>
+      <span class="subtitle-txt">B2B fleet ops for eVTOL &amp; drone operators</span>
       <div class="price-pill"><div class="blink"></div>$200–500 / aircraft / month</div>
     </div>
   </div>
@@ -308,6 +325,11 @@ body {
     <div class="li"><div class="ld" style="background:var(--amber)"></div>Data storage</div>
     <div class="li"><div class="ld" style="background:var(--green)"></div>Operator UI</div>
     <div class="li"><div class="le"></div>External API</div>
+    <div class="li"><div class="ld" style="background:var(--green);opacity:.7"></div><span style="color:var(--green)">Slice 1</span></div>
+    <div class="li"><div class="ld" style="background:var(--blue);opacity:.7"></div><span style="color:var(--blue)">Slice 2</span></div>
+    <div class="li"><div class="ld" style="background:var(--amber);opacity:.7"></div><span style="color:var(--amber)">Slice 3</span></div>
+    <div class="li"><div class="ld" style="background:#9b6fe8;opacity:.7"></div><span style="color:#9b6fe8">Slice 4</span></div>
+    <div class="li"><div class="ld" style="background:#d07070;opacity:.7"></div><span style="color:#d07070">Slice 5</span></div>
   </div>
 
   <!-- ── Diagram ── -->
@@ -321,11 +343,13 @@ body {
           <div class="node-name">eVTOL fleet</div>
           <div class="node-tech">ADS-B · OEM API · 10 Hz</div>
           <div class="node-detail">GPS · battery SOC/SOH · altitude · speed</div>
+          <div><span class="slice-badge s2">Slice 2 — real hardware</span></div>
         </div>
         <div class="node n-teal" id="n-drone">
           <div class="node-name">Drone fleet</div>
           <div class="node-tech">MAVLink · Remote ID · 10 Hz</div>
           <div class="node-detail">GPS · battery · altitude · speed</div>
+          <div><span class="slice-badge s1">Slice 1 — simulated</span></div>
         </div>
       </div>
 
@@ -343,13 +367,15 @@ body {
         <div class="col-lbl">Data Ingestion</div>
         <div class="node n-gray" id="n-ingest">
           <div class="node-name">Data ingestion</div>
-          <div class="node-tech">Socket.io · WebSockets · Kafka</div>
-          <div class="node-detail">Persistent live streams · high-throughput event pipeline</div>
+          <div class="node-tech">Socket.io · WebSockets</div>
+          <div class="node-detail">Slice 1: direct Socket.io · Slice 2+: Kafka for high-throughput multi-aircraft streaming</div>
+          <div><span class="slice-badge s1">Slice 1 — Socket.io</span> <span class="slice-badge s2">Slice 2 — + Kafka</span></div>
         </div>
         <div class="node n-gray" id="n-gateway">
           <div class="node-name">API gateway</div>
           <div class="node-tech">Node.js · Express</div>
           <div class="node-detail">Routes all incoming requests · Remote ID compliance layer</div>
+          <div><span class="slice-badge s1">Slice 1</span></div>
         </div>
       </div>
 
@@ -370,31 +396,37 @@ body {
             <div class="node-name">Fleet Map Service</div>
             <div class="node-tech">Redis · Socket.io</div>
             <div class="node-detail">Live positions · real-time status overlay</div>
+            <div><span class="slice-badge s1">Slice 1</span></div>
           </div>
           <div class="node n-blue" id="n-assign">
             <div class="node-name">Mission Dispatch</div>
             <div class="node-tech">BullMQ + Redis</div>
             <div class="node-detail">Aircraft assignment · operator routing</div>
+            <div><span class="slice-badge s2">Slice 2</span></div>
           </div>
           <div class="node n-blue" id="n-conflict">
             <div class="node-name">Deconfliction Engine</div>
             <div class="node-tech">3D routing algorithm</div>
             <div class="node-detail">Airspace separation · departure hold</div>
+            <div><span class="slice-badge s2">Slice 2</span></div>
           </div>
           <div class="node n-blue" id="n-laanc">
             <div class="node-name">LAANC Authorization</div>
             <div class="node-tech">FAA API client</div>
             <div class="node-detail">~1.4s auth · automated airspace approval</div>
+            <div><span class="slice-badge s4">Slice 4</span></div>
           </div>
           <div class="node n-blue" id="n-maint">
             <div class="node-name">Maintenance Tracker</div>
             <div class="node-tech">TimescaleDB · ML alerts</div>
             <div class="node-detail">Battery SOH · flight hours · work orders</div>
+            <div><span class="slice-badge s3">Slice 3</span></div>
           </div>
           <div class="node n-blue" id="n-compliance">
             <div class="node-name">Compliance Log</div>
             <div class="node-tech">PostgreSQL · audit trail</div>
             <div class="node-detail">FAA Part 135 · Part 107 · immutable records</div>
+            <div><span class="slice-badge s4">Slice 4</span></div>
           </div>
         </div>
       </div>
@@ -413,18 +445,21 @@ body {
         <div class="col-lbl">Storage</div>
         <div class="node n-amber" id="n-redis">
           <div class="node-name">Redis</div>
-          <div class="node-tech">Live positions · state</div>
-          <div class="node-detail">Real-time pub/sub</div>
+          <div class="node-tech">Live positions · state · fleet:state hash</div>
+          <div class="node-detail">Real-time pub/sub · persistent snapshot</div>
+          <div><span class="slice-badge s1">Slice 1</span></div>
         </div>
         <div class="node n-amber" id="n-pg">
           <div class="node-name">PostgreSQL</div>
-          <div class="node-tech">Missions · logs · users</div>
-          <div class="node-detail">Structured records</div>
+          <div class="node-tech">Aircraft · operators · missions · logs</div>
+          <div class="node-detail">Multi-tenant from day one · node-pg-migrate</div>
+          <div><span class="slice-badge s1">Slice 1</span></div>
         </div>
         <div class="node n-amber" id="n-ts">
           <div class="node-name">TimescaleDB</div>
           <div class="node-tech">Battery time-series</div>
-          <div class="node-detail">Trend analysis · history</div>
+          <div class="node-detail">Trend analysis · degradation history</div>
+          <div><span class="slice-badge s3">Slice 3</span></div>
         </div>
       </div>
 
@@ -442,20 +477,23 @@ body {
         <div class="col-lbl">Operator</div>
         <div class="node n-green" id="n-web">
           <div class="node-name">Web dashboard</div>
-          <div class="node-tech">React + Mapbox</div>
-          <div class="node-detail">Live fleet map · alerts · dispatch</div>
+          <div class="node-tech">React + Mapbox GL JS</div>
+          <div class="node-detail">Fleet map · status table · dispatch · compliance · analytics</div>
+          <div><span class="slice-badge s1">S1: Map + Status</span> <span class="slice-badge s2">S2: Dispatch</span> <span class="slice-badge s3">S3: Maint</span> <span class="slice-badge s4">S4: Compliance</span> <span class="slice-badge s5">S5: Analytics</span></div>
           <div class="node-price">$200–500 / aircraft / mo</div>
         </div>
         <div class="node n-green" id="n-mobile">
           <div class="node-name">Mobile app</div>
           <div class="node-tech">React Native</div>
-          <div class="node-detail">Field operator access</div>
+          <div class="node-detail">Field operator access · ground crew view</div>
+          <div><span class="slice-badge s2">Slice 2</span></div>
         </div>
         <div class="node n-ext" id="n-faa">
           <div class="node-name">FAA LAANC API</div>
           <div class="node-tech">External · U.S. government</div>
           <div class="node-detail">Authorization in ~1.4s</div>
           <div class="node-note">vs 5–10 min manual form</div>
+          <div><span class="slice-badge s4">Slice 4</span></div>
         </div>
       </div>
 
@@ -466,7 +504,7 @@ body {
 
   </div><!-- /diagram-wrap -->
 
-  <div class="footer">eVTOL Startup 25/26 &nbsp;·&nbsp; Fleet Ops SaaS &nbsp;·&nbsp; Architecture v1</div>
+  <div class="footer">Volant &nbsp;·&nbsp; Platform Architecture &nbsp;·&nbsp; 5-Slice MVP · Slice 1 = Fleet Overview · Slice 2 = Dispatch · Slice 3 = Maintenance · Slice 4 = Compliance · Slice 5 = Analytics</div>
 
 </div><!-- /page -->
 
