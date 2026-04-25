@@ -14,7 +14,7 @@ tags: [next-session, build, slice-1]
 
 ## First Action
 
-**START SLICE 1 STEP 1.** Archer email and deck assumed sent Apr 20. No need to ask — go straight to building.
+**CHECK CURSOR_TASKS.md** — Step 2 (aircraft seed) was in progress when session ended Apr 25. Read it first, check if ✅. If done, review Cursor's seed.js + db.js, then brief Step 3 (simulator). If not done, wait. No need to ask — go straight to building.
 
 Activate `search-first` first (verify Docker Compose Redis 7 + Postgres 15 patterns, Vite + React scaffold), then build `platform/` scaffold per blueprint Step 1 exit criteria:
 - `docker compose up -d` → both containers healthy
