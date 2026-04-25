@@ -105,7 +105,7 @@ cd /Users/aarav/Desktop/Volant/platform/frontend && npm install && npm run dev -
 
 ### 🔥 Step 1.5 — Auth Stub + Tenancy Schema
 
-**Status:** `[ ] Not started`
+**Status:** `[✅] Done`
 
 **Full spec:** `Plans/slice-1-fleet-overview.md` → Step 1.5
 
@@ -201,11 +201,32 @@ npm run dev
 
 **Completion:**
 ```
-[ ] node-pg-migrate installed
-[ ] 001_operators migration clean
-[ ] 002_aircraft migration clean
-[ ] operator_id column present + NOT NULL
-[ ] CURRENT_OPERATOR_ID logs on startup
+[x] node-pg-migrate installed
+[x] 001_operators migration clean
+[x] 002_aircraft migration clean
+[x] operator_id column present + NOT NULL
+[x] CURRENT_OPERATOR_ID logs on startup
+```
+
+✅ **Terminal proof (latest):**
+```bash
+cd /Users/aarav/Desktop/Volant/platform/backend && export DATABASE_URL=postgres://postgres:postgres@localhost:5432/volant && npm run migrate
+# Migrating files:
+# - 001_operators
+# - 002_aircraft
+# Migrations complete!
+
+cd /Users/aarav/Desktop/Volant/platform && docker exec volant-postgres psql -U postgres -d volant -c "\d aircraft"
+# → operator_id uuid NOT NULL + FK to operators
+
+cd /Users/aarav/Desktop/Volant/platform && docker exec volant-postgres psql -U postgres -d volant -c "SELECT name FROM operators;"
+# → Volant Demo Ops
+
+cd /Users/aarav/Desktop/Volant/platform/backend && npm run dev
+# PostgreSQL connected
+# Operator: Volant Demo Ops (00000000-0000-0000-0000-000000000001)
+# Redis connected
+# Express listening on :3001
 ```
 
 ---

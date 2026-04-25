@@ -5,7 +5,7 @@
   "type": "commonjs",
   "main": "src/index.js",
   "scripts": {
-    "dev": "node src/index.js",
+    "dev": "nodemon --legacy-watch src/index.js",
     "start": "node src/index.js",
     "migrate": "node-pg-migrate up -m migrations",
     "migrate:down": "node-pg-migrate down -m migrations"
@@ -19,6 +19,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "nodemon": "^3.1.0",
     "node-pg-migrate": "^8.0.4"
   }
 }

@@ -2,18 +2,19 @@ const express = require('express');
 const cors = require('cors');
 
 const { PORT } = require('./config');
-const { connectPostgres } = require('./db');
+const { connectPostgres, resolveOperator } = require('./db');
 const { connectRedis } = require('./redis');
 
 async function main() {
   await connectPostgres();
+  await resolveOperator();
   await connectRedis();
 
   const app = express();
 
   app.use(
     cors({
-      origin: ['http://localhost:5173'],
+      origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
     })
   );
   app.use(express.json());
