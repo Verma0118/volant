@@ -31,7 +31,8 @@ _Last updated: Apr 20, 2026 11:11 CDT_
 
 ## Now — Active Priority 🔥
 
-- [ ] **Slice 1 Step 1** — Repo scaffold + dev env
+- [x] **Slice 1 Step 1** — Repo scaffold + dev env ✅ _(Cursor, Apr 25)_
+- [ ] **Slice 1 Step 1.5** — Auth stub + tenancy schema (briefed in CURSOR_TASKS.md)
   - `platform/` directory structure
   - `docker-compose.yml` — Redis 7 + Postgres 15
   - `backend/package.json` + Express skeleton on :3001

@@ -20,7 +20,7 @@
 
 ### 🔥 Step 1 — Repo Scaffold + Dev Environment
 
-**Status:** `[~] Scaffolded (verification blocked — Docker unavailable on this machine)`
+**Status:** `[✅] Done`
 
 **Full spec:** `Plans/slice-1-fleet-overview.md` → Step 1
 
@@ -63,40 +63,145 @@ cd ../frontend && npm install && npm run dev
 
 **Completion:**
 ```
-[ ] docker compose up ✓ (BLOCKED — `docker` not found)
-[ ] PostgreSQL connected ✓ (blocked by above)
-[ ] Redis connected ✓ (blocked by above)
-[ ] GET /health → { status: "ok" } ✓ (blocked by above)
+[x] docker compose up ✓
+[x] PostgreSQL connected ✓
+[x] Redis connected ✓
+[x] GET /health → { status: "ok" } ✓
 [x] Vite :5173 loads ✓
 ```
 
 ✅ **Notes (what’s done / what’s blocked):**
 - Platform scaffold created at `platform/` (Compose + env + backend + Vite React frontend).
-- Frontend verified: `npm install` succeeded and Vite is serving on `http://127.0.0.1:5173/`.
-- Backend runs, but cannot verify DB/Redis connectivity because Docker is not available on this machine (`docker`, `docker-compose` not found). When Postgres/Redis are running, backend should log the expected connect messages and serve `/health`.
+- Frontend verified: Vite is serving on `http://127.0.0.1:5173/`.
+- Docker verified: Postgres + Redis healthy via Compose.
+- Backend verified: connects to Postgres + Redis and serves `/health`.
 
 **Terminal proof (latest):**
 ```bash
-# docker check (host)
-which docker
-# docker not found
+# docker (services healthy)
+cd /Users/aarav/Desktop/Volant/platform && docker compose up -d
+cd /Users/aarav/Desktop/Volant/platform && docker compose ps
+# postgres: Up ... (healthy)
+# redis:    Up ... (healthy)
+
+# backend
+cd /Users/aarav/Desktop/Volant/platform/backend && npm install && npm run dev
+# PostgreSQL connected
+# Redis connected
+# Express listening on :3001
+
+# health
+curl -fsS http://localhost:3001/health
+# {"status":"ok"}
 
 # frontend
-cd /Users/aarav/Desktop/Volant/platform/frontend && npm run dev -- --host 127.0.0.1 --port 5173
-# VITE v8.0.10  ready in 331 ms
+cd /Users/aarav/Desktop/Volant/platform/frontend && npm install && npm run dev -- --host 127.0.0.1 --port 5173
 # ➜  Local:   http://127.0.0.1:5173/
-
-# backend (expected failure until Postgres is running)
-cd /Users/aarav/Desktop/Volant/platform/backend && npm run dev
-# Fatal startup error ... ECONNREFUSED ... 127.0.0.1:5432
 ```
 
 ---
 
-## QUEUE (upcoming — wait for Claude Code to brief each one)
+## ACTIVE TASK
 
-- [ ] Step 1.5 — Auth stub + tenancy schema
-- [ ] Step 2 — PostgreSQL schema + aircraft registry
+### 🔥 Step 1.5 — Auth Stub + Tenancy Schema
+
+**Status:** `[ ] Not started`
+
+**Full spec:** `Plans/slice-1-fleet-overview.md` → Step 1.5
+
+**Why:** B2B SaaS needs multi-tenancy from day one. Adding `operator_id` after Slice 2 = painful migration. No login UI in Slice 1 — env var stub instead, real JWT auth in Slice 2.
+
+**What to build:**
+
+1. Install `node-pg-migrate`:
+   ```bash
+   cd platform/backend && npm install node-pg-migrate
+   ```
+
+2. Add to `backend/package.json` scripts:
+   ```json
+   "migrate": "node-pg-migrate -m migrations up",
+   "migrate:down": "node-pg-migrate -m migrations down"
+   ```
+
+3. Create `backend/migrations/001_operators.js`:
+   ```js
+   exports.up = (pgm) => {
+     pgm.createTable('operators', {
+       id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
+       name: { type: 'varchar(100)', notNull: true },
+       created_at: { type: 'timestamptz', default: pgm.func('NOW()') },
+     });
+     pgm.sql(`INSERT INTO operators (name) VALUES ('Volant Demo Ops')`);
+   };
+   exports.down = (pgm) => { pgm.dropTable('operators'); };
+   ```
+
+4. Create `backend/migrations/002_aircraft.js`:
+   ```js
+   exports.up = (pgm) => {
+     pgm.createTable('aircraft', {
+       id: { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
+       tail_number: { type: 'varchar(10)', notNull: true, unique: true },
+       type: { type: 'varchar(20)', notNull: true },
+       model: { type: 'varchar(50)' },
+       operator_name: { type: 'varchar(100)' },
+       operator_id: { type: 'uuid', notNull: true, references: '"operators"' },
+       created_at: { type: 'timestamptz', default: pgm.func('NOW()') },
+     });
+   };
+   exports.down = (pgm) => { pgm.dropTable('aircraft'); };
+   ```
+
+5. Add to `backend/.env.example`:
+   ```
+   CURRENT_OPERATOR_ID=    # set automatically at startup from DB
+   ```
+
+6. Update `backend/src/db.js` — after `connectPostgres()`, add `resolveOperator()`:
+   ```js
+   async function resolveOperator() {
+     const res = await pool.query(`SELECT id FROM operators WHERE name = 'Volant Demo Ops' LIMIT 1`);
+     process.env.CURRENT_OPERATOR_ID = res.rows[0].id;
+     console.log(`Operator: Volant Demo Ops (${res.rows[0].id})`);
+   }
+   module.exports = { pool, connectPostgres, resolveOperator };
+   ```
+
+7. Call `resolveOperator()` in `backend/src/index.js` after `connectPostgres()`.
+
+**Exit criteria:**
+```bash
+cd platform/backend && npm run migrate
+# → 001_operators and 002_aircraft applied, no errors
+
+psql $DATABASE_URL -c "\d aircraft"
+# → operator_id column: uuid, NOT NULL
+
+psql $DATABASE_URL -c "SELECT name FROM operators;"
+# → Volant Demo Ops
+
+npm run dev
+# → PostgreSQL connected
+# → Operator: Volant Demo Ops (uuid-here)
+# → Redis connected
+# → Express listening on :3001
+```
+
+**Completion:**
+```
+[ ] node-pg-migrate installed
+[ ] 001_operators migration clean
+[ ] 002_aircraft migration clean
+[ ] operator_id column present + NOT NULL
+[ ] CURRENT_OPERATOR_ID logs on startup
+```
+
+---
+
+## QUEUE (upcoming)
+
+- [ ] Step 2 — PostgreSQL schema + aircraft registry (seed 10 aircraft)
 - [ ] Step 3 — Telemetry simulator
 - [ ] Step 4 — Fleet Map Service
 - [ ] Step 5 — REST API
@@ -112,4 +217,4 @@ cd /Users/aarav/Desktop/Volant/platform/backend && npm run dev
 
 ## COMPLETED
 
-_(nothing yet)_
+- [x] **Step 1** — Repo scaffold + dev env. Docker (Postgres + Redis) healthy, backend `/health` ✓, Vite :5173 ✓. _(Apr 25)_

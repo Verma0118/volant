@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_DIR="${VOLANT_DIR:-/Users/aarav/Desktop/Volant}"
+
+cd "$REPO_DIR/platform"
+
+cleanup() {
+  if [ -n "${BACKEND_PID:-}" ] && kill -0 "$BACKEND_PID" 2>/dev/null; then
+    kill "$BACKEND_PID" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT
+
+echo ""
+echo "== Step 1: docker compose up -d =="
+docker compose up -d
+docker compose ps
+
+echo ""
+echo "== Step 1: backend dev server =="
+(
+  cd backend
+  npm install
+  PORT=3001 npm run dev
+) &
+BACKEND_PID="$!"
+
+echo "Backend PID: $BACKEND_PID"
+echo ""
+echo "Waiting for /health..."
+
+for i in {1..30}; do
+  if curl -fsS "http://localhost:3001/health" >/dev/null 2>&1; then
+    break
+  fi
+  sleep 1
+done
+
+echo ""
+echo "== Step 1: GET /health =="
+curl -fsS "http://localhost:3001/health"
+echo ""
+
+echo ""
+echo "== Step 1: frontend dev server (manual check: loads at :5173) =="
+(
+  cd frontend
+  npm install
+  npm run dev -- --host 127.0.0.1 --port 5173
+)
+
