@@ -1,0 +1,76 @@
+---
+description: Volant startup context — read this before touching any file in this repo
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Volant — Fleet Operations Software for Autonomous Aviation
+
+B2B SaaS fleet ops platform for eVTOL and drone operators. "What Samsara built for trucking, we're building for autonomous aviation." $200–500/aircraft/month SaaS hypothesis.
+
+## What You Are Building (Slice 1)
+
+Real-time fleet dashboard: 10 aircraft on a live Mapbox map over DFW, Socket.io telemetry, PostgreSQL registry, Redis state. Demo-ready prototype for Archer Aviation contacts.
+
+**Tech stack:**
+- Backend: Node.js + Express on :3001, PostgreSQL 15, Redis 7, Socket.io
+- Frontend: Vite + React (no TypeScript — speed first), Mapbox GL JS, socket.io-client
+- Infra: Docker Compose (Redis + Postgres)
+- Migrations: node-pg-migrate
+
+## Repo Structure
+
+```
+volant/                    ← this repo (vault docs + code)
+├── platform/              ← ALL code lives here
+│   ├── docker-compose.yml
+│   ├── backend/
+│   │   └── src/
+│   │       ├── index.js   ← Express :3001, GET /health
+│   │       ├── db.js      ← pg Pool
+│   │       ├── redis.js   ← Redis client
+│   │       ├── socket.js  ← Socket.io
+│   │       ├── routes/aircraft.js
+│   │       └── services/fleetMap.js
+│   └── frontend/
+│       └── src/
+│           ├── design/tokens.js   ← SINGLE SOURCE OF TRUTH for colors
+│           ├── components/        ← Sidebar, StatusPill, DetailPanel, BatteryBar
+│           ├── views/             ← FleetMap.jsx, FleetStatus.jsx
+│           └── hooks/useFleetSocket.js
+```
+
+## Design Tokens — NEVER hardcode colors
+
+```js
+// src/design/tokens.js — always import from here
+bg.primary:    '#0f0f0f'
+bg.secondary:  '#111827'
+bg.panel:      '#0f1623'
+bg.border:     '#333333'
+text.primary:  '#f0f0f0'
+text.secondary:'#94a3b8'
+accent:        '#2f7ef5'   // Volant blue
+status.inflight:    '#22c55e'  // green
+status.charging:    '#f59e0b'  // amber
+status.maintenance: '#3b82f6'  // blue
+status.grounded:    '#ef4444'  // red
+status.ready:       '#6b7280'  // gray
+font.data: "'JetBrains Mono', monospace"
+font.ui:   "'Inter', sans-serif"
+```
+
+## Invariants (never break these)
+
+- `useFleetSocket` is the ONLY place fleet state lives on frontend — no component fetches independently
+- All API routes filter by `CURRENT_OPERATOR_ID` — no unscoped queries
+- `tokens.js` is the ONLY place colors are defined — import everywhere else
+- `docker compose down && up` produces clean working state
+- `VITE_MAPBOX_TOKEN` missing → render error state, don't crash silently
+- Simulator publishes identical Redis format whether `DEMO_MODE=true` or false
+
+## Current Task
+
+Check `CURSOR_TASKS.md` at repo root for the current handoff from Claude Code.
+Check `Plans/Task List.md` for full priority order.
+Check `Plans/slice-1-fleet-overview.md` for full step specs with exit criteria.

@@ -1,0 +1,44 @@
+---
+description: Cursor workflow rules — what Cursor does vs Claude Code
+globs: ["platform/**/*"]
+alwaysApply: true
+---
+
+# Cursor Workflow Rules — Volant
+
+## Cursor's Domain (do these in Cursor)
+
+- Writing and editing code inside `platform/`
+- Implementing components from specs in `Plans/slice-1-fleet-overview.md`
+- CSS / styling iteration
+- Refactoring existing code
+- Debugging runtime errors
+- Autocomplete-heavy boilerplate (package.json, docker-compose, config files)
+- Running local dev servers and verifying exit criteria
+
+## Claude Code's Domain (don't duplicate — let Claude Code handle)
+
+- Planning and architecture decisions
+- Writing to the Obsidian vault (Sessions/, Plans/, Strategy/, etc.)
+- Research (Exa MCP, web search)
+- Email and outreach drafts
+- Git commits and pushes
+- Session logs
+- Task list updates
+- Prompt engineering for pitch decks / investor materials
+
+## Handoff Protocol
+
+1. Claude Code writes the task to `CURSOR_TASKS.md` (repo root)
+2. Cursor reads `CURSOR_TASKS.md` for what to build
+3. Cursor implements, verifies exit criteria via terminal
+4. When done: mark step complete in `CURSOR_TASKS.md` (add ✅ and notes)
+5. Claude Code picks up completion next session, updates `Plans/Task List.md`
+
+## Code Quality Rules
+
+- No TypeScript — plain JS for now (speed > correctness at prototype stage)
+- No hardcoded colors — always import from `src/design/tokens.js`
+- No `console.log` spam — one startup log per service ("PostgreSQL connected", "Redis connected")
+- CSS: CSS custom properties fed from tokens.js — no Tailwind, no inline styles
+- Comments only when WHY is non-obvious — no "this function does X" comments
