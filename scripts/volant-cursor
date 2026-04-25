@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_DIR="${VOLANT_DIR:-/Users/aarav/Desktop/Volant}"
+
+if [ ! -d "$REPO_DIR" ]; then
+  echo "Volant repo not found at: $REPO_DIR"
+  echo "Set VOLANT_DIR to override."
+  exit 1
+fi
+
+cd "$REPO_DIR"
+
+LATEST_CURSOR_SESSION="$(
+  ls -t "$REPO_DIR"/Sessions/*Cursor*.md 2>/dev/null | head -n 1 || true
+)"
+
+if [ -n "${LATEST_CURSOR_SESSION:-}" ]; then
+  echo ""
+  echo "=== Last Cursor session (${LATEST_CURSOR_SESSION##*/}) ==="
+  python3 - "$LATEST_CURSOR_SESSION" <<'PY'
+import sys, re
+path = sys.argv[1]
+with open(path, "r", encoding="utf-8") as f:
+    s = f.read()
+m = re.search(r"^## Summary\n\n(.*?)(?:\n\n## |\Z)", s, flags=re.M | re.S)
+print((m.group(1).strip() if m else "(No Summary section found)") + "\n")
+PY
+else
+  echo ""
+  echo "No Cursor session logs found in Sessions/ yet."
+fi
+
+if command -v cursor >/dev/null 2>&1; then
+  cursor "$REPO_DIR" >/dev/null 2>&1 || true
+elif command -v code >/dev/null 2>&1; then
+  code "$REPO_DIR" >/dev/null 2>&1 || true
+else
+  echo "Neither 'cursor' nor 'code' CLI found on PATH."
+  echo "Install Cursor CLI command, or open the folder manually: $REPO_DIR"
+  exit 1
+fi
+

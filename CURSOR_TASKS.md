@@ -20,7 +20,7 @@
 
 ### 🔥 Step 1 — Repo Scaffold + Dev Environment
 
-**Status:** `[ ] Not started`
+**Status:** `[~] Scaffolded (verification blocked — Docker unavailable on this machine)`
 
 **Full spec:** `Plans/slice-1-fleet-overview.md` → Step 1
 
@@ -63,11 +63,32 @@ cd ../frontend && npm install && npm run dev
 
 **Completion:**
 ```
-[ ] docker compose up ✓
-[ ] PostgreSQL connected ✓
-[ ] Redis connected ✓
-[ ] GET /health → { status: "ok" } ✓
-[ ] Vite :5173 loads ✓
+[ ] docker compose up ✓ (BLOCKED — `docker` not found)
+[ ] PostgreSQL connected ✓ (blocked by above)
+[ ] Redis connected ✓ (blocked by above)
+[ ] GET /health → { status: "ok" } ✓ (blocked by above)
+[x] Vite :5173 loads ✓
+```
+
+✅ **Notes (what’s done / what’s blocked):**
+- Platform scaffold created at `platform/` (Compose + env + backend + Vite React frontend).
+- Frontend verified: `npm install` succeeded and Vite is serving on `http://127.0.0.1:5173/`.
+- Backend runs, but cannot verify DB/Redis connectivity because Docker is not available on this machine (`docker`, `docker-compose` not found). When Postgres/Redis are running, backend should log the expected connect messages and serve `/health`.
+
+**Terminal proof (latest):**
+```bash
+# docker check (host)
+which docker
+# docker not found
+
+# frontend
+cd /Users/aarav/Desktop/Volant/platform/frontend && npm run dev -- --host 127.0.0.1 --port 5173
+# VITE v8.0.10  ready in 331 ms
+# ➜  Local:   http://127.0.0.1:5173/
+
+# backend (expected failure until Postgres is running)
+cd /Users/aarav/Desktop/Volant/platform/backend && npm run dev
+# Fatal startup error ... ECONNREFUSED ... 127.0.0.1:5432
 ```
 
 ---
