@@ -231,19 +231,22 @@ npm run dev
 3. **Exact seed data** (use these — researched from real Archer/DFW routes):
 
    ```js
+   // NOTE: column is `operator` (varchar 100) per actual migration — not `operator_name`
+   // operator_id is always '00000000-0000-0000-0000-000000000001' (stable UUID from migration)
+
    // eVTOL — Archer Midnight-class, air taxi routes DFW corridor
-   { tail_number: 'N301VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
-   { tail_number: 'N302VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
-   { tail_number: 'N303VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
-   { tail_number: 'N304VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
+   { tail_number: 'N301VL', type: 'evtol', model: 'Midnight', operator: 'Archer Aviation' },
+   { tail_number: 'N302VL', type: 'evtol', model: 'Midnight', operator: 'Archer Aviation' },
+   { tail_number: 'N303VL', type: 'evtol', model: 'Midnight', operator: 'Archer Aviation' },
+   { tail_number: 'N304VL', type: 'evtol', model: 'Midnight', operator: 'Archer Aviation' },
 
    // Drones — DJI Matrice 300 RTK, commercial inspection
-   { tail_number: 'N305VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
-   { tail_number: 'N306VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
-   { tail_number: 'N307VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
-   { tail_number: 'N308VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
-   { tail_number: 'N309VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'Alliance Drone Ops' },
-   { tail_number: 'N310VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'Alliance Drone Ops' },
+   { tail_number: 'N305VL', type: 'drone', model: 'Matrice 300 RTK', operator: 'DFW Inspection Co' },
+   { tail_number: 'N306VL', type: 'drone', model: 'Matrice 300 RTK', operator: 'DFW Inspection Co' },
+   { tail_number: 'N307VL', type: 'drone', model: 'Matrice 300 RTK', operator: 'DFW Inspection Co' },
+   { tail_number: 'N308VL', type: 'drone', model: 'Matrice 300 RTK', operator: 'DFW Inspection Co' },
+   { tail_number: 'N309VL', type: 'drone', model: 'Matrice 300 RTK', operator: 'Alliance Drone Ops' },
+   { tail_number: 'N310VL', type: 'drone', model: 'Matrice 300 RTK', operator: 'Alliance Drone Ops' },
    ```
 
 4. Seed script must:
