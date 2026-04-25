@@ -1,13 +1,9 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 
+const { PORT } = require('./config');
 const { connectPostgres } = require('./db');
 const { connectRedis } = require('./redis');
-
-dotenv.config();
-
-const PORT = Number(process.env.PORT || 3001);
 
 async function main() {
   await connectPostgres();

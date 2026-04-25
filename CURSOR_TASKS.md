@@ -111,6 +111,17 @@ cd /Users/aarav/Desktop/Volant/platform/frontend && npm install && npm run dev -
 
 **Why:** B2B SaaS needs multi-tenancy from day one. Adding `operator_id` after Slice 2 = painful migration. No login UI in Slice 1 — env var stub instead, real JWT auth in Slice 2.
 
+**Code review fixes from Step 1 (do these first, takes 5 min):**
+
+```js
+// 1. backend/src/index.js — CORS allows 127.0.0.1 too (Cursor verified on that address)
+cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173'] })
+
+// 2. backend/package.json — add nodemon for hot-reload in dev
+// deps: add "nodemon": "^3.1.0" to devDependencies
+// scripts: "dev": "nodemon src/index.js"
+```
+
 **What to build:**
 
 1. Install `node-pg-migrate`:
@@ -201,7 +212,90 @@ npm run dev
 
 ## QUEUE (upcoming)
 
-- [ ] Step 2 — PostgreSQL schema + aircraft registry (seed 10 aircraft)
+### Step 2 — PostgreSQL Schema + Aircraft Registry (fully briefed, start after 1.5 ✅)
+
+**Full spec:** `Plans/slice-1-fleet-overview.md` → Step 2
+
+**What to build:**
+
+1. Update `backend/src/db.js` — add `initSchema()` called after `resolveOperator()` in index.js:
+   - Runs `CREATE TABLE IF NOT EXISTS` for any tables not covered by migrations
+   - In practice: migrations handle schema, this just verifies connectivity
+
+2. Create `backend/src/seed.js` — standalone seed script (run once manually):
+   ```js
+   // Usage: node src/seed.js
+   // Seeds 10 aircraft: 6 drones + 4 eVTOL, all owned by Volant Demo Ops operator
+   ```
+
+3. **Exact seed data** (use these — researched from real Archer/DFW routes):
+
+   ```js
+   // eVTOL — Archer Midnight-class, air taxi routes DFW corridor
+   { tail_number: 'N301VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
+   { tail_number: 'N302VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
+   { tail_number: 'N303VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
+   { tail_number: 'N304VL', type: 'evtol', model: 'Midnight', operator_name: 'Archer Aviation' },
+
+   // Drones — DJI Matrice 300 RTK, commercial inspection
+   { tail_number: 'N305VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
+   { tail_number: 'N306VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
+   { tail_number: 'N307VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
+   { tail_number: 'N308VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'DFW Inspection Co' },
+   { tail_number: 'N309VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'Alliance Drone Ops' },
+   { tail_number: 'N310VL', type: 'drone', model: 'Matrice 300 RTK', operator_name: 'Alliance Drone Ops' },
+   ```
+
+4. Seed script must:
+   - Get `CURRENT_OPERATOR_ID` (call `resolveOperator()` first, or pass it in)
+   - Insert all 10 aircraft with that `operator_id`
+   - Use `ON CONFLICT (tail_number) DO NOTHING` so it's safe to re-run
+   - Log: `Seeded 10 aircraft`
+
+5. Add to `backend/package.json` scripts:
+   ```json
+   "seed": "node src/seed.js"
+   ```
+
+6. Add `getAircraft()` and `getAircraftById(id)` to `backend/src/db.js`:
+   ```js
+   async function getAircraft(operatorId) {
+     const res = await pool.query(
+       'SELECT * FROM aircraft WHERE operator_id = $1 ORDER BY tail_number',
+       [operatorId]
+     );
+     return res.rows;
+   }
+   async function getAircraftById(id, operatorId) {
+     const res = await pool.query(
+       'SELECT * FROM aircraft WHERE id = $1 AND operator_id = $2',
+       [id, operatorId]
+     );
+     return res.rows[0] || null;
+   }
+   ```
+
+**Exit criteria:**
+```bash
+node src/seed.js
+# → Seeded 10 aircraft
+
+psql $DATABASE_URL -c "SELECT tail_number, type, model FROM aircraft ORDER BY tail_number;"
+# → 10 rows: N301VL–N310VL
+
+psql $DATABASE_URL -c "SELECT COUNT(*) FROM aircraft WHERE type = 'evtol';"
+# → 4
+
+psql $DATABASE_URL -c "SELECT COUNT(*) FROM aircraft WHERE type = 'drone';"
+# → 6
+```
+
+**Completion:**
+```
+[ ] seed.js runs clean, 10 rows inserted
+[ ] getAircraft() + getAircraftById() exported from db.js
+[ ] safe to re-run (ON CONFLICT DO NOTHING)
+```
 - [ ] Step 3 — Telemetry simulator
 - [ ] Step 4 — Fleet Map Service
 - [ ] Step 5 — REST API
