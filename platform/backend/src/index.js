@@ -2,12 +2,13 @@ const express = require('express');
 const cors = require('cors');
 
 const { PORT } = require('./config');
-const { connectPostgres, resolveOperator } = require('./db');
+const { connectPostgres, resolveOperator, initSchema } = require('./db');
 const { connectRedis } = require('./redis');
 
 async function main() {
   await connectPostgres();
   await resolveOperator();
+  await initSchema();
   await connectRedis();
 
   const app = express();
