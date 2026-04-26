@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { colors, fonts } from './design/tokens';
-import { useFleetSocket } from './hooks/useFleetSocket';
-import FleetMap from './views/FleetMap';
-import FleetStatus from './views/FleetStatus';
-import Sidebar from './components/Sidebar';
+import { useFleetSocket } from './features/realtime';
+import { FleetMap } from './features/fleet-map';
+import { FleetStatus } from './features/fleet-status';
+import { Sidebar } from './shared/components';
 
 function applyThemeVariables() {
   const root = document.documentElement;

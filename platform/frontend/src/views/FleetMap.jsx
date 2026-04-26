@@ -143,8 +143,6 @@ function FleetMap({ fleetState }) {
         entry.marker.setLngLat([entry.currentLng, entry.currentLat]);
       });
 
-      // Force repaint so marker transforms never depend on user interaction.
-      map.triggerRepaint();
       rafRef.current = requestAnimationFrame(animate);
     };
 

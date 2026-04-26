@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 
 const SOCKET_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
@@ -51,7 +51,6 @@ export function useFleetSocket() {
     socket.on('connect', () => {
       setConnectionState('connected');
       setAnnouncement('Live telemetry connected.');
-      socket.emit('fleet:snapshot:request');
     });
 
     socket.on('disconnect', () => {
@@ -103,14 +102,8 @@ export function useFleetSocket() {
     };
   }, [announcement]);
 
-  const fleetList = useMemo(
-    () => Object.values(fleetState).sort((a, b) => a.tail_number.localeCompare(b.tail_number)),
-    [fleetState]
-  );
-
   return {
     fleetState,
-    fleetList,
     connectionState,
     announcement,
   };

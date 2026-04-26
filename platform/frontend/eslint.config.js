@@ -17,5 +17,18 @@ export default defineConfig([
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../features/*/*', '../../features/*/*'],
+              message: 'Import from feature entry points, not deep internal files.',
+            },
+          ],
+        },
+      ],
+    },
   },
 ])
