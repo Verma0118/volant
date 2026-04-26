@@ -49,6 +49,7 @@ From `platform/backend`:
 - `npm run seed` — seed 10 aircraft registry rows
 - `npm run dev` — backend API + Socket.io server
 - `npm run simulator` — telemetry publisher only
+- `npm run smoke:health` — checks backend `/health` JSON contract
 
 From `platform/frontend`:
 
@@ -56,6 +57,28 @@ From `platform/frontend`:
 - `npm run build` — production build check
 - `npm run lint` — lint check
 
+From `platform`:
+
+- `npm run verify` — backend tests + frontend lint/build
+- `npm run verify:full` — migrate + seed + verify
+
 ## Next Slice
 
 Slice 2 adds Mission Dispatch and route assignment workflows. See vault planning docs for staged roadmap context.
+
+## Contributor Docs
+
+- `ARCHITECTURE.md` — module boundaries and ownership
+- `CONTRIBUTING.md` — setup, checks, and first-hour onboarding path
+
+## Codebase Modularity Rules
+
+To keep onboarding smooth as more developers join:
+
+- `backend/src/config.js` is the single source of runtime configuration defaults.
+- `backend/src/db.js` owns database connectivity and operator resolution only.
+- `backend/src/repositories/` owns SQL access for feature domains.
+- `backend/src/services/` owns stateful integrations and background stream processors.
+- `backend/src/routes/` only handles HTTP concerns and delegates to repositories/services.
+
+When adding new backend features, follow this split first, then wire into routes.
