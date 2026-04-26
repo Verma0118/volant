@@ -332,18 +332,322 @@ psql $DATABASE_URL -c "SELECT COUNT(*) FROM aircraft WHERE type = 'drone';"
 - Updated migration scripts to glob mode (`--use-glob -m "migrations/*.js"`) to remove non-timestamp migration warnings while keeping current filenames.
 - Decision log added: `Decisions/2026-04-25 - Local Security Hardening for Slice 1.md`.
 - [x] Step 3 — Telemetry simulator ✅ _(implemented Apr 25)_
-- [ ] Step 4 — Fleet Map Service
-- [ ] Step 5 — REST API
-- [ ] Step 6 — Frontend scaffold + design system
-- [ ] Step 7 — Sidebar + nav shell
-- [ ] Step 8 — Live Fleet Map
-- [ ] Step 9 — Aircraft detail panel
-- [ ] Step 10 — Fleet Status table
-- [ ] Step 11 — Demo scenario
-- [ ] Step 12 — README + setup
+---
+
+### 🔥 Step 4 — Fleet Map Service (Redis → Socket.io)
+
+**Status:** `[✅] Done`
+
+**Full spec:** `Plans/slice-1-fleet-overview.md` → Step 4
+
+**Context:** Simulator is running and publishing to Redis `telemetry:update` at 1 Hz. Step 4 wires the bridge: subscribe to that channel, keep in-memory state, broadcast to every connected frontend via Socket.io. Frontend gets a full snapshot on connect (no empty map), then live updates per aircraft per tick.
+
+**What to build:**
+
+1. `backend/src/socket.js` — attach Socket.io to Express HTTP server:
+   ```js
+   const { Server } = require('socket.io');
+
+   let io;
+
+   function initSocket(httpServer) {
+     io = new Server(httpServer, {
+       cors: { origin: ['http://localhost:5173', 'http://127.0.0.1:5173'] },
+     });
+     return io;
+   }
+
+   function getIO() {
+     if (!io) throw new Error('Socket.io not initialized');
+     return io;
+   }
+
+   module.exports = { initSocket, getIO };
+   ```
+
+2. `backend/src/services/fleetMap.js`:
+   ```js
+   const { createClient } = require('redis');
+   const { getIO } = require('../socket');
+   const { REDIS_URL } = require('../config');
+
+   const fleetState = {};  // aircraft_id → latest telemetry object
+
+   async function hydrateFromRedis(redisClient) {
+     const snapshot = await redisClient.hGetAll('fleet:state');
+     for (const [id, raw] of Object.entries(snapshot)) {
+       fleetState[id] = JSON.parse(raw);
+     }
+     console.log(`Fleet hydrated: ${Object.keys(fleetState).length} aircraft`);
+   }
+
+   async function startFleetMap() {
+     // Subscriber client (dedicated — can't share with main redis client)
+     const sub = createClient({ url: REDIS_URL });
+     await sub.connect();
+
+     // Writer client for HSET
+     const writer = createClient({ url: REDIS_URL });
+     await writer.connect();
+
+     await hydrateFromRedis(writer);
+
+     // Wire Socket.io connect handler
+     getIO().on('connection', (socket) => {
+       socket.emit('fleet:snapshot', fleetState);
+     });
+
+     // Subscribe to telemetry stream
+     await sub.subscribe('telemetry:update', async (message) => {
+       const payload = JSON.parse(message);
+       const id = payload.aircraft_id;
+
+       fleetState[id] = payload;
+       await writer.hSet('fleet:state', id, JSON.stringify(payload));
+       getIO().emit('aircraft:update', payload);
+     });
+
+     console.log('Fleet Map Service started — subscribed to telemetry:update');
+   }
+
+   module.exports = { startFleetMap, fleetState };
+   ```
+
+3. Update `backend/src/index.js` — wire socket.js + start fleet map service:
+   ```js
+   const http = require('http');
+   const { initSocket } = require('./socket');
+   const { startFleetMap } = require('./services/fleetMap');
+
+   // After app is built, before listen:
+   const server = http.createServer(app);
+   initSocket(server);
+
+   async function start() {
+     await connectPostgres();
+     await resolveOperator();
+     await connectRedis();
+     await startFleetMap();
+
+     server.listen(PORT, () => {
+       console.log(`Express listening on :${PORT}`);
+     });
+   }
+   start().catch(err => { console.error(err); process.exit(1); });
+   ```
+   > **Important:** Use `http.createServer(app)` + `server.listen()` — not `app.listen()`. Socket.io must attach to the raw HTTP server, not the Express app directly.
+
+**Exit criteria — verify all before marking done:**
+```bash
+# Terminal 1 — start simulator
+cd platform/backend && npm run simulator
+
+# Terminal 2 — start backend (with fleet map service wired)
+cd platform/backend && npm run dev
+# → "Fleet hydrated: 10 aircraft"  (or 0 if Redis was empty — fine)
+# → "Fleet Map Service started — subscribed to telemetry:update"
+# → "Express listening on :3001"
+
+# Terminal 3 — test Socket.io events
+node -e "
+  const { io } = require('socket.io-client');
+  const socket = io('http://localhost:3001');
+  socket.on('fleet:snapshot', d => {
+    console.log('snapshot:', Object.keys(d).length, 'aircraft');
+  });
+  socket.on('aircraft:update', d => {
+    console.log('update:', d.tail_number, d.battery_pct + '%', d.status);
+  });
+"
+# → snapshot: 10 aircraft
+# → updates streaming at ~1/sec with tail numbers + battery %
+```
+
+**Completion checklist:**
+```
+[x] socket.js created — Socket.io attaches to http.createServer, not app.listen
+[x] fleetMap.js created — hydrateFromRedis + subscribe + HSET mirror + emit
+[x] index.js updated — server = http.createServer(app), initSocket wired, startFleetMap called
+[x] snapshot: 10 aircraft on connect
+[x] aircraft:update events streaming at 1 Hz
+[x] service restart recovers from fleet:state hash in <1s
+```
+
+---
+
+---
+
+### 🛡️ Security Hardening Fixes (do after Step 4, before Step 5)
+
+**Status:** `[✅] Done`
+
+**Context:** Claude Code security audit flagged these. All are small, low-risk changes. None block Step 4 — do them as a single commit immediately after Step 4 passes exit criteria.
+
+---
+
+**Fix 1 — `.env.example`: mark credentials as change-before-deploy**
+
+Change the credential lines so copiers know these aren't safe defaults:
+```bash
+# .env.example — current (bad):
+POSTGRES_PASSWORD=postgres
+REDIS_PASSWORD=redis
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/volant
+REDIS_URL=redis://:redis@localhost:6379
+
+# .env.example — correct:
+POSTGRES_PASSWORD=change_me_before_deploy
+REDIS_PASSWORD=change_me_before_deploy
+DATABASE_URL=postgres://postgres:change_me_before_deploy@localhost:5432/volant
+REDIS_URL=redis://:change_me_before_deploy@localhost:6379
+```
+
+Add a comment block at the top of `.env.example`:
+```
+# Copy to .env for local dev. CHANGE POSTGRES_PASSWORD and REDIS_PASSWORD before any shared deployment.
+# docker-compose.yml reads these — mismatch = containers won't connect.
+```
+
+> Note: `docker-compose.yml` uses `${REDIS_PASSWORD:-redis}` fallback. After this change, users MUST copy `.env.example` → `.env` before running. Add one line to README: "Copy `.env.example` to `.env` (required — docker-compose reads it)."
+
+---
+
+**Fix 2 — `backend/src/middleware/auth.js`: auth stub placeholder**
+
+Create this file (empty stub — signals to any technical reviewer where auth slots in):
+```js
+// TODO Slice 2: replace with JWT verification middleware
+// Shape: req.operatorId is set here, all routes read it instead of process.env.CURRENT_OPERATOR_ID
+function authStub(req, _res, next) {
+  req.operatorId = process.env.CURRENT_OPERATOR_ID;
+  next();
+}
+
+module.exports = { authStub };
+```
+
+Wire it in `backend/src/index.js`:
+```js
+const { authStub } = require('./middleware/auth');
+app.use(authStub);  // add after CORS, before routes
+```
+
+Update all future route handlers to use `req.operatorId` instead of reading `process.env.CURRENT_OPERATOR_ID` directly — this makes the Slice 2 auth swap a one-line change in `auth.js`, not a search-and-replace across routes.
+
+---
+
+**Fix 3 — `backend/src/seed.js`: add count verification after seed**
+
+After the insert loop, add:
+```js
+const count = await pool.query(
+  'SELECT COUNT(*) FROM aircraft WHERE operator_id = $1',
+  [operatorId]
+);
+console.log(`Seeded 10 aircraft (${count.rows[0].count} total in DB)`);
+```
+
+Replace the current `console.log('Seeded 10 aircraft')` line.
+
+---
+
+**Fix 4 — `backend/src/socket.js`: add connect/disconnect logging**
+
+In `initSocket`, add event logging so restarts and client drops are visible in the terminal:
+```js
+io.on('connection', (socket) => {
+  console.log(`Socket connected: ${socket.id} (${io.engine.clientsCount} total)`);
+  socket.on('disconnect', () => {
+    console.log(`Socket disconnected: ${socket.id}`);
+  });
+});
+```
+
+This lives in `socket.js` not `fleetMap.js` — the fleet map service adds its own `connection` handler separately via `getIO().on('connection', ...)`.
+
+---
+
+**Exit criteria:**
+```bash
+# .env.example has placeholder passwords, not "postgres"/"redis"
+grep "change_me" platform/.env.example  # → 2 lines found
+
+# auth.js exists and is wired
+grep "authStub" platform/backend/src/index.js  # → found
+
+# seed count logs correctly
+cd platform/backend && npm run seed
+# → "Seeded 10 aircraft (10 total in DB)"
+
+# socket logging visible
+npm run dev
+# → start simulator in another tab, open browser to :5173
+# → "Socket connected: <id> (1 total)" appears in backend terminal
+```
+
+✅ **Implementation notes:**
+- `platform/.env.example` updated with `change_me_before_deploy` placeholders + copy/deploy warning comments.
+- Added auth handoff stub at `platform/backend/src/middleware/auth.js` and wired `app.use(authStub)` in `platform/backend/src/index.js`.
+- `platform/backend/src/seed.js` now logs verified DB count after seed (`Seeded 10 aircraft (X total in DB)`).
+- `platform/backend/src/socket.js` now logs socket connect/disconnect with current client count.
+- Installed `socket.io-client` in backend so CLI socket validation command works from `platform/backend`.
+
+---
+
+### 🔥 Step 5 — REST API
+
+**Status:** `[✅] Done`
+
+**Implementation notes:**
+- Added `platform/backend/src/routes/aircraft.js` with:
+  - `GET /api/aircraft` (operator-scoped via `req.operatorId`)
+  - `GET /api/aircraft/:id` (operator-scoped + 404 handling)
+- Wired routes in `platform/backend/src/index.js` with `app.use('/api/aircraft', aircraftRoutes)`.
+- API responses merge DB registry fields with live telemetry from `fleetState`.
+- Response includes `last_update` from telemetry timestamp.
+- Runtime verified with live simulator + `curl` response showing merged static + telemetry fields.
+
+- [x] Step 5 — REST API runtime verification
+- [x] Step 6 — Frontend scaffold + design system
+- [x] Step 7 — Sidebar + nav shell
+- [x] Step 8 — Live Fleet Map
+- [x] Step 9 — Aircraft detail panel
+- [x] Step 10 — Fleet Status table
+- [x] Step 11 — Demo scenario
+- [x] Step 12 — README + setup
+
+✅ **Step 6 completion notes (Apr 26):**
+- Replaced Vite starter UI with Step 6 scaffold: route shell (`/` and `/status`) in `platform/frontend/src/App.jsx` + router wiring in `platform/frontend/src/main.jsx`.
+- Added design-system-first global styling in `platform/frontend/src/index.css` with CSS custom properties fed from `platform/frontend/src/design/tokens.js`.
+- Added reusable components `platform/frontend/src/components/StatusPill.jsx` and `platform/frontend/src/components/BatteryBar.jsx`.
+- Added `platform/frontend/src/hooks/useFleetSocket.js` for `fleet:snapshot` + `aircraft:update` state sync, reconnect handling, and polite live announcement messages.
+- Added Step 6 placeholder views `platform/frontend/src/views/FleetMap.jsx` and `platform/frontend/src/views/FleetStatus.jsx`.
+- Implemented explicit Mapbox token failure state in `FleetMap` (`Mapbox token not configured`) instead of silent crash.
+- Repaired package state and installed `react-router-dom` in `platform/frontend/package.json`; removed accidental root-level npm manifests created during shell path mismatch.
+
+✅ **Terminal proof (latest):**
+```bash
+cd /Users/aarav/Desktop/Volant/platform/frontend && npm install
+# added 4 packages ... found 0 vulnerabilities
+
+cd /Users/aarav/Desktop/Volant/platform/frontend && npm run build
+# vite build success
+# dist/index.html + dist/assets generated
+
+cd /Users/aarav/Desktop/Volant/platform/frontend && npm run lint
+# eslint . (no errors)
+
+cd /Users/aarav/Desktop/Volant/platform/frontend && npm run dev -- --host 127.0.0.1 --port 5173
+# Port 5173 in use, Vite started on:
+# http://127.0.0.1:5174/
+```
 
 ---
 
 ## COMPLETED
 
 - [x] **Step 1** — Repo scaffold + dev env. Docker (Postgres + Redis) healthy, backend `/health` ✓, Vite :5173 ✓. _(Apr 25)_
+
+## Related
+
+- [[Unfinished Tasks]]

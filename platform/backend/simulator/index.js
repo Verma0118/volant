@@ -41,13 +41,26 @@ const DEMO_STATUS_BY_TAIL = {
   N301VL: 'in-flight',
   N302VL: 'in-flight',
   N303VL: 'in-flight',
-  N304VL: 'charging',
+  N304VL: 'in-flight',
   N305VL: 'charging',
   N306VL: 'maintenance',
   N307VL: 'grounded',
-  N308VL: 'ready',
+  N308VL: 'charging',
   N309VL: 'ready',
   N310VL: 'ready',
+};
+
+const DEMO_START_BATTERY_BY_TAIL = {
+  N301VL: 74,
+  N302VL: 66,
+  N303VL: 59,
+  N304VL: 30,
+  N305VL: 34,
+  N306VL: 63,
+  N307VL: 12,
+  N308VL: 33,
+  N309VL: 92,
+  N310VL: 88,
 };
 
 function toRadians(degrees) {
@@ -102,6 +115,10 @@ function createAircraftState(aircraft, index) {
     ready: sampleRandom(82, 100),
   };
 
+  const batteryPct = DEMO_MODE
+    ? DEMO_START_BATTERY_BY_TAIL[aircraft.tail_number] ?? sampleRandom(40, 80)
+    : batteryByStatus[status] ?? sampleRandom(40, 80);
+
   return {
     ...aircraft,
     route,
@@ -117,7 +134,7 @@ function createAircraftState(aircraft, index) {
           ? 0
           : Math.round(defaultAltitude * 0.15),
     speed_kts: status === 'in-flight' ? defaultSpeed : 0,
-    battery_pct: Math.round(batteryByStatus[status] ?? sampleRandom(40, 80)),
+    battery_pct: batteryPct,
     status,
     holdTicks: 0,
   };
@@ -158,7 +175,7 @@ function updateDynamicState(state) {
   if (state.status === 'charging') {
     state.speed_kts = 0;
     state.altitude_ft = 0;
-    state.battery_pct = clamp(Math.round(state.battery_pct + 0.8), 0, 100);
+    state.battery_pct = clamp(state.battery_pct + 0.8, 0, 100);
     if (state.battery_pct >= 85) {
       state.status = 'ready';
     }
@@ -181,7 +198,7 @@ function updateDynamicState(state) {
   const waypointReached = moveAlongRoute(state);
   state.speed_kts = state.type === 'evtol' ? 110 : 38;
   state.altitude_ft = state.type === 'evtol' ? 1200 : 260;
-  state.battery_pct = clamp(Math.round(state.battery_pct - sampleRandom(0.3, 0.5)), 0, 100);
+  state.battery_pct = clamp(state.battery_pct - sampleRandom(0.3, 0.5), 0, 100);
 
   if (state.battery_pct <= 20) {
     state.status = 'charging';
@@ -194,6 +211,45 @@ function updateDynamicState(state) {
     state.status = 'charging';
     state.speed_kts = 0;
     state.altitude_ft = 0;
+  }
+}
+
+const demoEvents = {
+  transition30sLogged: false,
+  transition60sLogged: false,
+};
+
+function applyDemoScenarioOverrides(state, demoTick) {
+  if (state.tail_number === 'N304VL' && demoTick >= 30) {
+    if (demoTick === 30 && !demoEvents.transition30sLogged) {
+      console.log('Demo event T+30s: N304VL landed and entered charging at 18%');
+      demoEvents.transition30sLogged = true;
+    }
+
+    state.status = 'charging';
+    state.speed_kts = 0;
+    state.altitude_ft = 0;
+    state.battery_pct = clamp(Math.max(state.battery_pct, 18), 0, 100);
+  }
+
+  if (state.tail_number === 'N308VL' && demoTick <= 60) {
+    const demoBattery = clamp(33 + demoTick * 0.8, 0, 81);
+    state.battery_pct = demoBattery;
+    state.speed_kts = 0;
+    state.altitude_ft = 0;
+
+    if (demoTick < 60) {
+      state.status = 'charging';
+      return;
+    }
+
+    state.status = 'ready';
+    state.holdTicks = 0;
+
+    if (!demoEvents.transition60sLogged) {
+      console.log('Demo event T+60s: N308VL reached 81% and is now ready');
+      demoEvents.transition60sLogged = true;
+    }
   }
 }
 
@@ -212,11 +268,20 @@ function buildPayload(state) {
   };
 }
 
+let demoTick = 0;
+
 async function tick(states) {
   for (const state of states) {
     updateDynamicState(state);
+    if (DEMO_MODE) {
+      applyDemoScenarioOverrides(state, demoTick);
+    }
     const payload = buildPayload(state);
     await redis.publish(TELEMETRY_CHANNEL, JSON.stringify(payload));
+  }
+
+  if (DEMO_MODE) {
+    demoTick += 1;
   }
 }
 

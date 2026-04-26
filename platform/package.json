@@ -1,0 +1,11 @@
+{
+  "name": "volant-platform",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "demo": "concurrently -k -n backend,simulator,frontend -c cyan,magenta,green \"cd backend && DEMO_MODE=true npm run dev\" \"cd backend && DEMO_MODE=true npm run simulator\" \"cd frontend && npm run dev -- --host 127.0.0.1 --port 5173\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

@@ -68,7 +68,8 @@ async function seedAircraft() {
     ]);
   }
 
-  console.log('Seeded 10 aircraft');
+  const count = await pool.query('SELECT COUNT(*) FROM aircraft WHERE operator_id = $1', [operatorId]);
+  console.log(`Seeded 10 aircraft (${count.rows[0].count} total in DB)`);
 }
 
 seedAircraft()
