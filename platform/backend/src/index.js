@@ -6,9 +6,9 @@ const { PORT } = require('./config');
 const { connectPostgres, resolveOperator, initSchema } = require('./db');
 const { connectRedis } = require('./redis');
 const { initSocket } = require('./socket');
-const { startFleetMap } = require('./services/fleetMap');
+const { startFleetMap } = require('./services');
 const { authStub } = require('./middleware/auth');
-const aircraftRoutes = require('./routes/aircraft');
+const { aircraftRoutes } = require('./routes');
 
 const app = express();
 

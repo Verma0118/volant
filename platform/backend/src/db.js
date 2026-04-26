@@ -1,7 +1,5 @@
 const { Pool } = require('pg');
-
-const DATABASE_URL =
-  process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/volant';
+const { DATABASE_URL } = require('./config');
 
 const pool = new Pool({
   connectionString: DATABASE_URL,
@@ -30,28 +28,10 @@ async function initSchema() {
   await pool.query('SELECT 1');
 }
 
-async function getAircraft(operatorId) {
-  const res = await pool.query(
-    'SELECT * FROM aircraft WHERE operator_id = $1 ORDER BY tail_number',
-    [operatorId]
-  );
-  return res.rows;
-}
-
-async function getAircraftById(id, operatorId) {
-  const res = await pool.query(
-    'SELECT * FROM aircraft WHERE id = $1 AND operator_id = $2',
-    [id, operatorId]
-  );
-  return res.rows[0] || null;
-}
-
 module.exports = {
   pool,
   connectPostgres,
   resolveOperator,
   initSchema,
-  getAircraft,
-  getAircraftById,
 };
 

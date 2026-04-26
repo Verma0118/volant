@@ -5,7 +5,6 @@ const { REDIS_URL } = require('../config');
 
 const TELEMETRY_CHANNEL = 'telemetry:update';
 const FLEET_STATE_KEY = 'fleet:state';
-const DEFAULT_REDIS_URL = 'redis://:redis@localhost:6379';
 
 const fleetState = {};
 
@@ -32,10 +31,8 @@ async function startFleetMap() {
     return;
   }
 
-  const redisUrl = REDIS_URL || DEFAULT_REDIS_URL;
-
-  subClient = createClient({ url: redisUrl });
-  writerClient = createClient({ url: redisUrl });
+  subClient = createClient({ url: REDIS_URL });
+  writerClient = createClient({ url: REDIS_URL });
 
   subClient.on('error', (err) => {
     console.error('FleetMap subscriber Redis error', err);

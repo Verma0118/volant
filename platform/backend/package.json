@@ -7,12 +7,14 @@
   "scripts": {
     "dev": "nodemon --legacy-watch src/index.js",
     "start": "node src/index.js",
-    "migrate": "DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/volant} node-pg-migrate up -m \"migrations/*.js\" --use-glob --check-order false",
-    "migrate:strict": "DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/volant} node-pg-migrate up -m migrations",
-    "migrate:down": "DATABASE_URL=${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/volant} node-pg-migrate down -m \"migrations/*.js\" --use-glob --check-order false",
+    "migrate": "DATABASE_URL=${DATABASE_URL:-postgres://postgres:change_me_before_deploy@localhost:5432/volant} node-pg-migrate up -m \"migrations/*.js\" --use-glob --check-order false",
+    "migrate:strict": "DATABASE_URL=${DATABASE_URL:-postgres://postgres:change_me_before_deploy@localhost:5432/volant} node-pg-migrate up -m migrations",
+    "migrate:down": "DATABASE_URL=${DATABASE_URL:-postgres://postgres:change_me_before_deploy@localhost:5432/volant} node-pg-migrate down -m \"migrations/*.js\" --use-glob --check-order false",
     "seed": "node src/seed.js",
     "simulator": "node simulator/index.js",
-    "telemetry:watch": "node scripts/watchTelemetry.js"
+    "telemetry:watch": "node scripts/watchTelemetry.js",
+    "smoke:health": "node scripts/smokeHealth.js",
+    "test": "node --test"
   },
   "dependencies": {
     "cors": "^2.8.5",

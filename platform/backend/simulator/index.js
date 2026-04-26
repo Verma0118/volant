@@ -1,4 +1,5 @@
-const { connectPostgres, resolveOperator, getAircraft, pool } = require('../src/db');
+const { connectPostgres, resolveOperator, pool } = require('../src/db');
+const { getAircraft } = require('../src/repositories/aircraftRepository');
 const { connectRedis, redis } = require('../src/redis');
 const { DEMO_MODE } = require('../src/config');
 
