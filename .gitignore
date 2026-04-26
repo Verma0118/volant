@@ -1,3 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+coverage/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
 # Obsidian app config
 .obsidian/
 
@@ -30,6 +50,7 @@ Graph/Investor Pipeline*
 # Obsidian files
 *.base
 Untitled.canvas
+Untitled *.canvas
 
 # macOS
 .DS_Store

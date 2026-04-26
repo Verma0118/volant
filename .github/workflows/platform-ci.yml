@@ -1,0 +1,87 @@
+name: Platform CI
+
+on:
+  push:
+    paths:
+      - "platform/**"
+      - ".github/workflows/platform-ci.yml"
+  pull_request:
+    paths:
+      - "platform/**"
+      - ".github/workflows/platform-ci.yml"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "npm"
+          cache-dependency-path: |
+            platform/package-lock.json
+            platform/backend/package-lock.json
+            platform/frontend/package-lock.json
+
+      - name: Prepare env
+        run: |
+          cp platform/.env.example platform/.env
+
+      - name: Install root tooling
+        run: npm ci
+        working-directory: platform
+
+      - name: Install backend deps
+        run: npm ci
+        working-directory: platform/backend
+
+      - name: Install frontend deps
+        run: npm ci
+        working-directory: platform/frontend
+
+      - name: Start infra
+        run: docker compose up -d
+        working-directory: platform
+
+      - name: Backend migrate + seed
+        run: |
+          npm run migrate
+          npm run seed
+        working-directory: platform/backend
+
+      - name: Backend unit tests
+        run: npm test
+        working-directory: platform/backend
+
+      - name: Frontend lint and build
+        run: |
+          npm run lint
+          npm run build
+        working-directory: platform/frontend
+
+      - name: API smoke
+        run: |
+          npm run dev &
+          SERVER_PID=$!
+          for i in {1..20}; do
+            if curl -fsS http://127.0.0.1:3001/health >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3001/health | grep -q '"status":"ok"'
+          kill $SERVER_PID
+        working-directory: platform/backend
+
+      - name: Stop infra
+        if: always()
+        run: docker compose down -v
+        working-directory: platform
