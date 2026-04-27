@@ -1238,3 +1238,84 @@ cd platform/frontend && npm run build
 - `App.jsx`: `useAuth()` → token + isAuthenticated. `useFleetSocket(token)` → socket passed to Dispatch for mission socket reuse. `/login` route outside `AuthenticatedLayout`. Auth guard redirects unauthenticated users. `RouteTitle` handles `/dispatch`.
 - `Sidebar.jsx`: Mission Dispatch removed from LOCKED_ITEMS, added as `<NavLink to="/dispatch">`.
 - `index.css`: added shared form primitives (`.btn-primary`, `.btn-secondary`, `.form-field`, `.field-input`, `.field-select`), login page styles, dispatch layout + panel styles, mission queue + priority badge styles.
+
+---
+
+## 🔥 Step 7 — End-to-End Dispatch Flow Verification
+
+**Status:** `[ ] Not started`
+
+**Context:** All code is shipped and committed (`5dab177`). This is a live integration test — run the full stack and walk through the dispatch flow manually. Fix any runtime bugs found.
+
+**Start the full stack:**
+```bash
+cd platform && docker compose up -d
+cd platform/backend && npm run simulator &
+cd platform/backend && npm run dev
+cd platform/frontend && npm run dev
+```
+
+**Test sequence (do in order):**
+
+1. **Auth guard**
+   - Open `http://localhost:5173` → should redirect to `/login`
+   - Confirm no flash of authenticated content before redirect
+
+2. **Login**
+   - Enter `dispatcher@volant.demo` / `dispatch123` → submit
+   - Should redirect to `/` (Fleet Map)
+   - Backend terminal: `Socket connected: <id>` should appear
+   - If login fails with 500/401: run `cd platform/backend && npm run migrate` then retry
+
+3. **Sidebar**
+   - "Mission Dispatch" link should be visible (not locked)
+   - Click it → navigates to `/dispatch`
+   - Page title: `Mission Dispatch - Volant`
+
+4. **Dispatch form — quick fill**
+   - Click "DFW Airport → Downtown Dallas" button
+   - Origin lat/lng and dest lat/lng fields should populate
+
+5. **Dispatch a mission**
+   - Cargo: Medical, Priority: Urgent
+   - Click "Dispatch Mission"
+   - Expected: green success message "Mission dispatched — N3__VL assigned" (4s then clears)
+   - If 409 conflict: try again, different aircraft may have been busy
+   - If no aircraft available (all grounded/charging): wait for simulator to cycle, retry
+
+6. **Mission queue live update**
+   - After dispatch: mission card appears in right panel with status "assigned"
+   - Status should change to "in-flight" within a few seconds (no refresh)
+   - After flight time elapses: status changes to "completed"
+
+7. **Conflict detection**
+   - Dispatch two missions on the same route back-to-back immediately
+   - Second should return red error with conflict reason
+
+8. **Socket auth**
+   - Browser devtools → Network → WS tab
+   - Check handshake request has `auth` field with token
+
+**Common bugs to fix if found:**
+
+| Symptom | Likely cause | Fix |
+|---------|-------------|-----|
+| Login 401 even with correct creds | `005_seed_users` migration not run | `npm run migrate` |
+| Login 500 | `JWT_SECRET` missing from `.env` | Add `JWT_SECRET=volant_dev_secret` to `platform/backend/.env` |
+| Fleet map blank after login | Socket auth rejected — token not passed | Check `useFleetSocket(token)` call in `App.jsx` |
+| Mission queue never updates | `mission:update` not broadcasting | Verify `missionWorker.js` full state machine is wired (Step 6 — may still be shell) |
+| Dispatch returns 404 | Missions route not registered | Check `platform/backend/src/routes/index.js` wires `/api/missions` |
+
+**Exit criteria:**
+```
+[ ] /login loads without touching / first
+[ ] Login with demo creds succeeds, redirects to Fleet Map
+[ ] /dispatch renders form + empty queue
+[ ] Quick-fill populates coord fields
+[ ] Dispatch mission → success message + card in queue
+[ ] Card status updates live (assigned → in-flight → completed)
+[ ] Second rapid dispatch on same route → conflict error shown
+[ ] npm run build still clean after any fixes
+```
+
+**When done:** Mark this block ✅, commit fixes with message `fix: dispatch e2e verification — [what you fixed]`.
