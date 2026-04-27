@@ -14,19 +14,25 @@ tags: [next-session, build, slice-1]
 
 ## First Action
 
-**CHECK CURSOR_TASKS.md** — Step 2 (aircraft seed) was in progress when session ended Apr 25. Read it first, check if ✅. If done, review Cursor's seed.js + db.js, then brief Step 3 (simulator). If not done, wait. No need to ask — go straight to building.
+Slice 1 stabilization/hardening is complete. First action next session is **Slice 2 kickoff brief + implementation start**:
 
-Activate `search-first` first (verify Docker Compose Redis 7 + Postgres 15 patterns, Vite + React scaffold), then build `platform/` scaffold per blueprint Step 1 exit criteria:
-- `docker compose up -d` → both containers healthy
-- `npm run dev` in backend → "PostgreSQL connected", "Redis connected", server on :3001
-- `curl http://localhost:3001/health` → `{ status: "ok" }`
-- `npm run dev` in frontend → Vite on :5173, blank React app loads
+1. Draft Slice 2 Mission Dispatch kickoff brief (architecture, queue model, API surface, UI flow).
+2. Define Step 1 execution tasks in `CURSOR_TASKS.md`.
+3. Start Slice 2 Step 1 implementation.
+
+**Recent hardening commits (for Claude context):**
+- `148112e` — repo standards + verify workflow + CI scaffold
+- `de1b1cf` — backend modular boundaries + transform tests + health smoke
+- `7409835` — frontend feature entrypoints + realtime dead-work cleanup
+- `56b090d` — architecture/contributor docs + ADR template
+
+**Push note:** push was blocked because PAT is missing `workflow` scope for `.github/workflows/platform-ci.yml`.
 
 ---
 
 ## Active Blueprint
 
-**File:** `Plans/slice-1-fleet-overview.md`
+**File:** `Plans/slice-1-fleet-overview.md` (completed; now in stabilization + handoff mode)
 **Print this table at startup:**
 
 | Step | What | Skills |

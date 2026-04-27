@@ -651,3 +651,143 @@ cd /Users/aarav/Desktop/Volant/platform/frontend && npm run dev -- --host 127.0.
 ## Related
 
 - [[Unfinished Tasks]]
+
+---
+
+### 🔧 Slice 1 Stabilization — 3 targeted fixes
+
+**Status:** `[✅] Done`
+
+**Context:** Claude Code reviewed all Slice 1 source files. Build is clean, 0 vuln, no runtime crashes. Three specific bugs found — all small, surgical fixes. Do these before Slice 2.
+
+---
+
+**Fix 1 (CRITICAL — map jitter) — remove `map.triggerRepaint()` from RAF loop**
+
+File: `platform/frontend/src/views/FleetMap.jsx`, line ~147
+
+Current code in `animate()`:
+```js
+entry.marker.setLngLat([entry.currentLng, entry.currentLat]);
+// ...
+map.triggerRepaint();  // ← DELETE THIS LINE
+rafRef.current = requestAnimationFrame(animate);
+```
+
+**Why:** Markers are DOM elements overlaid on the canvas — `setLngLat()` moves them via CSS transforms. `triggerRepaint()` forces the Mapbox tile compositor to re-composite at 60fps. That's the source of the visual flash/jitter. CSS transform updates don't need a canvas repaint.
+
+After removing: the RAF loop still runs (needed for LERP interpolation), markers still glide smoothly, but the Mapbox canvas only repaints when tiles actually change (pan, zoom). Zero visual change except the jitter disappears.
+
+---
+
+**Fix 2 (minor) — remove orphan `fleet:snapshot:request` emit**
+
+File: `platform/frontend/src/hooks/useFleetSocket.js`, line ~54
+
+```js
+socket.on('connect', () => {
+  setConnectionState('connected');
+  setAnnouncement('Live telemetry connected.');
+  socket.emit('fleet:snapshot:request');  // ← DELETE THIS LINE
+});
+```
+
+**Why:** Server (`fleetMap.js`) sends `fleet:snapshot` automatically on every `connection` event — the client doesn't need to request it. The server has no handler for `fleet:snapshot:request`, so this emit is silently ignored every reconnect. Removing it is cleaner and avoids confusion when reading server logs.
+
+---
+
+**Fix 3 (minor) — remove unused `fleetList` from hook return**
+
+File: `platform/frontend/src/hooks/useFleetSocket.js`
+
+`fleetList` is computed with `useMemo` and returned from the hook, but `App.jsx` doesn't destructure it. Remove from return value:
+
+```js
+// Remove fleetList from the return object:
+return {
+  fleetState,
+  // fleetList,   ← remove
+  connectionState,
+  announcement,
+};
+```
+
+Also remove the `fleetList` useMemo above it:
+```js
+// Delete these 3 lines:
+const fleetList = useMemo(
+  () => Object.values(fleetState).sort((a, b) => a.tail_number.localeCompare(b.tail_number)),
+  [fleetState]
+);
+```
+
+**Why:** Wasted sort on every `fleetState` update (1 Hz × 10 aircraft). `FleetMap.jsx` and `FleetStatus.jsx` both derive their own sorted arrays from `fleetState` directly.
+
+---
+
+**Exit criteria:**
+```bash
+# 1. Verify jitter gone — start full stack and watch map for 30s
+cd platform && docker compose up -d
+cd platform/backend && npm run simulator &
+cd platform/backend && npm run dev &
+# open http://localhost:5173 — markers should glide with zero flash
+
+# 2. Check no console errors in browser dev tools
+# → no "triggerRepaint" warnings, no unhandled socket events
+
+# 3. Frontend build still clean
+cd platform/frontend && npm run build
+# → ✓ built, 0 errors
+
+# 4. Confirm socket snapshot still works
+node -e "const {io}=require('socket.io-client');const s=io('http://localhost:3001');s.on('fleet:snapshot',d=>console.log('snapshot:',Object.keys(d).length,'aircraft'))"
+# → snapshot: 10 aircraft  (arrives automatically, no request needed)
+```
+
+**Completion checklist:**
+```
+[x] map.triggerRepaint() removed from RAF loop in FleetMap.jsx
+[x] socket.emit('fleet:snapshot:request') removed from useFleetSocket.js
+[x] fleetList useMemo + return entry removed from useFleetSocket.js
+[x] map jitter visually gone in browser
+[x] frontend build still clean
+```
+
+✅ **Implementation notes (Apr 26):**
+- Removed forced canvas repaint from `platform/frontend/src/views/FleetMap.jsx` RAF loop to stop map flash/jitter while keeping marker interpolation.
+- Removed orphan `socket.emit('fleet:snapshot:request')` from `platform/frontend/src/hooks/useFleetSocket.js` (server pushes snapshot on connect automatically).
+- Removed unused `fleetList` memo/return from the same hook and simplified imports.
+- Verified no remaining `fleet:snapshot:request` references in `platform/` source.
+- Verified frontend build passes (`npm run build --prefix "/Users/aarav/Desktop/Volant/platform/frontend"`).
+
+---
+
+## Claude Tomorrow Task
+
+- Slice 2 kickoff after stabilization pass complete.
+- Save session only **after** Slice 2 kickoff brief is written.
+
+---
+
+## Handoff Update (Apr 26, 2026)
+
+### ✅ Slice 1 stabilization + hardening delivered
+
+Committed in four grouped commits:
+
+- `148112e` — repo standards + verify scripts + CI workflow scaffold
+- `de1b1cf` — backend modularization (`repositories`, `routes/index`, `services/index`) + tests/smoke script
+- `7409835` — frontend feature entrypoints + map/socket cleanup
+- `56b090d` — architecture/contributor docs + ADR template
+
+Verification completed:
+
+- `cd platform && npm run verify` ✅
+- `cd platform && npm run verify:full` ✅
+- backend tests (`node --test`) ✅
+- frontend lint/build ✅
+
+Push status:
+
+- ❌ `git push` blocked by token permission: missing `workflow` scope for `.github/workflows/platform-ci.yml`.

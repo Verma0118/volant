@@ -6,7 +6,7 @@ tags: [tasks, priorities, slice-1]
 
 # Volant Task List
 
-_Last updated: Apr 20, 2026 11:11 CDT_
+_Last updated: Apr 26, 2026 19:07 CDT_
 
 ---
 
@@ -32,32 +32,33 @@ _Last updated: Apr 20, 2026 11:11 CDT_
 ## Now — Active Priority 🔥
 
 - [x] **Slice 1 Step 1** — Repo scaffold + dev env ✅ _(Cursor, Apr 25)_
-- [ ] **Slice 1 Step 1.5** — Auth stub + tenancy schema (briefed in CURSOR_TASKS.md)
-  - `platform/` directory structure
-  - `docker-compose.yml` — Redis 7 + Postgres 15
-  - `backend/package.json` + Express skeleton on :3001
-  - `backend/src/db.js` + `redis.js` — connect on startup
-  - `frontend/package.json` — Vite + React
-  - `.env.example`
-  - **Exit criteria:** `docker compose up -d` + both servers start clean + `GET /health` → `{ status: "ok" }`
-  - **Skills:** `search-first` → `blueprint`
+- [x] **Slice 1 Step 1.5** — Auth stub + tenancy schema ✅ _(Cursor, Apr 25)_
+- [x] **Slice 1 Step 2** — PostgreSQL schema + 10 aircraft seeded ✅ _(Cursor, Apr 25)_
+- [x] **Slice 1 Step 3** — Telemetry simulator (DFW routes, battery physics, DEMO_MODE) ✅ _(Cursor, Apr 25)_
+- [x] **Slice 1 Step 4** — Fleet Map Service (Redis → Socket.io) ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 5** — REST API (`GET /api/aircraft`, operator-scoped) ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 6** — Frontend scaffold + design system ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 7** — Sidebar + nav shell ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 8** — Live Fleet Map (Mapbox GL JS) ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 9** — Aircraft detail panel ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 10** — Fleet Status table ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 11** — Demo scenario hardening ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 Step 12** — README + setup ✅ _(Cursor, Apr 26)_
+- [x] **Slice 1 stabilization + codebase hardening pass** ✅ _(Cursor, Apr 26)_
+  - Backend modular boundaries (`repositories`, `routes/index`, `services/index`)
+  - Frontend feature/shared entry points + import boundary lint guardrail
+  - CI workflow (`.github/workflows/platform-ci.yml`)
+  - Contributor docs: `ARCHITECTURE.md`, `CONTRIBUTING.md`, ADR template
+  - One-command verify scripts + backend smoke health script
+- [ ] **Slice 2 kickoff** — Mission Dispatch planning + implementation brief
 
 ---
 
 ## Up Next (in order)
 
-- [ ] Slice 1 Step 1.5 — Auth stub + tenancy schema (`operator_id`, `node-pg-migrate`)
-- [ ] Slice 1 Step 2 — PostgreSQL schema + 10 seeded aircraft (N-numbers)
-- [ ] Slice 1 Step 3 — Telemetry simulator (DFW routes, battery drain, `DEMO_MODE`)
-- [ ] Slice 1 Step 4 — Fleet Map Service (Redis → Socket.io broadcast)
-- [ ] Slice 1 Step 5 — REST API (`GET /api/aircraft`, operator-scoped)
-- [ ] Slice 1 Step 6 — Frontend scaffold + design system (`tokens.js`, dark aerospace)
-- [ ] Slice 1 Step 7 — Sidebar + nav shell (5 items, locked future slices)
-- [ ] Slice 1 Step 8 — Live Fleet Map (Mapbox GL JS, GeoJSON, DFW airspace overlay)
-- [ ] Slice 1 Step 9 — Aircraft detail panel (slide-in, live battery)
-- [ ] Slice 1 Step 10 — Fleet Status table (sortable, filterable, live sync)
-- [ ] Slice 1 Step 11 — Demo scenario (`npm run demo`, scripted 90s DFW story)
-- [ ] Slice 1 Step 12 — README + setup (5-min cold start)
+- [ ] Slice 2 Step 1 — Mission Dispatch architecture + queue model
+- [ ] Slice 2 Step 2 — Dispatch API + assignment logic
+- [ ] Slice 2 Step 3 — Dispatch UI workflow in dashboard
 
 ---
 
@@ -83,4 +84,4 @@ _Last updated: Apr 20, 2026 11:11 CDT_
 ---
 
 ## Related
-[[_BRIEFING]] · [[Plans/Next Session]] · [[Plans/slice-1-fleet-overview]] · [[Sessions/Sessions]]
+[[_BRIEFING]] · [[Plans/Next Session]] · [[Plans/slice-1-fleet-overview]] · [[Sessions/Sessions]] · [[Unfinished Tasks]]
