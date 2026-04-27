@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { colors, fonts } from './design/tokens';
 import { useAuth } from './hooks/useAuth';
@@ -8,6 +8,7 @@ import { FleetStatus } from './features/fleet-status';
 import { Login } from './features/auth';
 import { Dispatch } from './features/dispatch';
 import { Sidebar } from './shared/components';
+import { dedupeFleetRowsByTail } from './utils/fleetDedupe';
 
 function applyThemeVariables() {
   const root = document.documentElement;
@@ -94,7 +95,10 @@ function AuthenticatedLayout({ fleetState, activeAircraftCount, connectionState,
 function App() {
   const { token, isAuthenticated } = useAuth();
   const { fleetState, connectionState, announcement, socket } = useFleetSocket(token);
-  const activeAircraftCount = Object.keys(fleetState).length;
+  const activeAircraftCount = useMemo(
+    () => dedupeFleetRowsByTail(Object.values(fleetState)).length,
+    [fleetState]
+  );
 
   useEffect(() => {
     applyThemeVariables();

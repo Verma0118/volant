@@ -2,6 +2,7 @@ const { createClient } = require('redis');
 
 const { getIO } = require('../socket');
 const { REDIS_URL } = require('../config');
+const { getAircraft } = require('../repositories/aircraftRepository');
 
 const TELEMETRY_CHANNEL = 'telemetry:update';
 const FLEET_STATE_KEY = 'fleet:state';
@@ -26,6 +27,41 @@ async function hydrateFromRedis(redisClient) {
   console.log(`Fleet hydrated: ${Object.keys(fleetState).length} aircraft`);
 }
 
+/**
+ * Redis fleet:state persists across DB re-seeds. Old aircraft_id keys stay in the hash
+ * while new registry rows get new UUIDs — simulator only publishes for current IDs,
+ * leaving stale duplicates (same tail_number, ancient timestamp). Drop orphans.
+ */
+async function pruneFleetStateToRegistry(redisClient, operatorId) {
+  if (!operatorId) {
+    console.warn('Fleet prune skipped: CURRENT_OPERATOR_ID not set');
+    return;
+  }
+
+  let rows;
+  try {
+    rows = await getAircraft(operatorId);
+  } catch (err) {
+    console.error('Fleet prune: failed to load aircraft registry', err.message);
+    return;
+  }
+
+  const allowed = new Set(rows.map((row) => String(row.id)));
+  let removed = 0;
+
+  for (const id of Object.keys(fleetState)) {
+    if (!allowed.has(id)) {
+      delete fleetState[id];
+      await redisClient.hDel(FLEET_STATE_KEY, id);
+      removed += 1;
+    }
+  }
+
+  if (removed > 0) {
+    console.log(`Fleet pruned ${removed} stale Redis aircraft key(s) not in registry`);
+  }
+}
+
 async function startFleetMap() {
   if (fleetMapStarted) {
     return;
@@ -46,6 +82,7 @@ async function startFleetMap() {
   await writerClient.connect();
 
   await hydrateFromRedis(writerClient);
+  await pruneFleetStateToRegistry(writerClient, process.env.CURRENT_OPERATOR_ID);
 
   getIO().on('connection', (socket) => {
     socket.emit('fleet:snapshot', fleetState);

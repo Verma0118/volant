@@ -5,6 +5,7 @@ import { colors } from '../design/tokens';
 import dfwClassB from '../assets/dfwClassB';
 import DetailPanel from '../components/DetailPanel';
 import { useMissionSocket } from '../hooks/useMissionSocket';
+import { dedupeFleetRowsByTail } from '../utils/fleetDedupe';
 
 const DFW_CENTER = [-96.797, 32.776];
 const LERP = 0.32;
@@ -135,10 +136,11 @@ function FleetMap({ fleetState, socket, token }) {
   const [selectedAircraftId, setSelectedAircraftId] = useState(null);
   const lastTriggerRef = useRef(null);
 
-  const aircraftRows = useMemo(
-    () => Object.values(fleetState || {}).sort((a, b) => a.tail_number.localeCompare(b.tail_number)),
-    [fleetState]
-  );
+  const aircraftRows = useMemo(() => {
+    const list = Object.values(fleetState || {});
+    const merged = dedupeFleetRowsByTail(list);
+    return merged.sort((a, b) => a.tail_number.localeCompare(b.tail_number));
+  }, [fleetState]);
   const aircraftCount = aircraftRows.length;
   const activeMissions = useMemo(
     () =>

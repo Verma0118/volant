@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import BatteryBar from '../components/BatteryBar';
 import DetailPanel from '../components/DetailPanel';
 import StatusPill from '../components/StatusPill';
+import { dedupeFleetRowsByTail } from '../utils/fleetDedupe';
 
 const FILTERS = [
   { id: 'all', label: 'All' },
@@ -53,10 +54,11 @@ function FleetStatus({ fleetState }) {
   const [sortDirection, setSortDirection] = useState('asc');
   const [selectedAircraftId, setSelectedAircraftId] = useState(null);
 
-  const rows = useMemo(
-    () => Object.values(fleetState || {}).sort((a, b) => a.tail_number.localeCompare(b.tail_number)),
-    [fleetState]
-  );
+  const rows = useMemo(() => {
+    const list = Object.values(fleetState || {});
+    const merged = dedupeFleetRowsByTail(list);
+    return merged.sort((a, b) => a.tail_number.localeCompare(b.tail_number));
+  }, [fleetState]);
 
   const counts = useMemo(() => {
     const next = { all: rows.length };

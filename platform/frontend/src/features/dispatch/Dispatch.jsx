@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useMissionSocket } from '../../hooks/useMissionSocket';
 import { StatusPill } from '../../shared/components';
+import { dedupeFleetRowsByTail } from '../../utils/fleetDedupe';
 
 const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
 
@@ -69,13 +70,12 @@ export default function Dispatch({ socket, token, fleetState }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const clearTimerRef = useRef(null);
-  const availableAircraft = useMemo(
-    () =>
-      Object.values(fleetState || {})
-        .filter(isDispatchEligibleClient)
-        .sort((a, b) => a.tail_number.localeCompare(b.tail_number)),
-    [fleetState]
-  );
+  const availableAircraft = useMemo(() => {
+    const merged = dedupeFleetRowsByTail(Object.values(fleetState || {}));
+    return merged
+      .filter(isDispatchEligibleClient)
+      .sort((a, b) => a.tail_number.localeCompare(b.tail_number));
+  }, [fleetState]);
 
   const missionsActive = useMemo(
     () => missionsList.filter((m) => ACTIVE_MISSION_STATUSES.has(m.status)),
