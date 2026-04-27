@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { colors, fonts } from './design/tokens';
+import { useAuth } from './hooks/useAuth';
 import { useFleetSocket } from './features/realtime';
 import { FleetMap } from './features/fleet-map';
 import { FleetStatus } from './features/fleet-status';
+import { Login } from './features/auth';
+import { Dispatch } from './features/dispatch';
 import { Sidebar } from './shared/components';
 
 function applyThemeVariables() {
@@ -31,27 +34,21 @@ function applyThemeVariables() {
 
 function RouteTitle() {
   const location = useLocation();
-
   useEffect(() => {
     if (location.pathname === '/status') {
       document.title = 'Fleet Status - Volant';
       return;
     }
-
+    if (location.pathname === '/dispatch') {
+      document.title = 'Mission Dispatch - Volant';
+      return;
+    }
     document.title = 'Fleet Map - Volant';
   }, [location.pathname]);
-
   return null;
 }
 
-function App() {
-  const { fleetState, connectionState, announcement } = useFleetSocket();
-  const activeAircraftCount = Object.keys(fleetState).length;
-
-  useEffect(() => {
-    applyThemeVariables();
-  }, []);
-
+function AuthenticatedLayout({ fleetState, activeAircraftCount, connectionState, announcement, socket, token }) {
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -74,6 +71,7 @@ function App() {
             <Routes>
               <Route path="/" element={<FleetMap fleetState={fleetState} />} />
               <Route path="/status" element={<FleetStatus fleetState={fleetState} />} />
+              <Route path="/dispatch" element={<Dispatch socket={socket} token={token} />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
@@ -84,6 +82,39 @@ function App() {
         {announcement}
       </div>
     </>
+  );
+}
+
+function App() {
+  const { token, isAuthenticated } = useAuth();
+  const { fleetState, connectionState, announcement, socket } = useFleetSocket(token);
+  const activeAircraftCount = Object.keys(fleetState).length;
+
+  useEffect(() => {
+    applyThemeVariables();
+  }, []);
+
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/*"
+        element={
+          isAuthenticated ? (
+            <AuthenticatedLayout
+              fleetState={fleetState}
+              activeAircraftCount={activeAircraftCount}
+              connectionState={connectionState}
+              announcement={announcement}
+              socket={socket}
+              token={token}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+    </Routes>
   );
 }
 

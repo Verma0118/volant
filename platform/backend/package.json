@@ -12,6 +12,7 @@
     "migrate:down": "DATABASE_URL=${DATABASE_URL:-postgres://postgres:change_me_before_deploy@localhost:5432/volant} node-pg-migrate down -m \"migrations/*.js\" --use-glob --check-order false",
     "seed": "node src/seed.js",
     "simulator": "node simulator/index.js",
+    "worker": "node src/workers/missionWorker.js",
     "telemetry:watch": "node scripts/watchTelemetry.js",
     "smoke:health": "node scripts/smokeHealth.js",
     "test": "node --test"

@@ -7,8 +7,10 @@ const { connectPostgres, resolveOperator, initSchema } = require('./db');
 const { connectRedis } = require('./redis');
 const { initSocket } = require('./socket');
 const { startFleetMap } = require('./services');
-const { authStub } = require('./middleware/auth');
-const { aircraftRoutes } = require('./routes');
+const { initMissionQueue } = require('./queues/missionQueue');
+const { worker } = require('./workers/missionWorker');
+const { authMiddleware } = require('./middleware/auth');
+const { authRoutes, aircraftRoutes, missionsRoutes } = require('./routes');
 
 const app = express();
 
@@ -27,12 +29,14 @@ app.use(
   })
 );
 app.use(express.json());
-app.use(authStub);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+app.use('/api/auth', authRoutes);
+app.use('/api', authMiddleware);
 app.use('/api/aircraft', aircraftRoutes);
+app.use('/api/missions', missionsRoutes);
 
 const server = http.createServer(app);
 initSocket(server);
@@ -43,6 +47,10 @@ async function main() {
   await initSchema();
   await connectRedis();
   await startFleetMap();
+  await initMissionQueue();
+  if (worker) {
+    console.log('Mission worker listening');
+  }
 
   server.listen(PORT, () => {
     console.log(`Express listening on :${PORT}`);

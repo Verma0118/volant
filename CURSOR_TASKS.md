@@ -791,3 +791,450 @@ Verification completed:
 Push status:
 
 - ❌ `git push` blocked by token permission: missing `workflow` scope for `.github/workflows/platform-ci.yml`.
+
+---
+
+## SLICE 2 — Mission Dispatch
+
+**Blueprint:** `Plans/slice-2-mission-dispatch.md` — read it before starting any step.
+
+---
+
+### 🔥 Slice 2 Step 1 — Schema + BullMQ Setup
+
+**Status:** `[✅] Done`
+
+**Full spec:** `Plans/slice-2-mission-dispatch.md` → Step 1
+
+**Context:** Two new migrations (missions + users tables) + BullMQ wired to existing Redis. This is pure infrastructure — no business logic yet. All later steps depend on this. Redis is already running; BullMQ connects to it via the same REDIS_URL.
+
+**What to build:**
+
+1. `backend/migrations/003_missions.js`:
+   ```js
+   exports.up = (pgm) => {
+     pgm.createTable('missions', {
+       id:              { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
+       operator_id:     { type: 'uuid', notNull: true, references: '"operators"' },
+       aircraft_id:     { type: 'uuid', references: '"aircraft"' },
+       origin_lat:      { type: 'decimal(9,6)', notNull: true },
+       origin_lng:      { type: 'decimal(9,6)', notNull: true },
+       dest_lat:        { type: 'decimal(9,6)', notNull: true },
+       dest_lng:        { type: 'decimal(9,6)', notNull: true },
+       cargo_type:      { type: 'varchar(50)' },
+       priority:        { type: 'varchar(10)', default: "'normal'" },
+       status:          { type: 'varchar(20)', default: "'queued'" },
+       conflict_reason: { type: 'text' },
+       dispatched_at:   { type: 'timestamptz', default: pgm.func('NOW()') },
+       assigned_at:     { type: 'timestamptz' },
+       completed_at:    { type: 'timestamptz' },
+     });
+     pgm.addIndex('missions', 'operator_id');
+     pgm.addIndex('missions', 'status');
+   };
+   exports.down = (pgm) => { pgm.dropTable('missions'); };
+   ```
+
+2. `backend/migrations/004_users.js`:
+   ```js
+   exports.up = (pgm) => {
+     pgm.createTable('users', {
+       id:            { type: 'uuid', primaryKey: true, default: pgm.func('gen_random_uuid()') },
+       operator_id:   { type: 'uuid', notNull: true, references: '"operators"' },
+       email:         { type: 'varchar(100)', notNull: true, unique: true },
+       password_hash: { type: 'varchar(100)', notNull: true },
+       role:          { type: 'varchar(20)', default: "'dispatcher'" },
+       created_at:    { type: 'timestamptz', default: pgm.func('NOW()') },
+     });
+   };
+   exports.down = (pgm) => { pgm.dropTable('users'); };
+   ```
+
+3. Install BullMQ:
+   ```bash
+   cd platform/backend && npm install bullmq
+   ```
+
+4. `backend/src/queues/missionQueue.js`:
+   ```js
+   const { Queue } = require('bullmq');
+   const { REDIS_URL } = require('../config');
+
+   // BullMQ needs host/port/password separately — parse from REDIS_URL
+   // REDIS_URL format: redis://:password@host:port
+   function parseRedisUrl(url) {
+     const u = new URL(url);
+     return {
+       host: u.hostname,
+       port: Number(u.port) || 6379,
+       password: u.password || undefined,
+     };
+   }
+
+   const connection = parseRedisUrl(REDIS_URL);
+   const missionQueue = new Queue('missions', { connection });
+
+   async function initMissionQueue() {
+     await missionQueue.waitUntilReady();
+     console.log('Mission queue ready');
+   }
+
+   module.exports = { missionQueue, initMissionQueue };
+   ```
+
+5. `backend/src/workers/missionWorker.js` (shell only — full logic in Step 6):
+   ```js
+   const { Worker } = require('bullmq');
+   const { REDIS_URL } = require('../config');
+
+   function parseRedisUrl(url) {
+     const u = new URL(url);
+     return { host: u.hostname, port: Number(u.port) || 6379, password: u.password || undefined };
+   }
+
+   const worker = new Worker('missions', async (job) => {
+     console.log(`Mission job received: ${job.id}`, job.data);
+     // Full state machine implemented in Step 6
+   }, { connection: parseRedisUrl(REDIS_URL) });
+
+   worker.on('completed', (job) => console.log(`Mission job completed: ${job.id}`));
+   worker.on('failed', (job, err) => console.error(`Mission job failed: ${job.id}`, err.message));
+
+   module.exports = { worker };
+   ```
+
+6. `backend/src/index.js` — call `initMissionQueue()` in startup sequence after `startFleetMap()`:
+   ```js
+   const { initMissionQueue } = require('./queues/missionQueue');
+   const { worker } = require('./workers/missionWorker');
+   // ...
+   await initMissionQueue();
+   // worker auto-starts on require — just log it
+   console.log('Mission worker listening');
+   ```
+
+7. Add to `backend/package.json` scripts:
+   ```json
+   "worker": "node src/workers/missionWorker.js"
+   ```
+
+**Exit criteria:**
+```bash
+cd platform/backend && npm run migrate
+# → 003_missions applied, no errors
+# → 004_users applied, no errors
+
+npm run dev
+# → "PostgreSQL connected"
+# → "Operator: Volant Demo Ops (...)"
+# → "Redis connected"
+# → "Fleet Map Service started"
+# → "Mission queue ready"
+# → "Mission worker listening"
+# → "Express listening on :3001"
+
+# Verify tables exist
+docker exec volant-postgres psql -U postgres -d volant -c "\dt"
+# → operators, aircraft, missions, users all listed
+
+# Verify BullMQ keys in Redis
+docker exec volant-redis redis-cli -a change_me_before_deploy KEYS "bull:*"
+# → bull:missions:* keys appear (may be empty list if no jobs yet — that's fine)
+```
+
+**Completion checklist:**
+```
+[x] 003_missions migration clean
+[x] 004_users migration clean
+[x] bullmq installed (package.json updated)
+[x] missionQueue.js created + parseRedisUrl helper
+[x] missionWorker.js shell created
+[x] initMissionQueue() called in startup — "Mission queue ready" logged
+[x] worker imported in index.js — "Mission worker listening" logged
+[x] all 5 logs appear on npm run dev
+```
+
+✅ **Implementation notes (Apr 27):**
+- Added migrations `platform/backend/migrations/003_missions.js` and `platform/backend/migrations/004_users.js` with proper FK constraints and indexes (`missions.operator_id`, `missions.status`).
+- Installed `bullmq` and added queue bootstrap in `platform/backend/src/queues/missionQueue.js` with a shared `parseRedisUrl()` helper.
+- Added worker shell in `platform/backend/src/workers/missionWorker.js` with `received/completed/failed` logging hooks (state machine remains for Step 6).
+- Wired mission queue startup into `platform/backend/src/index.js` after Fleet Map service startup and confirmed worker listener log.
+- Added backend script `worker` in `platform/backend/package.json`.
+
+✅ **Terminal proof (latest):**
+```bash
+cd /Users/aarav/Desktop/Volant/platform/backend && npm run migrate
+# → 003_missions applied
+# → 004_users applied
+
+cd /Users/aarav/Desktop/Volant/platform/backend && npm run dev
+# PostgreSQL connected
+# Operator: Volant Demo Ops (00000000-0000-0000-0000-000000000001)
+# Redis connected
+# Fleet Map Service started — subscribed to telemetry:update
+# Mission queue ready
+# Mission worker listening
+# Express listening on :3001
+
+cd /Users/aarav/Desktop/Volant && docker exec volant-postgres psql -U postgres -d volant -c "\dt"
+# → aircraft, operators, missions, users
+
+cd /Users/aarav/Desktop/Volant && docker exec volant-redis redis-cli -a change_me_before_deploy KEYS "bull:*"
+# → bull:missions:stalled-check
+# → bull:missions:meta
+```
+
+---
+
+### 🔥 Slice 2 Step 7 — Dispatch UI (Login + Dispatch View + Mission Queue)
+
+**Status:** `[✅] Done — implemented by Claude Code (Apr 27)`
+
+**Full spec:** `Plans/slice-2-mission-dispatch.md` → Step 7
+
+**Context:** Backend Steps 1-6 are done. Auth hook (`useAuth.js`) already exists. This step wires the frontend: login page, auth guard, dispatch form, live mission queue. Match the existing feature module structure — `features/fleet-map`, `features/fleet-status`, `features/realtime` are the pattern to follow.
+
+---
+
+**Backend security fix (do this first, 2 min):**
+
+In `backend/src/repositories/missionRepository.js`, add JSDoc above `getMissionByIdAnyOperator`:
+```js
+/**
+ * Internal use only — worker context, no user input reaches this.
+ * Routes must use getMissionById(id, operatorId) for operator-scoped access.
+ */
+async function getMissionByIdAnyOperator(id) {
+```
+
+---
+
+**What to build:**
+
+**1. `frontend/src/features/auth/` feature module**
+
+`frontend/src/features/auth/Login.jsx`:
+```jsx
+// Full login page — renders outside the layout shell (no sidebar, no top-bar)
+// Uses useAuth() hook from hooks/useAuth.js
+// On successful login: navigate to '/'
+// On failure: show inline error below the form (not a modal, not an alert)
+```
+
+Requirements:
+- `<form>` with `onSubmit`, not a button click handler
+- Each input has a `<label>` with `htmlFor` matching input `id` — no placeholder-only labels
+- Error message has `role="alert"` so screen readers announce it without focus move
+- Submit button shows "Signing in…" and is `disabled` while request is in-flight
+- No redirect loop: if already `isAuthenticated`, redirect to `/` immediately (check on mount)
+- Title: `document.title = 'Sign In - Volant'`
+
+`frontend/src/features/auth/index.js` — barrel export:
+```js
+export { default as Login } from './Login';
+```
+
+---
+
+**2. Auth guard in `App.jsx`**
+
+Update `App.jsx`:
+- Import `useAuth` from `hooks/useAuth`
+- Pass `token` to `useFleetSocket` (it needs to send it in Socket.io handshake — see point 4 below)
+- Add `/login` route outside the layout shell (no sidebar)
+- Auth guard: if `!isAuthenticated` and path !== `/login`, redirect to `/login`
+
+```jsx
+// Route structure:
+<Routes>
+  <Route path="/login" element={<Login />} />
+  <Route path="/*" element={
+    isAuthenticated
+      ? <AuthenticatedLayout fleetState={fleetState} activeAircraftCount={activeAircraftCount} connectionState={connectionState} announcement={announcement} />
+      : <Navigate to="/login" replace />
+  } />
+</Routes>
+```
+
+Extract `AuthenticatedLayout` as a local component in `App.jsx` (sidebar + top-bar + routes). Do not create a separate file — keep it in App.jsx.
+
+---
+
+**3. Socket.io token handshake**
+
+Update `frontend/src/features/realtime/index.js` (or `hooks/useFleetSocket.js` — wherever `io()` is called):
+- Pass `auth: { token }` in the socket options
+- Accept `token` as a parameter: `useFleetSocket(token)`
+- App.jsx passes `token` from `useAuth()`
+
+```js
+const socket = io(SOCKET_URL, {
+  transports: ['websocket'],
+  auth: { token },   // ← add this
+  reconnection: true,
+  ...
+});
+```
+
+---
+
+**4. `frontend/src/hooks/useMissionSocket.js`**
+
+```js
+// Subscribes to 'mission:update' Socket.io events
+// Returns: missionsState (object map: mission_id → mission object)
+// On 'mission:update': upsert into missionsState
+// On socket reconnect: re-request missions via GET /api/missions and repopulate state
+// Accepts: socket instance (passed from parent, not created here — reuse existing connection)
+```
+
+Shape of each mission object in state:
+```js
+{
+  mission_id, status, aircraft_id, tail_number,
+  priority, cargo_type, conflict_reason,
+  dispatched_at, assigned_at, completed_at
+}
+```
+
+---
+
+**5. `frontend/src/features/dispatch/` feature module**
+
+`frontend/src/features/dispatch/Dispatch.jsx` — two-panel layout:
+
+**Left panel — Mission Creation Form:**
+- Heading: "New Mission" (`<h2>`)
+- Fields (all `<label>` + `<input>` pairs, no placeholder-only labels):
+  - Origin Lat / Origin Lng — `type="number"`, `step="0.0001"`, `min`/`max` for DFW region
+  - Dest Lat / Dest Lng — same
+  - Cargo Type — `<select>`: medical | package | inspection | passenger
+  - Priority — `<select>`: urgent | normal | low
+- "Dispatch Mission" `<button type="submit">` — disabled while submitting
+- On submit: `POST /api/missions` with `Authorization: Bearer <token>` header
+- Success state: green inline confirmation "Mission dispatched — N308VL assigned" (clear after 4s)
+- Error state: red inline error with `role="alert"` — show conflict reason or generic error
+- Quick-fill buttons for demo: "DFW → Downtown Dallas" and "Love Field → Alliance" — pre-fill lat/lng fields with real DFW coordinates
+
+**Right panel — Mission Queue:**
+- Heading: "Active Missions" (`<h2>`)
+- List (`<ul>`) of mission cards, newest first
+- Each card shows: tail number (JetBrains Mono), StatusPill, priority badge, cargo type, relative time ("2m ago")
+- Empty state: "No active missions — dispatch one to get started"
+- Live updates via `useMissionSocket` — `aria-live="polite"` on the list container so screen readers announce new missions
+- On initial load: `GET /api/missions` to populate (in case page refreshed mid-session)
+
+`frontend/src/features/dispatch/index.js`:
+```js
+export { default as Dispatch } from './Dispatch';
+```
+
+---
+
+**6. Update `Sidebar.jsx` — unlock Mission Dispatch**
+
+Change `LOCKED_ITEMS` — remove `'Mission Dispatch'` from the locked list, add it as a real `<NavLink to="/dispatch">`:
+```jsx
+<li>
+  <NavLink to="/dispatch" className="sidebar-link">
+    Mission Dispatch
+  </NavLink>
+</li>
+```
+
+Keep `Maintenance` and `Analytics` locked.
+
+---
+
+**7. Update `App.jsx` routing — add `/dispatch` and `/login`**
+
+Inside `AuthenticatedLayout` routes:
+```jsx
+<Route path="/" element={<FleetMap fleetState={fleetState} />} />
+<Route path="/status" element={<FleetStatus fleetState={fleetState} />} />
+<Route path="/dispatch" element={<Dispatch token={token} />} />
+<Route path="*" element={<Navigate to="/" replace />} />
+```
+
+Update `RouteTitle` effect to handle `/dispatch`:
+```js
+if (location.pathname === '/dispatch') {
+  document.title = 'Mission Dispatch - Volant';
+  return;
+}
+```
+
+---
+
+**Accessibility requirements (WCAG AA — mandatory):**
+
+Login form:
+- `<form>` element with descriptive `aria-labelledby` pointing to page heading
+- All inputs: explicit `<label htmlFor>`, never placeholder as label substitute
+- Error: `role="alert"`, rendered in DOM (not conditional unmount — use empty string), focused or announced via live region
+- Submit button: `aria-busy="true"` while in-flight
+
+Dispatch form:
+- Same label/input pairing rules as login
+- Success/error messages: `role="alert"` with `aria-live="assertive"` for errors, `"polite"` for success
+- Quick-fill buttons: clear accessible name ("Pre-fill: DFW Airport → Downtown Dallas")
+- `<fieldset>` + `<legend>` grouping for origin fields and destination fields separately
+
+Mission queue:
+- `<ul>` with `aria-label="Active missions"` and `aria-live="polite"` — new cards announced
+- Each card: `<li>` with readable content order (status first, then tail number, then time)
+- Relative time ("2m ago") updates: use `<time datetime="ISO-string">` element
+- Empty state: not hidden with `display:none` — render with `aria-label` intact
+
+Color contrast:
+- All status colors against `#0a0e1a` background must meet 4.5:1 — verify `#22c55e` (green), `#f59e0b` (amber), `#3b82f6` (blue), `#ef4444` (red) all pass
+- Priority "urgent" label: if red text used, must be 4.5:1 against panel background
+
+---
+
+**Exit criteria:**
+```bash
+# Frontend build clean
+cd platform/frontend && npm run build
+# → ✓ built, 0 errors, 0 warnings about missing exports
+
+# Login flow
+# 1. Open http://localhost:5173 → redirects to /login (not authenticated)
+# 2. Enter dispatcher@volant.demo / dispatch123 → redirects to /
+# 3. Sidebar shows "Mission Dispatch" as clickable (not locked)
+# 4. Navigate to /dispatch → form + empty queue visible
+
+# Dispatch flow
+# 1. Click "DFW → Downtown Dallas" quick-fill → lat/lng fields populate
+# 2. Click "Dispatch Mission" → success message appears with tail number
+# 3. Mission card appears in right panel with status "assigned"
+# 4. Card status updates live to "in-flight" within seconds (no refresh)
+# 5. Card status updates to "completed" after flight time elapses
+
+# Socket auth
+# Open browser devtools → Network → WS → check handshake has auth token
+# Backend terminal → "Socket connected: <id>" appears after login
+```
+
+**Completion checklist:**
+```
+[x] features/auth/Login.jsx — form with label/input pairs, role="alert" error, disabled submit
+[x] features/auth/index.js — barrel export
+[x] features/dispatch/Dispatch.jsx — two-panel, form + queue, useMissionSocket wired
+[x] features/dispatch/index.js — barrel export
+[x] hooks/useMissionSocket.js — mission:update subscription, initial GET /api/missions load (Cursor)
+[x] useFleetSocket accepts token param, passes in Socket.io auth handshake (Cursor)
+[x] App.jsx — /login route outside shell, auth guard, /dispatch route added
+[x] Sidebar.jsx — Mission Dispatch unlocked, links to /dispatch
+[x] RouteTitle handles /dispatch
+[x] missionRepository.js — JSDoc comment added to getMissionByIdAnyOperator (Cursor)
+[x] frontend build clean (vite build ✓, 0 errors)
+[ ] full dispatch flow works end-to-end without page refresh (needs live test with backend)
+```
+
+✅ **Implementation notes (Apr 27 — Claude Code):**
+- `features/auth/Login.jsx`: full-page login outside layout shell. Accessible: explicit label/input pairs, `role="alert"` error always in DOM (not unmounted), `aria-busy` on submit, redirect guard on mount.
+- `features/dispatch/Dispatch.jsx`: two-panel layout. Left: form with `<fieldset>`+`<legend>` for origin/dest coordinate pairs, quick-fill buttons with full `aria-label`, assertive live region for errors, polite for success (auto-clears 4s). Right: `aria-live="polite"` mission queue `<ul>`, always in DOM, empty state as `<li>`.
+- `App.jsx`: `useAuth()` → token + isAuthenticated. `useFleetSocket(token)` → socket passed to Dispatch for mission socket reuse. `/login` route outside `AuthenticatedLayout`. Auth guard redirects unauthenticated users. `RouteTitle` handles `/dispatch`.
+- `Sidebar.jsx`: Mission Dispatch removed from LOCKED_ITEMS, added as `<NavLink to="/dispatch">`.
+- `index.css`: added shared form primitives (`.btn-primary`, `.btn-secondary`, `.form-field`, `.field-input`, `.field-select`), login page styles, dispatch layout + panel styles, mission queue + priority badge styles.

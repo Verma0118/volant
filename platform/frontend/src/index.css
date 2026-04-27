@@ -761,3 +761,334 @@ main:focus {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* ── Shared form primitives ── */
+
+.btn-primary {
+  background: var(--color-accent);
+  border: none;
+  border-radius: 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.6rem 1.1rem;
+  transition: opacity 150ms ease;
+  width: 100%;
+}
+
+.btn-primary:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.btn-primary:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--color-bg-border);
+  border-radius: 0.45rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-text-primary);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.btn-sm {
+  font-size: 0.8rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.form-field {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.field-label {
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.field-input {
+  appearance: none;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 0.45rem;
+  color: var(--color-text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.92rem;
+  padding: 0.5rem 0.65rem;
+  transition: border-color 120ms ease;
+  width: 100%;
+}
+
+.field-input:focus {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
+.field-input--mono {
+  font-family: var(--font-data);
+  font-size: 0.88rem;
+}
+
+.field-select {
+  cursor: pointer;
+}
+
+/* ── Login page ── */
+
+.login-shell {
+  align-items: center;
+  background: var(--color-bg-primary);
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.login-card {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 1rem;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 380px;
+}
+
+.login-logo {
+  color: var(--color-accent);
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+}
+
+.login-sub {
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  margin: 0 0 1.5rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.login-error {
+  color: var(--color-status-grounded);
+  font-size: 0.85rem;
+  margin: 0;
+  min-height: 1.2em;
+}
+
+.login-hint {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  margin: 1.2rem 0 0;
+}
+
+.login-hint code {
+  color: var(--color-text-secondary);
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+}
+
+/* ── Dispatch view ── */
+
+.dispatch-layout {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 380px 1fr;
+}
+
+@media (max-width: 860px) {
+  .dispatch-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dispatch-panel {
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+}
+
+.panel-heading {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.dispatch-quick-fills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.dispatch-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-fieldset {
+  border: 1px solid var(--color-bg-border);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem 0.75rem;
+}
+
+.fieldset-legend {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.field-row {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.dispatch-success {
+  color: var(--color-status-inflight);
+  font-size: 0.85rem;
+  margin: 0;
+  min-height: 1.2em;
+}
+
+.dispatch-error {
+  color: var(--color-status-grounded);
+  font-size: 0.85rem;
+  margin: 0;
+  min-height: 1.2em;
+}
+
+/* ── Mission queue ── */
+
+.dispatch-queue-panel {
+  min-height: 300px;
+}
+
+.mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.queue-empty {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+  padding: 0.75rem 0;
+}
+
+.mission-card {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-bg-border);
+  border-radius: 0.55rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.65rem 0.75rem;
+}
+
+.mission-card__top {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mission-card__bottom {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.mission-tail {
+  color: var(--color-text-primary);
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+
+.mission-cargo {
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.mission-time {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  margin-left: auto;
+}
+
+.mission-conflict {
+  color: var(--color-status-grounded);
+  font-size: 0.78rem;
+}
+
+.priority-badge {
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.15rem 0.45rem;
+  text-transform: uppercase;
+}
+
+.priority-badge--urgent {
+  background: color-mix(in srgb, var(--color-status-grounded) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-status-grounded) 35%, transparent);
+  color: #fca5a5;
+}
+
+.priority-badge--normal {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  color: #93c5fd;
+}
+
+.priority-badge--low {
+  background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-text-muted) 30%, transparent);
+  color: var(--color-text-secondary);
+}

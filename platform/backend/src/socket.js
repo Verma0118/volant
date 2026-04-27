@@ -1,4 +1,5 @@
 const { Server } = require('socket.io');
+const { verifyAccessToken } = require('./middleware/auth');
 
 let io;
 
@@ -18,6 +19,22 @@ function initSocket(httpServer) {
     },
   });
 
+  io.use((socket, next) => {
+    const token = socket.handshake?.auth?.token;
+    if (!token) {
+      next(new Error('No token'));
+      return;
+    }
+
+    try {
+      const payload = verifyAccessToken(token);
+      socket.data.user = payload;
+      next();
+    } catch (_err) {
+      next(new Error('Invalid token'));
+    }
+  });
+
   io.on('connection', (socket) => {
     console.log(`Socket connected: ${socket.id} (${io.engine.clientsCount} total)`);
     socket.on('disconnect', () => {
@@ -35,7 +52,12 @@ function getIO() {
   return io;
 }
 
+function emitMissionUpdate(payload) {
+  getIO().emit('mission:update', payload);
+}
+
 module.exports = {
   initSocket,
   getIO,
+  emitMissionUpdate,
 };

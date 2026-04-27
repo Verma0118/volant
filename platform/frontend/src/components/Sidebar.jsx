@@ -1,7 +1,6 @@
 import { NavLink } from 'react-router-dom';
 
 const LOCKED_ITEMS = [
-  'Mission Dispatch',
   'Maintenance',
   'Analytics',
 ];
@@ -22,6 +21,11 @@ function Sidebar({ activeAircraftCount }) {
             <li>
               <NavLink to="/status" className="sidebar-link">
                 Fleet Status
+              </NavLink>
+            </li>
+            <li>
+              <NavLink to="/dispatch" className="sidebar-link">
+                Mission Dispatch
               </NavLink>
             </li>
             {LOCKED_ITEMS.map((label) => (
