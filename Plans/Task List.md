@@ -6,7 +6,7 @@ tags: [tasks, priorities, slice-1]
 
 # Volant Task List
 
-_Last updated: Apr 27, 2026 16:35 CDT_
+_Last updated: Apr 27, 2026 18:00 CDT_
 
 ---
 
@@ -58,9 +58,9 @@ _Last updated: Apr 27, 2026 16:35 CDT_
 - [x] **Slice 2 Step 7** — Dispatch UI (login view + dispatch form + mission queue) ✅ _(Cursor + Claude, Apr 27)_
 - [x] **Slice 2 Step 8** — Mission map overlay (selected-aircraft route focus + mission path) ✅ _(Cursor, Apr 27)_
 - [x] **Slice 2 Step 9** — Demo scenario update (dispatch sequence in npm run demo) ✅ _(Cursor, Apr 27)_
-  - One-command verify scripts + backend smoke health script
-- [ ] **Slice 2 kickoff** — Mission Dispatch planning + implementation brief
-- [ ] **Frontend bundle-size optimization (non-blocking)** — split/lazy-load heavy frontend chunks after hardening pass
+- [x] **Slice 3 Step 1** — Maintenance schema (migration 006) + `maintenance_events` / `maintenance_due` ✅ _(Cursor, Apr 27)_
+- [ ] **Slice 3 Step 2** — Accrue flight minutes on completed missions (idempotent) 🔥
+- [ ] **Frontend bundle-size optimization (non-blocking)** — split/lazy-load heavy frontend chunks
 
 ### Claude Handoff — Finish Slice 2 Step 7 (Dispatch UI)
 
@@ -91,9 +91,8 @@ _Last updated: Apr 27, 2026 16:35 CDT_
 
 ## Up Next (in order)
 
-- [ ] Slice 2 Step 1 — Mission Dispatch architecture + queue model
-- [ ] Slice 2 Step 2 — Dispatch API + assignment logic
-- [ ] Slice 2 Step 3 — Dispatch UI workflow in dashboard
+- [ ] **Slice 3** — Maintenance Tracker (see `Plans/slice-3-maintenance-tracker.md`, `CURSOR_TASKS.md`)
+- [ ] **Slice 4** — Compliance log (FAA / LAANC) — after Slice 3 core
 - [ ] Frontend route-level code-splitting (`FleetMap` / `FleetStatus`) to reduce main bundle
 
 ---
@@ -107,10 +106,10 @@ _Last updated: Apr 27, 2026 16:35 CDT_
 
 ---
 
-## Someday / Slice 2+
+## Someday / Slice 4+
 
-- [ ] Slice 2 — Mission Dispatch (BullMQ, deconfliction, aircraft assignment)
-- [ ] Slice 3 — Maintenance Tracker (flight hours, battery cycles, work orders)
+- [x] Slice 2 — Mission Dispatch (BullMQ, deconfliction, aircraft assignment) — **done**
+- [ ] Slice 3 — Maintenance Tracker (in progress — blueprint `Plans/slice-3-maintenance-tracker.md`)
 - [ ] Slice 4 — Compliance Log (FAA Part 135/107, LAANC automation)
 - [ ] Slice 5 — Analytics (cost per flight hour, utilization, fleet revenue)
 - [ ] Real auth layer (JWT + login UI) — Slice 2

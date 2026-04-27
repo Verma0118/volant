@@ -5,7 +5,7 @@ const SOCKET_URL = `${window.location.protocol}//${window.location.hostname}:300
 const MAX_RECONNECT_DELAY_MS = 10000;
 
 export function useFleetSocket(token) {
-  const socketRef = useRef(null);
+  const [activeSocket, setActiveSocket] = useState(null);
   const [fleetState, setFleetState] = useState({});
   const [connectionState, setConnectionState] = useState(
     token ? 'connecting' : 'unauthenticated'
@@ -23,10 +23,13 @@ export function useFleetSocket(token) {
     if (!token) {
       pendingUpdatesRef.current.clear();
       flushScheduledRef.current = false;
-      setFleetState({});
-      setConnectionState('unauthenticated');
-      setAnnouncement('Sign in to connect telemetry.');
-      setCriticalAnnouncement('');
+      queueMicrotask(() => {
+        setActiveSocket(null);
+        setFleetState({});
+        setConnectionState('unauthenticated');
+        setAnnouncement('Sign in to connect telemetry.');
+        setCriticalAnnouncement('');
+      });
       return undefined;
     }
 
@@ -64,7 +67,9 @@ export function useFleetSocket(token) {
       reconnectionDelayMax: MAX_RECONNECT_DELAY_MS,
       timeout: 8000,
     });
-    socketRef.current = socket;
+    queueMicrotask(() => {
+      setActiveSocket(socket);
+    });
 
     socket.on('connect', () => {
       setConnectionState('connected');
@@ -100,7 +105,9 @@ export function useFleetSocket(token) {
     });
 
     return () => {
-      socketRef.current = null;
+      queueMicrotask(() => {
+        setActiveSocket(null);
+      });
       socket.removeAllListeners();
       socket.close();
     };
@@ -131,6 +138,6 @@ export function useFleetSocket(token) {
     connectionState,
     announcement,
     criticalAnnouncement,
-    socket: socketRef.current,
+    socket: activeSocket,
   };
 }

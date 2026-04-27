@@ -16,7 +16,45 @@
 
 ---
 
-## ACTIVE TASK
+## SLICE 3 — Maintenance Tracker (active)
+
+**Blueprint:** `Plans/slice-3-maintenance-tracker.md`
+
+### Slice 3 Step 1 — Schema (migration `006`)
+
+**Status:** `[✅] Done`
+
+**What to build**
+
+1. **`platform/backend/migrations/006_maintenance.js`**
+   - `ALTER` `aircraft` add (if not present): `total_flight_minutes` `numeric(12,2)` default `0`, `battery_cycle_count` int default `0`, `last_maintenance_at` `timestamptz` nullable.
+   - Table `maintenance_events`: `id` uuid PK, `operator_id` uuid not null → `operators`, `aircraft_id` uuid not null → `aircraft`, `event_type` varchar(20) not null, `summary` varchar(200) not null, `details` text, `performed_at` `timestamptz` not null default `now()`, `recorded_by` uuid null → `users`, `created_at` `timestamptz` default `now()`. Indexes on `operator_id`, `aircraft_id`.
+   - Table `maintenance_due`: `id` uuid PK, `operator_id`, `aircraft_id`, `kind` varchar(20) not null, `label` varchar(200), `due_at` `timestamptz` nullable, `due_after_minutes` int nullable, `created_at` `timestamptz` default `now()`. Indexes on `operator_id`, `aircraft_id`.
+
+2. **Down migrations** must drop new tables and remove new columns safely.
+
+3. **Verify:** `cd platform/backend && npm run migrate` — `006_maintenance` applied; `\d aircraft` shows new columns; new tables list in `\dt`.
+
+**Exit criteria**
+
+- `npm run verify` (from `platform/`) still passes after migration against a migrated DB.
+- No application code change required in Step 1 beyond migration; worker/API come in Step 2+.
+
+**When done:** mark `[✅] Done` here + short notes; commit `feat(slice-3): maintenance schema migration 006`.
+
+✅ **Done (Apr 27):** Added `migrations/006_maintenance.js` — `aircraft` columns `total_flight_minutes`, `battery_cycle_count`, `last_maintenance_at`; new tables `maintenance_events`, `maintenance_due` with operator/aircraft indexes. Local `npm run migrate` applied `006_maintenance` successfully. Next: Step 2 accrual on mission `completed` in `missionWorker`.
+
+### Slice 3 Step 2 — Flight-minute accrual (next)
+
+**Status:** `[ ] Not started`
+
+- On transition to `completed`, add mission flight duration (same estimate as worker / `estimateFlightDurationMs` → minutes) to `aircraft.total_flight_minutes` in an **idempotent** way (e.g. only if mission not already counted — `missions` column `maintenance_minutes_applied` or a `maintenance_accrual` ledger row).
+- Keep `operator_id` scoping; unit test the accrual helper.
+- **Exit:** `npm run verify` + one backend test for idempotency.
+
+---
+
+## ACTIVE TASK (archive — prior slices)
 
 ### 🔥 Step 1 — Repo Scaffold + Dev Environment
 
@@ -1229,7 +1267,7 @@ cd platform/frontend && npm run build
 [x] RouteTitle handles /dispatch
 [x] missionRepository.js — JSDoc comment added to getMissionByIdAnyOperator (Cursor)
 [x] frontend build clean (vite build ✓, 0 errors)
-[ ] full dispatch flow works end-to-end without page refresh (needs live test with backend)
+[x] full dispatch flow works end-to-end without page refresh (verified Apr 27)
 ```
 
 ✅ **Implementation notes (Apr 27 — Claude Code):**

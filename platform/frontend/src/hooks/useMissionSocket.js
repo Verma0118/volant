@@ -34,7 +34,9 @@ export function useMissionSocket(socket, token) {
 
   useEffect(() => {
     if (!token) {
-      setMissionsState({});
+      queueMicrotask(() => {
+        setMissionsState({});
+      });
       return undefined;
     }
 
@@ -48,7 +50,7 @@ export function useMissionSocket(socket, token) {
           return;
         }
         setMissionsState(toMissionMap(payload));
-      } catch (_err) {
+      } catch {
         // Ignore transient network failures.
       }
     }

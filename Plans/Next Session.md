@@ -1,9 +1,9 @@
 ---
-date: 2026-04-26
+date: 2026-04-27
 type: context-brief
-active_blueprint: Plans/slice-2-mission-dispatch.md
-active_slice: 2
-tags: [next-session, build, slice-2]
+active_blueprint: Plans/slice-3-maintenance-tracker.md
+active_slice: 3
+tags: [next-session, build, slice-3]
 ---
 
 # Next Session — Context Brief
@@ -14,12 +14,13 @@ tags: [next-session, build, slice-2]
 
 ## First Action
 
-Slice 1 is complete and hardened. Slice 2 blueprint is written (`Plans/slice-2-mission-dispatch.md`). Step 1 is briefed in `CURSOR_TASKS.md`. First action next session:
+Slice 2 (Mission Dispatch) is complete. **Slice 3** blueprint: `Plans/slice-3-maintenance-tracker.md`. Cursor work is briefed in `CURSOR_TASKS.md` under **Slice 3 — Maintenance Tracker**.
 
-1. Check `CURSOR_TASKS.md` — see if Cursor completed Slice 2 Step 1 (schema + BullMQ).
-2. If ✅: review migrations + queue startup, then brief Step 2 (Assignment Engine) + Step 3 (Deconfliction) — these are independent, brief both so Cursor can parallelize.
-3. If not done: wait, no need to re-brief.
-3. Start Slice 2 Step 1 implementation.
+1. Open `CURSOR_TASKS.md` — **Slice 3 Step 1** (migration `006`) is done; start **Step 2** (flight-minute accrual on mission `completed`, idempotent per mission id).
+2. Use `missionWorker` + `missionRepository` + new `aircraft` columns; avoid double-counting if worker retries a job.
+3. Do not block on Timescale — Step 1 is plain PostgreSQL only.
+
+**Non-blocking:** frontend bundle size warning on `npm run build` — lazy-load Mapbox route after Slice 3 foundation is in.
 
 **Recent hardening commits (for Claude context):**
 - `148112e` — repo standards + verify workflow + CI scaffold
@@ -35,36 +36,32 @@ Slice 1 is complete and hardened. Slice 2 blueprint is written (`Plans/slice-2-m
 
 ## Active Blueprint
 
-**File:** `Plans/slice-1-fleet-overview.md` (completed; now in stabilization + handoff mode)
+**File:** `Plans/slice-3-maintenance-tracker.md`  
 **Print this table at startup:**
 
-| Step | What | Skills |
-|------|------|--------|
-| 1 | Repo scaffold + dev env (Docker Compose, Vite + React skeleton) | `search-first` |
-| 1.5 | Auth stub + tenancy schema (`operator_id`, `node-pg-migrate`) | — |
-| 2 | PostgreSQL schema + aircraft registry (10 seeded aircraft, N-numbers) | `search-first` |
-| 3 | Telemetry simulator (DFW routes, battery drain, `DEMO_MODE` flag) | `search-first` |
-| 4 | Fleet Map Service (Redis → in-memory state → Socket.io broadcast) | `search-first` |
-| 5 | REST API (`GET /api/aircraft`, operator-scoped) | — |
-| 6 | Frontend scaffold + design system (tokens.js, dark aerospace, CSS vars) | `search-first` + `ui-ux-pro-max` |
-| 7 | Sidebar + nav shell (5 items, Slices 2–5 locked, live count) | `ui-ux-pro-max` |
-| 8 | Live Fleet Map view (Mapbox GL JS, GeoJSON layer, interpolation, FAA overlay) | `search-first` + `ui-ux-pro-max` |
-| 9 | Aircraft detail panel (slide-in 320px, live battery, all fields) | `ui-ux-pro-max` |
-| 10 | Fleet Status table (sortable, filterable, live row sync) | `ui-ux-pro-max` |
-| 11 | Demo scenario (`npm run demo`, scripted 90s DFW story) | `product-lens` |
-| 12 | README + setup (5-min cold start, screenshot) | — |
+| Step | What |
+|------|------|
+| 1 | Schema — `aircraft` maintenance columns, `maintenance_events`, `maintenance_due` (migration `006`) |
+| 2 | Accrual — completed missions add flight minutes to `aircraft` (idempotent) |
+| 3 | Battery / cycles (MVP) — cycle count rules or manual API |
+| 4 | REST — maintenance events + summaries, operator-scoped |
+| 5 | UI — `/maintenance` + sidebar unlock |
+| 6 | (Optional) Timescale battery history |
+| 7 | Demo — show hours/events in `npm run demo` story |
 
-Full step details with tasks, verification commands, and exit criteria: `Plans/slice-1-fleet-overview.md`
+Full narrative + invariants: `Plans/slice-3-maintenance-tracker.md`
 
 ---
 
 ## Where Aarav Wants to Take This
 
-**Immediate:** Build Slice 1 → working Fleet Overview prototype → demo to Archer contacts + drone operators.
+**Done:** Slices 1–2 (Fleet Overview + Mission Dispatch) ship in `platform/`.
 
-**Then Slice 2:** Mission Dispatch — assign aircraft, deconfliction, BullMQ queue.
+**Immediate (Slice 3):** Maintenance Tracker — hours, events, due items.
 
-**Vision:** All 5 slices = Volant v1 MVP. A complete fleet ops platform a drone operator pays $200–500/aircraft/month for today, scales to eVTOL as Archer and Joby begin commercial ops.
+**Then:** Slice 4 Compliance, Slice 5 Analytics (see `Product/MVP Slices.md`).
+
+**Vision:** All 5 slices = Volant v1 MVP — full fleet ops for drone operators now, eVTOL later.
 
 **Hackathon:** Claude Opus 4.7 hackathon application submitted — pending approval. If approved, Slice 1 IS the hackathon submission. Claude Code builds the full stack, Aarav is the aviation domain expert.
 
