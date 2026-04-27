@@ -11,6 +11,7 @@ const {
   estimateFlightDurationMs,
   toMissionUpdatePayload,
 } = require('./missionWorkerHelpers');
+const { setMissionPath, clearMissionPath } = require('../services/missionPathRedis');
 
 function delay(ms) {
   return new Promise((resolve) => {
@@ -87,12 +88,29 @@ async function processMissionJob(job) {
     destLat,
     destLng,
   });
+
+  const cur = fleetState[aircraftId];
+  const startLat =
+    cur && Number.isFinite(Number(cur.lat)) ? Number(cur.lat) : Number(originLat);
+  const startLng =
+    cur && Number.isFinite(Number(cur.lng)) ? Number(cur.lng) : Number(originLng);
+
+  await setMissionPath(String(aircraftId), {
+    startLat,
+    startLng,
+    endLat: Number(destLat),
+    endLng: Number(destLng),
+    startMs: Date.now(),
+    durationMs: flightDurationMs,
+  });
+
   await delay(flightDurationMs);
 
   await updateMissionStatus(missionId, effectiveOperatorId, 'completed', {
     completed_at: new Date(),
   });
   updateFleetAircraftStatus(aircraftId, 'charging');
+  await clearMissionPath(String(aircraftId), 'charging');
   {
     const latest = await getMissionByIdAnyOperator(missionId);
     if (latest) {
@@ -129,6 +147,7 @@ worker.on('failed', (job, err) => {
   }
   if (job?.data?.aircraftId) {
     updateFleetAircraftStatus(job.data.aircraftId, 'charging');
+    clearMissionPath(String(job.data.aircraftId), 'charging').catch(() => {});
   }
 });
 

@@ -2,6 +2,10 @@ const { connectPostgres, resolveOperator, pool } = require('../src/db');
 const { getAircraft } = require('../src/repositories/aircraftRepository');
 const { connectRedis, redis } = require('../src/redis');
 const { DEMO_MODE } = require('../src/config');
+const {
+  MISSION_PATH_HASH,
+  FORCE_STATUS_PREFIX,
+} = require('../src/services/missionPathRedis');
 
 const TELEMETRY_CHANNEL = 'telemetry:update';
 const TICK_MS = 1000;
@@ -235,6 +239,36 @@ const demoEvents = {
   transition60sLogged: false,
 };
 
+/**
+ * Active mission: fly in a straight line (lat/lng lerp) from worker-provided
+ * start → dest, matching the map "blue line" instead of the leisure loop route.
+ */
+function applyMissionPathInterpolation(state, g) {
+  const elapsed = Date.now() - Number(g.startMs);
+  const duration = Math.max(1, Number(g.durationMs));
+  const t = Math.min(1, Math.max(0, elapsed / duration));
+
+  const endLat = Number(g.endLat);
+  const endLng = Number(g.endLng);
+  const startLat = Number(g.startLat);
+  const startLng = Number(g.startLng);
+
+  state.lat = startLat + (endLat - startLat) * t;
+  state.lng = startLng + (endLng - startLng) * t;
+  const here = { lat: state.lat, lng: state.lng };
+  const dest = { lat: endLat, lng: endLng };
+  state.heading_deg = bearingDegrees(here, dest);
+  state.status = 'in-flight';
+  state.speed_kts = state.type === 'evtol' ? 110 : 38;
+  state.altitude_ft = state.type === 'evtol' ? 1200 : 260;
+  state.battery_float = clamp(
+    (state.battery_float ?? state.battery_pct) - sampleRandom(0.3, 0.55),
+    0,
+    100
+  );
+  state.battery_pct = state.battery_float;
+}
+
 function applyDemoScenarioOverrides(state, demoTick) {
   if (state.tail_number === 'N304VL' && demoTick >= 30) {
     if (demoTick === 30 && !demoEvents.transition30sLogged) {
@@ -287,11 +321,56 @@ function buildPayload(state) {
 let demoTick = 0;
 
 async function tick(states) {
-  for (const state of states) {
-    updateDynamicState(state);
-    if (DEMO_MODE) {
-      applyDemoScenarioOverrides(state, demoTick);
+  let pathById = {};
+  try {
+    pathById = await redis.hGetAll(MISSION_PATH_HASH);
+  } catch (err) {
+    console.error('mission:path hGetAll failed', err.message);
+  }
+
+  const forceKeys = states.map((s) => `${FORCE_STATUS_PREFIX}${s.id}`);
+  let forceVals = [];
+  try {
+    if (forceKeys.length) {
+      forceVals = await redis.mGet(forceKeys);
     }
+  } catch (err) {
+    console.error('aircraft:forceStatus mGet failed', err.message);
+  }
+
+  for (let i = 0; i < states.length; i += 1) {
+    const state = states[i];
+    const force = forceVals[i];
+    if (force) {
+      try {
+        await redis.del(`${FORCE_STATUS_PREFIX}${state.id}`);
+      } catch {
+        /* ignore */
+      }
+      state.status = force;
+      state.speed_kts = 0;
+      state.altitude_ft = 0;
+    }
+
+    const rawPath = pathById[String(state.id)];
+    if (rawPath) {
+      try {
+        const g = JSON.parse(rawPath);
+        applyMissionPathInterpolation(state, g);
+      } catch (err) {
+        console.error(`mission:path parse failed for ${state.id}`, err.message);
+        updateDynamicState(state);
+        if (DEMO_MODE) {
+          applyDemoScenarioOverrides(state, demoTick);
+        }
+      }
+    } else {
+      updateDynamicState(state);
+      if (DEMO_MODE) {
+        applyDemoScenarioOverrides(state, demoTick);
+      }
+    }
+
     state.battery_float = clamp(Number(state.battery_pct), 0, 100);
     state.battery_pct = state.battery_float;
     const payload = buildPayload(state);

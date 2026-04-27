@@ -281,7 +281,7 @@ function FleetMap({ fleetState, socket, token }) {
         const dLat = entry.targetLat - entry.currentLat;
 
         // If jump is large (status transition/route switch), snap to target.
-        if (Math.abs(dLng) + Math.abs(dLat) > 0.08) {
+        if (Math.abs(dLng) + Math.abs(dLat) > 0.028) {
           entry.currentLng = entry.targetLng;
           entry.currentLat = entry.targetLat;
         } else {
