@@ -261,12 +261,7 @@ function applyMissionPathInterpolation(state, g) {
   state.status = 'in-flight';
   state.speed_kts = state.type === 'evtol' ? 110 : 38;
   state.altitude_ft = state.type === 'evtol' ? 1200 : 260;
-  state.battery_float = clamp(
-    (state.battery_float ?? state.battery_pct) - sampleRandom(0.3, 0.55),
-    0,
-    100
-  );
-  state.battery_pct = state.battery_float;
+  // Reserve battery during guided segment — drain below 0% mid-route confused the demo.
 }
 
 function applyDemoScenarioOverrides(state, demoTick) {

@@ -18,6 +18,13 @@ export const colors = {
     muted: '#64748b',
   },
   accent: '#2f7ef5',
+  mission: {
+    endpointFillOrigin: 'rgba(47, 126, 245, 0.22)',
+    endpointFillDestination: 'rgba(47, 126, 245, 0.38)',
+    endpointFillFallback: 'rgba(47, 126, 245, 0.3)',
+    landingFillOpacity: 0.09,
+    landingOutlineOpacity: 0.55,
+  },
 };
 
 export const fonts = {

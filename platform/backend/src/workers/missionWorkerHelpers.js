@@ -4,7 +4,9 @@ const { DEMO_MODE } = require('../config');
 const DEFAULT_CRUISE_SPEED_KMPH = 120;
 const MIN_FLIGHT_DURATION_MS = 5_000;
 const MAX_FLIGHT_DURATION_MS = 180_000;
-const DEMO_MAX_FLIGHT_DURATION_MS = 22_000;
+const DEMO_MAX_FLIGHT_DURATION_MS = 15_000;
+/** Tighter pacing for demo flights without snapping to instant hops. */
+const DEMO_FLIGHT_DURATION_SCALE = 0.78;
 
 function estimateFlightDurationMs({
   originLat,
@@ -15,7 +17,10 @@ function estimateFlightDurationMs({
 }) {
   const distanceKm = haversineKm(originLat, originLng, destLat, destLng);
   const durationHours = distanceKm / cruiseSpeedKmph;
-  const durationMs = durationHours * 60 * 60 * 1000;
+  let durationMs = durationHours * 60 * 60 * 1000;
+  if (DEMO_MODE) {
+    durationMs *= DEMO_FLIGHT_DURATION_SCALE;
+  }
   const maxDurationMs = DEMO_MODE ? DEMO_MAX_FLIGHT_DURATION_MS : MAX_FLIGHT_DURATION_MS;
 
   return Math.max(MIN_FLIGHT_DURATION_MS, Math.min(maxDurationMs, durationMs));

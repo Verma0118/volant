@@ -11,10 +11,36 @@ const DFW_CENTER = [-96.797, 32.776];
 const LERP = 0.32;
 const MISSION_ROUTE_SOURCE = 'selected-mission-route';
 const MISSION_ENDPOINT_SOURCE = 'selected-mission-endpoints';
+const MISSION_LANDING_SOURCE = 'selected-mission-landing-zone';
+/** Approximate landing / LZ clearance radius for map visualization (meters). */
+const LANDING_CLEARANCE_METERS = 420;
 const ACTIVE_ROUTE_STATUSES = new Set(['assigned', 'in-flight']);
 
 function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
+}
+
+function circlePolygonGeoJson(centerLng, centerLat, radiusM, steps = 56) {
+  const ring = [];
+  const latRad = (centerLat * Math.PI) / 180;
+  const metersPerDegLat = 111320;
+  const metersPerDegLng = 111320 * Math.cos(latRad);
+
+  for (let i = 0; i <= steps; i += 1) {
+    const angle = (i / steps) * Math.PI * 2;
+    const dxM = radiusM * Math.cos(angle);
+    const dyM = radiusM * Math.sin(angle);
+    ring.push([centerLng + dxM / metersPerDegLng, centerLat + dyM / metersPerDegLat]);
+  }
+
+  return {
+    type: 'Feature',
+    properties: { kind: 'landing_clearance' },
+    geometry: {
+      type: 'Polygon',
+      coordinates: [ring],
+    },
+  };
 }
 
 const STATUS_CLASS = {
@@ -57,6 +83,7 @@ function buildMissionOverlayGeoJson(mission, selectedAircraft) {
     return {
       routes: { type: 'FeatureCollection', features: [] },
       endpoints: { type: 'FeatureCollection', features: [] },
+      landingZone: { type: 'FeatureCollection', features: [] },
     };
   }
 
@@ -71,24 +98,27 @@ function buildMissionOverlayGeoJson(mission, selectedAircraft) {
     ? Number(selectedAircraft.lat)
     : Number(mission.origin_lat);
 
+  const destLng = Number(mission.dest_lng);
+  const destLat = Number(mission.dest_lat);
+
   return {
     routes: {
       type: 'FeatureCollection',
       features: [
         {
-        type: 'Feature',
-        properties: {
-          mission_id: mission.mission_id,
-          priority: mission.priority || 'normal'
+          type: 'Feature',
+          properties: {
+            mission_id: mission.mission_id,
+            priority: mission.priority || 'normal',
+          },
+          geometry: {
+            type: 'LineString',
+            coordinates: [
+              [routeStartLng, routeStartLat],
+              [destLng, destLat],
+            ],
+          },
         },
-        geometry: {
-          type: 'LineString',
-          coordinates: [
-            [routeStartLng, routeStartLat],
-            [Number(mission.dest_lng), Number(mission.dest_lat)],
-          ],
-        },
-      },
       ],
     },
     endpoints: {
@@ -100,6 +130,7 @@ function buildMissionOverlayGeoJson(mission, selectedAircraft) {
             mission_id: mission.mission_id,
             priority: mission.priority || 'normal',
             endpoint_type: 'origin',
+            endpoint_label: 'START',
           },
           geometry: {
             type: 'Point',
@@ -112,13 +143,18 @@ function buildMissionOverlayGeoJson(mission, selectedAircraft) {
             mission_id: mission.mission_id,
             priority: mission.priority || 'normal',
             endpoint_type: 'destination',
+            endpoint_label: 'LZ',
           },
           geometry: {
             type: 'Point',
-            coordinates: [Number(mission.dest_lng), Number(mission.dest_lat)],
+            coordinates: [destLng, destLat],
           },
         },
       ],
+    },
+    landingZone: {
+      type: 'FeatureCollection',
+      features: [circlePolygonGeoJson(destLng, destLat, LANDING_CLEARANCE_METERS)],
     },
   };
 }
@@ -233,6 +269,30 @@ function FleetMap({ fleetState, socket, token }) {
         },
       });
 
+      map.addSource(MISSION_LANDING_SOURCE, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] },
+      });
+      map.addLayer({
+        id: 'mission-landing-fill',
+        type: 'fill',
+        source: MISSION_LANDING_SOURCE,
+        paint: {
+          'fill-color': colors.accent,
+          'fill-opacity': colors.mission.landingFillOpacity,
+        },
+      });
+      map.addLayer({
+        id: 'mission-landing-outline',
+        type: 'line',
+        source: MISSION_LANDING_SOURCE,
+        paint: {
+          'line-color': colors.accent,
+          'line-width': 1.5,
+          'line-opacity': colors.mission.landingOutlineOpacity,
+        },
+      });
+
       map.addSource(MISSION_ROUTE_SOURCE, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
@@ -242,7 +302,7 @@ function FleetMap({ fleetState, socket, token }) {
         type: 'line',
         source: MISSION_ROUTE_SOURCE,
         paint: {
-          'line-color': '#4da3ff',
+          'line-color': colors.accent,
           'line-width': 2.5,
           'line-opacity': 0.95,
         },
@@ -253,24 +313,47 @@ function FleetMap({ fleetState, socket, token }) {
         data: { type: 'FeatureCollection', features: [] },
       });
       map.addLayer({
-        id: 'mission-endpoints-layer',
-        type: 'symbol',
+        id: 'mission-endpoints-circle',
+        type: 'circle',
         source: MISSION_ENDPOINT_SOURCE,
-        layout: {
-          'text-field': [
+        paint: {
+          'circle-radius': [
             'match',
             ['get', 'endpoint_type'],
             'origin',
-            '■',
-            '▣',
+            8,
+            'destination',
+            10,
+            8,
           ],
-          'text-size': 12,
+          'circle-color': [
+            'match',
+            ['get', 'endpoint_type'],
+            'origin',
+            colors.mission.endpointFillOrigin,
+            'destination',
+            colors.mission.endpointFillDestination,
+            colors.mission.endpointFillFallback,
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': colors.accent,
+        },
+      });
+      map.addLayer({
+        id: 'mission-endpoint-labels',
+        type: 'symbol',
+        source: MISSION_ENDPOINT_SOURCE,
+        layout: {
+          'text-field': ['get', 'endpoint_label'],
+          'text-size': 11,
+          'text-offset': [0, 1.35],
+          'text-anchor': 'top',
           'text-allow-overlap': true,
         },
         paint: {
-          'text-color': '#4da3ff',
-          'text-halo-color': colors.text.primary,
-          'text-halo-width': 0.8,
+          'text-color': colors.text.secondary,
+          'text-halo-color': colors.bg.primary,
+          'text-halo-width': 1,
         },
       });
     });
@@ -343,7 +426,7 @@ function FleetMap({ fleetState, socket, token }) {
       return;
     }
 
-    const { routes, endpoints } = buildMissionOverlayGeoJson(
+    const { routes, endpoints, landingZone } = buildMissionOverlayGeoJson(
       selectedActiveMission,
       selectedAircraft
     );
@@ -355,6 +438,11 @@ function FleetMap({ fleetState, socket, token }) {
     const endpointSource = map.getSource(MISSION_ENDPOINT_SOURCE);
     if (endpointSource) {
       endpointSource.setData(endpoints);
+    }
+
+    const landingSource = map.getSource(MISSION_LANDING_SOURCE);
+    if (landingSource) {
+      landingSource.setData(landingZone);
     }
   }, [selectedActiveMission, selectedAircraft]);
 
@@ -518,7 +606,7 @@ function FleetMap({ fleetState, socket, token }) {
       <p className="fleet-map-selection" aria-live="polite">
         {selectedAircraft
           ? selectedActiveMission
-            ? `Selected ${selectedAircraft.tail_number} (${selectedAircraft.status}, ${selectedAircraft.battery_pct}%). Active mission route highlighted in blue.`
+            ? `Selected ${selectedAircraft.tail_number} (${selectedAircraft.status}, ${selectedAircraft.battery_pct}%). Mission route, START and LZ markers, and landing clearance circle shown on map.`
             : `Selected ${selectedAircraft.tail_number} (${selectedAircraft.status}, ${selectedAircraft.battery_pct}%). No active dispatched mission for this aircraft.`
           : 'Select an aircraft marker or chip to inspect its live state.'}
       </p>
@@ -526,9 +614,10 @@ function FleetMap({ fleetState, socket, token }) {
       <ul className="visually-hidden" aria-label="Active mission routes">
         {(selectedActiveMission ? [selectedActiveMission] : []).map((mission) => (
           <li key={mission.mission_id}>
-            Mission {mission.mission_id} {mission.status} priority {mission.priority} from{' '}
-            {Number(mission.origin_lat).toFixed(4)}, {Number(mission.origin_lng).toFixed(4)} to{' '}
-            {Number(mission.dest_lat).toFixed(4)}, {Number(mission.dest_lng).toFixed(4)}
+            Mission {mission.mission_id} {mission.status} priority {mission.priority}. Start{' '}
+            {Number(mission.origin_lat).toFixed(4)}, {Number(mission.origin_lng).toFixed(4)}. Landing zone{' '}
+            {Number(mission.dest_lat).toFixed(4)}, {Number(mission.dest_lng).toFixed(4)} with approximate{' '}
+            {LANDING_CLEARANCE_METERS} meter clearance circle.
           </li>
         ))}
       </ul>
