@@ -4,7 +4,7 @@ const { DEMO_MODE } = require('../config');
 const DEFAULT_CRUISE_SPEED_KMPH = 120;
 const MIN_FLIGHT_DURATION_MS = 5_000;
 const MAX_FLIGHT_DURATION_MS = 180_000;
-const DEMO_MAX_FLIGHT_DURATION_MS = 60_000;
+const DEMO_MAX_FLIGHT_DURATION_MS = 30_000;
 
 function estimateFlightDurationMs({
   originLat,
