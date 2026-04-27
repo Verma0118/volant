@@ -1,8 +1,10 @@
 const { haversineKm } = require('../services/assignmentEngine');
+const { DEMO_MODE } = require('../config');
 
 const DEFAULT_CRUISE_SPEED_KMPH = 120;
 const MIN_FLIGHT_DURATION_MS = 5_000;
 const MAX_FLIGHT_DURATION_MS = 180_000;
+const DEMO_MAX_FLIGHT_DURATION_MS = 60_000;
 
 function estimateFlightDurationMs({
   originLat,
@@ -14,8 +16,9 @@ function estimateFlightDurationMs({
   const distanceKm = haversineKm(originLat, originLng, destLat, destLng);
   const durationHours = distanceKm / cruiseSpeedKmph;
   const durationMs = durationHours * 60 * 60 * 1000;
+  const maxDurationMs = DEMO_MODE ? DEMO_MAX_FLIGHT_DURATION_MS : MAX_FLIGHT_DURATION_MS;
 
-  return Math.max(MIN_FLIGHT_DURATION_MS, Math.min(MAX_FLIGHT_DURATION_MS, durationMs));
+  return Math.max(MIN_FLIGHT_DURATION_MS, Math.min(maxDurationMs, durationMs));
 }
 
 function toMissionUpdatePayload(mission) {

@@ -960,6 +960,32 @@ main:focus {
   gap: 0.75rem;
 }
 
+.dispatch-availability {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 34%, var(--color-bg-border));
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.65rem;
+}
+
+.dispatch-availability__title {
+  color: var(--color-text-primary);
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.dispatch-availability__rule {
+  color: var(--color-text-secondary);
+  font-size: 0.76rem;
+  margin: 0.2rem 0 0;
+}
+
+.dispatch-availability__list {
+  color: var(--color-text-primary);
+  font-size: 0.79rem;
+  margin: 0.3rem 0 0;
+}
+
 .form-fieldset {
   border: 1px solid var(--color-bg-border);
   border-radius: 0.5rem;

@@ -69,9 +69,15 @@ function AuthenticatedLayout({ fleetState, activeAircraftCount, connectionState,
 
           <main id="main-content" tabIndex={-1}>
             <Routes>
-              <Route path="/" element={<FleetMap fleetState={fleetState} />} />
+              <Route
+                path="/"
+                element={<FleetMap fleetState={fleetState} socket={socket} token={token} />}
+              />
               <Route path="/status" element={<FleetStatus fleetState={fleetState} />} />
-              <Route path="/dispatch" element={<Dispatch socket={socket} token={token} />} />
+              <Route
+                path="/dispatch"
+                element={<Dispatch socket={socket} token={token} fleetState={fleetState} />}
+              />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>

@@ -4,16 +4,32 @@ import { io } from 'socket.io-client';
 const SOCKET_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
 const MAX_RECONNECT_DELAY_MS = 10000;
 
-export function useFleetSocket() {
+export function useFleetSocket(token) {
+  const socketRef = useRef(null);
   const [fleetState, setFleetState] = useState({});
-  const [connectionState, setConnectionState] = useState('connecting');
-  const [announcement, setAnnouncement] = useState('Connecting to live telemetry...');
+  const [connectionState, setConnectionState] = useState(
+    token ? 'connecting' : 'unauthenticated'
+  );
+  const [announcement, setAnnouncement] = useState(
+    token ? 'Connecting to live telemetry...' : 'Sign in to connect telemetry.'
+  );
+  const [criticalAnnouncement, setCriticalAnnouncement] = useState('');
 
   const announcementTimeoutRef = useRef(null);
   const pendingUpdatesRef = useRef(new Map());
   const flushScheduledRef = useRef(false);
 
   useEffect(() => {
+    if (!token) {
+      pendingUpdatesRef.current.clear();
+      flushScheduledRef.current = false;
+      setFleetState({});
+      setConnectionState('unauthenticated');
+      setAnnouncement('Sign in to connect telemetry.');
+      setCriticalAnnouncement('');
+      return undefined;
+    }
+
     const flushPendingUpdates = () => {
       flushScheduledRef.current = false;
 
@@ -41,12 +57,14 @@ export function useFleetSocket() {
     };
 
     const socket = io(SOCKET_URL, {
+      auth: { token },
       transports: ['websocket'],
       reconnection: true,
       reconnectionDelay: 500,
       reconnectionDelayMax: MAX_RECONNECT_DELAY_MS,
       timeout: 8000,
     });
+    socketRef.current = socket;
 
     socket.on('connect', () => {
       setConnectionState('connected');
@@ -56,6 +74,11 @@ export function useFleetSocket() {
     socket.on('disconnect', () => {
       setConnectionState('disconnected');
       setAnnouncement('Live telemetry disconnected. Reconnecting...');
+    });
+
+    socket.on('connect_error', (err) => {
+      setConnectionState('disconnected');
+      setCriticalAnnouncement(`Telemetry connection failed: ${err.message}`);
     });
 
     socket.io.on('reconnect_attempt', () => {
@@ -77,10 +100,11 @@ export function useFleetSocket() {
     });
 
     return () => {
+      socketRef.current = null;
       socket.removeAllListeners();
       socket.close();
     };
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (!announcement) {
@@ -106,5 +130,7 @@ export function useFleetSocket() {
     fleetState,
     connectionState,
     announcement,
+    criticalAnnouncement,
+    socket: socketRef.current,
   };
 }

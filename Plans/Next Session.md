@@ -1,9 +1,9 @@
 ---
-date: 2026-04-20
+date: 2026-04-26
 type: context-brief
-active_blueprint: Plans/slice-1-fleet-overview.md
-active_slice: 1
-tags: [next-session, build, slice-1]
+active_blueprint: Plans/slice-2-mission-dispatch.md
+active_slice: 2
+tags: [next-session, build, slice-2]
 ---
 
 # Next Session — Context Brief
@@ -14,10 +14,11 @@ tags: [next-session, build, slice-1]
 
 ## First Action
 
-Slice 1 stabilization/hardening is complete. First action next session is **Slice 2 kickoff brief + implementation start**:
+Slice 1 is complete and hardened. Slice 2 blueprint is written (`Plans/slice-2-mission-dispatch.md`). Step 1 is briefed in `CURSOR_TASKS.md`. First action next session:
 
-1. Draft Slice 2 Mission Dispatch kickoff brief (architecture, queue model, API surface, UI flow).
-2. Define Step 1 execution tasks in `CURSOR_TASKS.md`.
+1. Check `CURSOR_TASKS.md` — see if Cursor completed Slice 2 Step 1 (schema + BullMQ).
+2. If ✅: review migrations + queue startup, then brief Step 2 (Assignment Engine) + Step 3 (Deconfliction) — these are independent, brief both so Cursor can parallelize.
+3. If not done: wait, no need to re-brief.
 3. Start Slice 2 Step 1 implementation.
 
 **Recent hardening commits (for Claude context):**

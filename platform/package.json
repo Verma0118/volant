@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "demo": "concurrently -k -n backend,simulator,frontend -c cyan,magenta,green \"cd backend && DEMO_MODE=true npm run dev\" \"cd backend && DEMO_MODE=true npm run simulator\" \"cd frontend && npm run dev -- --host 127.0.0.1 --port 5173\"",
+    "demo": "concurrently --success first -k -n backend,simulator,frontend,scenario -c cyan,magenta,green,yellow \"cd backend && DEMO_MODE=true npm run dev\" \"cd backend && DEMO_MODE=true npm run simulator\" \"cd frontend && npm run dev -- --host 127.0.0.1 --port 5173\" \"cd backend && DEMO_MODE=true node simulator/demoScenario.js\"",
     "backend:migrate": "cd backend && npm run migrate",
     "backend:seed": "cd backend && npm run seed",
     "backend:test": "cd backend && npm test",

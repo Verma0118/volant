@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useMissionSocket } from '../../hooks/useMissionSocket';
 import { StatusPill } from '../../shared/components';
 
@@ -33,7 +33,7 @@ function relativeTime(isoString) {
   return `${Math.floor(mins / 60)}h ago`;
 }
 
-export default function Dispatch({ socket, token }) {
+export default function Dispatch({ socket, token, fleetState }) {
   const { missionsList } = useMissionSocket(socket, token);
 
   const originLegendId = useId();
@@ -53,6 +53,13 @@ export default function Dispatch({ socket, token }) {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const clearTimerRef = useRef(null);
+  const availableAircraft = useMemo(
+    () =>
+      Object.values(fleetState || {})
+        .filter((aircraft) => aircraft.status === 'ready' && Number(aircraft.battery_pct) >= 40)
+        .sort((a, b) => a.tail_number.localeCompare(b.tail_number)),
+    [fleetState]
+  );
 
   useEffect(() => {
     document.title = 'Mission Dispatch - Volant';
@@ -82,6 +89,12 @@ export default function Dispatch({ socket, token }) {
       if (clearTimerRef.current) clearTimeout(clearTimerRef.current);
       setSubmitting(true);
 
+      if (availableAircraft.length === 0) {
+        setErrorMsg('No aircraft currently dispatchable. Waiting for ready status and battery >= 40%.');
+        setSubmitting(false);
+        return;
+      }
+
       try {
         const res = await fetch(`${API_BASE_URL}/api/missions`, {
           method: 'POST',
@@ -108,7 +121,7 @@ export default function Dispatch({ socket, token }) {
           return;
         }
 
-        const tail = data?.tail_number || data?.aircraft?.tail_number;
+        const tail = data?.mission?.tail_number || data?.tail_number || data?.aircraft?.tail_number;
         setSuccessMsg(tail ? `Mission dispatched — ${tail} assigned` : 'Mission dispatched');
         clearTimerRef.current = setTimeout(() => setSuccessMsg(''), 4000);
       } catch {
@@ -117,7 +130,7 @@ export default function Dispatch({ socket, token }) {
         setSubmitting(false);
       }
     },
-    [form, token],
+    [availableAircraft.length, form, token],
   );
 
   return (
@@ -130,6 +143,18 @@ export default function Dispatch({ socket, token }) {
         <h2 id="dispatch-form-heading" className="panel-heading">
           New Mission
         </h2>
+
+        <div className="dispatch-availability" aria-live="polite" aria-atomic="true">
+          <p className="dispatch-availability__title">
+            Dispatchable aircraft now: {availableAircraft.length}
+          </p>
+          <p className="dispatch-availability__rule">Rule: status = ready and battery {'>='} 40%</p>
+          <p className="dispatch-availability__list">
+            {availableAircraft.length > 0
+              ? availableAircraft.map((aircraft) => aircraft.tail_number).join(', ')
+              : 'None available yet. Wait for simulator cycle.'}
+          </p>
+        </div>
 
         <div className="dispatch-quick-fills">
           {QUICK_FILLS.map((fill) => (
@@ -289,10 +314,14 @@ export default function Dispatch({ socket, token }) {
           <button
             type="submit"
             className="btn-primary"
-            disabled={submitting}
+            disabled={submitting || availableAircraft.length === 0}
             aria-busy={submitting}
           >
-            {submitting ? 'Dispatching…' : 'Dispatch Mission'}
+            {submitting
+              ? 'Dispatching…'
+              : availableAircraft.length === 0
+                ? 'Waiting for Available Aircraft'
+                : 'Dispatch Mission'}
           </button>
         </form>
       </section>
@@ -337,9 +366,9 @@ export default function Dispatch({ socket, token }) {
                   </time>
                 </div>
                 <div className="mission-card__bottom">
-                  {mission.tail_number && (
-                    <span className="mission-tail">{mission.tail_number}</span>
-                  )}
+                  <span className="mission-tail">
+                    {mission.tail_number || 'Unassigned'}
+                  </span>
                   {mission.cargo_type && (
                     <span className="mission-cargo">{mission.cargo_type}</span>
                   )}

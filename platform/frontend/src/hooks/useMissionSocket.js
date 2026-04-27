@@ -17,6 +17,10 @@ function toMissionMap(missions) {
       priority: mission.priority,
       cargo_type: mission.cargo_type,
       conflict_reason: mission.conflict_reason || null,
+      origin_lat: mission.origin_lat,
+      origin_lng: mission.origin_lng,
+      dest_lat: mission.dest_lat,
+      dest_lng: mission.dest_lng,
       dispatched_at: mission.dispatched_at,
       assigned_at: mission.assigned_at,
       completed_at: mission.completed_at,
@@ -61,7 +65,10 @@ export function useMissionSocket(socket, token) {
       }
       setMissionsState((previous) => ({
         ...previous,
-        [payload.mission_id]: payload,
+        [payload.mission_id]: {
+          ...(previous[payload.mission_id] || {}),
+          ...payload,
+        },
       }));
     };
 

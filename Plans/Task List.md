@@ -49,9 +49,43 @@ _Last updated: Apr 26, 2026 19:35 CDT_
   - Frontend feature/shared entry points + import boundary lint guardrail
   - CI workflow (`.github/workflows/platform-ci.yml`)
   - Contributor docs: `ARCHITECTURE.md`, `CONTRIBUTING.md`, ADR template
+- [ ] **Slice 2 Step 1** — Schema (missions + users) + BullMQ queue setup 🔥 _(briefed in CURSOR_TASKS.md)_
+- [ ] **Slice 2 Step 2** — Assignment Engine (haversine, best aircraft selection)
+- [ ] **Slice 2 Step 3** — Deconfliction Service (spatial/temporal conflict check)
+- [ ] **Slice 2 Step 4** — Dispatch REST API (POST/GET/PATCH /api/missions)
+- [ ] **Slice 2 Step 5** — Auth layer (JWT, login endpoint, bcrypt, Socket.io handshake)
+- [ ] **Slice 2 Step 6** — BullMQ worker + mission state machine
+- [ ] **Slice 2 Step 7** — Dispatch UI (login view + dispatch form + mission queue)
+- [ ] **Slice 2 Step 8** — Mission map overlay (route LineString on Fleet Map)
+- [ ] **Slice 2 Step 9** — Demo scenario update (dispatch sequence in npm run demo)
   - One-command verify scripts + backend smoke health script
 - [ ] **Slice 2 kickoff** — Mission Dispatch planning + implementation brief
 - [ ] **Frontend bundle-size optimization (non-blocking)** — split/lazy-load heavy frontend chunks after hardening pass
+
+### Claude Handoff — Finish Slice 2 Step 7 (Dispatch UI)
+
+- [ ] **Finish Step 7 in Claude Code CLI** (Cursor session blocked by stale UI a11y gate despite rule update)
+- [x] **Already completed in codebase:**
+  - `platform/backend/src/repositories/missionRepository.js` — JSDoc added above `getMissionByIdAnyOperator`
+  - `platform/frontend/src/hooks/useFleetSocket.js` — now returns `socket` for shared mission subscriptions
+  - `platform/frontend/src/hooks/useMissionSocket.js` — added (initial `GET /api/missions`, `mission:update` upsert, reconnect refetch, sorted `missionsList`)
+- [ ] **Claude should implement remaining Step 7 files:**
+  - `platform/frontend/src/features/auth/Login.jsx`
+  - `platform/frontend/src/features/auth/index.js`
+  - `platform/frontend/src/features/dispatch/Dispatch.jsx`
+  - `platform/frontend/src/features/dispatch/index.js`
+  - `platform/frontend/src/App.jsx` (auth guard + `/login` + `/dispatch` routes)
+  - `platform/frontend/src/components/Sidebar.jsx` (unlock Mission Dispatch nav link)
+  - `platform/frontend/src/index.css` (login + dispatch styles)
+- [ ] **Step 7 behavior to verify in Claude run:**
+  - unauthenticated `/` redirects to `/login`
+  - login (`dispatcher@volant.demo` / `dispatch123`) redirects to `/`
+  - sidebar shows clickable `Mission Dispatch` link
+  - `/dispatch` shows mission form + queue
+  - quick-fill buttons populate DFW coordinates
+  - submit mission shows success/error inline messages with proper live regions
+  - mission queue updates live via socket `mission:update` (assigned → in-flight → completed)
+  - `cd platform/frontend && npm run build` passes clean
 
 ---
 
@@ -66,7 +100,7 @@ _Last updated: Apr 26, 2026 19:35 CDT_
 
 ## Waiting / Async
 
-- [ ] Hackathon approval — applied, pending
+- [~] Hackathon approval — not accepted, no longer relevant
 - [ ] Archer reply — email sent Apr 20, follow-up if no response in 5–7 days
 - [ ] Obsidian Git plugin — manual install in Obsidian UI
 - [ ] Ask Rushil's dad to forward to Director of Digital Technology Program Management

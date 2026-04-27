@@ -1243,7 +1243,7 @@ cd platform/frontend && npm run build
 
 ## 🔥 Step 7 — End-to-End Dispatch Flow Verification
 
-**Status:** `[ ] Not started`
+**Status:** `[~] In progress (Cursor terminal verification complete; browser/live UI walkthrough still needed)`
 
 **Context:** All code is shipped and committed (`5dab177`). This is a live integration test — run the full stack and walk through the dispatch flow manually. Fix any runtime bugs found.
 
@@ -1309,13 +1309,48 @@ cd platform/frontend && npm run dev
 **Exit criteria:**
 ```
 [ ] /login loads without touching / first
-[ ] Login with demo creds succeeds, redirects to Fleet Map
+[x] Login API with demo creds succeeds (`POST /api/auth/login` → 200 + token)
 [ ] /dispatch renders form + empty queue
 [ ] Quick-fill populates coord fields
 [ ] Dispatch mission → success message + card in queue
 [ ] Card status updates live (assigned → in-flight → completed)
 [ ] Second rapid dispatch on same route → conflict error shown
-[ ] npm run build still clean after any fixes
+[x] Socket auth handshake works (`socket_connected` + `fleet:snapshot` received)
+[x] npm run build still clean after any fixes
 ```
 
 **When done:** Mark this block ✅, commit fixes with message `fix: dispatch e2e verification — [what you fixed]`.
+
+✅ **Cursor verification notes (Apr 27, 11:14 AM CDT):**
+- Stack boots clean: Docker services healthy, simulator running, backend logs mission queue + worker startup, frontend Vite serves on `http://127.0.0.1:5173`.
+- Login endpoint verified from terminal (`dispatcher@volant.demo` / `dispatch123`), token issued.
+- Socket auth verified via `socket.io-client` script with token; `fleet:snapshot` payload received.
+- Dispatch API returned `409 queued` with `No aircraft available` under current simulator state for repeated scripted requests (requires live UI retry when aircraft cycles to `ready`).
+- Step 8 coding is now unblocked in Cursor; mission map overlay implementation has been started in frontend (`App.jsx` + `FleetMap.jsx`) and needs live browser validation.
+
+---
+
+## 🔥 Step 9 — Demo scenario update
+
+**Status:** `[✅] Done (one-command demo validated end-to-end)`
+
+✅ **Implementation notes (Cursor):**
+- Added `platform/backend/simulator/demoScenario.js`:
+  - Authenticates demo user (`dispatcher@volant.demo` / `dispatch123`) with retries.
+  - Waits to T+30s, dispatches urgent medical mission (DFW -> Downtown Dallas).
+  - Retries dispatch when simulator is temporarily unavailable (`No aircraft available`).
+  - Polls mission status and logs transitions (`assigned/in-flight/completed`).
+  - Logs mid-flight battery check around T+60s and completion event for route disappearance.
+- Updated `platform/package.json` `demo` script to run scenario alongside backend/simulator/frontend via `concurrently`.
+
+⚠️ **Validation note:**
+- Mission worker demo-mode duration cap added so the scenario completes on a reasonable timeline for live demo playback.
+
+✅ **Terminal proof (latest):**
+- `cd platform && npm run demo` now completes with exit code `0` (via `concurrently --success first`).
+- Observed runtime sequence:
+  - T+0s baseline stack up
+  - T+30s scenario dispatch attempts begin
+  - around T+62s mission transitions to `in-flight` (N308VL)
+  - around T+122s mission transitions to `completed`
+  - scenario exits cleanly and shuts down other demo processes

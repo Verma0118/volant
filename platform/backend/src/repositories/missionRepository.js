@@ -48,7 +48,13 @@ async function createMission({
 
 async function listMissions(operatorId) {
   const result = await pool.query(
-    'SELECT * FROM missions WHERE operator_id = $1 ORDER BY dispatched_at DESC',
+    `SELECT
+       m.*,
+       a.tail_number
+     FROM missions m
+     LEFT JOIN aircraft a ON a.id = m.aircraft_id
+     WHERE m.operator_id = $1
+     ORDER BY m.dispatched_at DESC`,
     [operatorId]
   );
   return result.rows;

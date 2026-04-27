@@ -122,7 +122,12 @@ router.post('/', async (req, res) => {
       { jobId: assignedMission.id }
     );
 
-    return res.status(201).json({ mission: assignedMission });
+    return res.status(201).json({
+      mission: {
+        ...assignedMission,
+        tail_number: selectedAircraft.tail_number || null,
+      },
+    });
   } catch (err) {
     console.error('POST /api/missions failed', err);
     return res.status(500).json({ error: 'Internal server error' });
