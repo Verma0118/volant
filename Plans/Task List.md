@@ -6,7 +6,7 @@ tags: [tasks, priorities, slice-1]
 
 # Volant Task List
 
-_Last updated: Apr 26, 2026 19:07 CDT_
+_Last updated: Apr 26, 2026 19:35 CDT_
 
 ---
 
@@ -51,6 +51,7 @@ _Last updated: Apr 26, 2026 19:07 CDT_
   - Contributor docs: `ARCHITECTURE.md`, `CONTRIBUTING.md`, ADR template
   - One-command verify scripts + backend smoke health script
 - [ ] **Slice 2 kickoff** — Mission Dispatch planning + implementation brief
+- [ ] **Frontend bundle-size optimization (non-blocking)** — split/lazy-load heavy frontend chunks after hardening pass
 
 ---
 
@@ -59,6 +60,7 @@ _Last updated: Apr 26, 2026 19:07 CDT_
 - [ ] Slice 2 Step 1 — Mission Dispatch architecture + queue model
 - [ ] Slice 2 Step 2 — Dispatch API + assignment logic
 - [ ] Slice 2 Step 3 — Dispatch UI workflow in dashboard
+- [ ] Frontend route-level code-splitting (`FleetMap` / `FleetStatus`) to reduce main bundle
 
 ---
 

@@ -26,7 +26,9 @@ Slice 1 stabilization/hardening is complete. First action next session is **Slic
 - `7409835` — frontend feature entrypoints + realtime dead-work cleanup
 - `56b090d` — architecture/contributor docs + ADR template
 
-**Push note:** push was blocked because PAT is missing `workflow` scope for `.github/workflows/platform-ci.yml`.
+**Push note:** resolved. Commits pushed after auth scope fix. Also removed tokenized remote usage by switching to clean HTTPS remote URL.
+
+**Non-blocking follow-up:** frontend bundle-size warning still appears on `npm run build` (large main chunk). Plan a targeted code-splitting pass after Slice 2 kickoff brief.
 
 ---
 
