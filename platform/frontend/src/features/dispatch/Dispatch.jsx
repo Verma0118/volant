@@ -11,6 +11,22 @@ const PRIORITY_CLASSES = {
   low: 'priority-badge--low',
 };
 
+function isDispatchEligibleClient(aircraft) {
+  const batt = Number(aircraft.battery_pct);
+  if (!Number.isFinite(batt) || batt < 40) {
+    return false;
+  }
+  if (aircraft.status === 'ready') {
+    return true;
+  }
+  if (aircraft.status === 'charging' && batt >= 82) {
+    return true;
+  }
+  return false;
+}
+
+const ACTIVE_MISSION_STATUSES = new Set(['queued', 'assigned', 'in-flight', 'conflict']);
+
 const QUICK_FILLS = [
   {
     label: 'Pre-fill: DFW Airport → Downtown Dallas',
@@ -56,9 +72,19 @@ export default function Dispatch({ socket, token, fleetState }) {
   const availableAircraft = useMemo(
     () =>
       Object.values(fleetState || {})
-        .filter((aircraft) => aircraft.status === 'ready' && Number(aircraft.battery_pct) >= 40)
+        .filter(isDispatchEligibleClient)
         .sort((a, b) => a.tail_number.localeCompare(b.tail_number)),
     [fleetState]
+  );
+
+  const missionsActive = useMemo(
+    () => missionsList.filter((m) => ACTIVE_MISSION_STATUSES.has(m.status)),
+    [missionsList]
+  );
+
+  const missionsRecentDone = useMemo(
+    () => missionsList.filter((m) => m.status === 'completed').slice(0, 12),
+    [missionsList]
   );
 
   useEffect(() => {
@@ -90,7 +116,9 @@ export default function Dispatch({ socket, token, fleetState }) {
       setSubmitting(true);
 
       if (availableAircraft.length === 0) {
-        setErrorMsg('No aircraft currently dispatchable. Waiting for ready status and battery >= 40%.');
+        setErrorMsg(
+          'No aircraft currently dispatchable. Need battery ≥40% and status ready, or charging ≥82%.'
+        );
         setSubmitting(false);
         return;
       }
@@ -148,7 +176,9 @@ export default function Dispatch({ socket, token, fleetState }) {
           <p className="dispatch-availability__title">
             Dispatchable aircraft now: {availableAircraft.length}
           </p>
-          <p className="dispatch-availability__rule">Rule: status = ready and battery {'>='} 40%</p>
+          <p className="dispatch-availability__rule">
+            Rule: battery {'>='} 40% and (status ready, or charging {'>='} 82%)
+          </p>
           <p className="dispatch-availability__list">
             {availableAircraft.length > 0
               ? availableAircraft.map((aircraft) => aircraft.tail_number).join(', ')
@@ -332,23 +362,20 @@ export default function Dispatch({ socket, token, fleetState }) {
         aria-labelledby="mission-queue-heading"
       >
         <h2 id="mission-queue-heading" className="panel-heading">
-          Active Missions
+          Mission queue
         </h2>
 
-        {/* Always rendered with aria-live — empty state as <li> keeps the
-            live region in the DOM so future additions are announced */}
+        <h3 className="mission-queue-subheading">In progress</h3>
         <ul
           className="mission-list"
-          aria-label="Active missions"
+          aria-label="Missions in progress"
           aria-live="polite"
-          aria-relevant="additions"
+          aria-relevant="additions text"
         >
-          {missionsList.length === 0 ? (
-            <li className="queue-empty">
-              No active missions — dispatch one to get started
-            </li>
+          {missionsActive.length === 0 ? (
+            <li className="queue-empty">None in flight — dispatch when aircraft are available</li>
           ) : (
-            missionsList.map((mission) => (
+            missionsActive.map((mission) => (
               <li key={mission.mission_id} className="mission-card">
                 <div className="mission-card__top">
                   <StatusPill status={mission.status} />
@@ -382,6 +409,40 @@ export default function Dispatch({ socket, token, fleetState }) {
             ))
           )}
         </ul>
+
+        {missionsRecentDone.length > 0 ? (
+          <>
+            <h3 className="mission-queue-subheading mission-queue-subheading--secondary">
+              Recently completed
+            </h3>
+            <ul className="mission-list mission-list--secondary" aria-label="Recently completed missions">
+              {missionsRecentDone.map((mission) => (
+                <li key={`done-${mission.mission_id}`} className="mission-card mission-card--done">
+                  <div className="mission-card__top">
+                    <StatusPill status={mission.status} />
+                    <span
+                      className={`priority-badge ${PRIORITY_CLASSES[mission.priority] || PRIORITY_CLASSES.normal}`}
+                    >
+                      {PRIORITY_LABELS[mission.priority] || mission.priority}
+                    </span>
+                    <time
+                      className="mission-time"
+                      dateTime={mission.dispatched_at}
+                      title={mission.dispatched_at}
+                    >
+                      {relativeTime(mission.dispatched_at)}
+                    </time>
+                  </div>
+                  <div className="mission-card__bottom">
+                    <span className="mission-tail">
+                      {mission.tail_number || 'Unassigned'}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
       </section>
     </div>
   );

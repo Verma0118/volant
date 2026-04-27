@@ -7,7 +7,7 @@ import DetailPanel from '../components/DetailPanel';
 import { useMissionSocket } from '../hooks/useMissionSocket';
 
 const DFW_CENTER = [-96.797, 32.776];
-const LERP = 0.45;
+const LERP = 0.32;
 const MISSION_ROUTE_SOURCE = 'selected-mission-route';
 const MISSION_ENDPOINT_SOURCE = 'selected-mission-endpoints';
 const ACTIVE_ROUTE_STATUSES = new Set(['assigned', 'in-flight']);
@@ -468,16 +468,29 @@ function FleetMap({ fleetState, socket, token }) {
         Fleet Map
       </h1>
 
-      <div className="fleet-map-stack">
-        <div ref={mapContainerRef} className="fleet-map-canvas" />
+      <div
+        className={`fleet-map-stack ${selectedAircraftId ? 'fleet-map-stack--split' : ''}`}
+      >
+        <div className="fleet-map-map-area">
+          <div ref={mapContainerRef} className="fleet-map-canvas" />
 
-        <aside className="fleet-map-overlay" aria-label="Map status panel">
-          <p className="zone-pill">DFW Class B - Active</p>
-          <p className="zone-count">Aircraft online: {aircraftCount}</p>
-          <p className="zone-count" aria-live="polite" aria-atomic="true">
-            Active missions: {activeMissions.length}
-          </p>
-        </aside>
+          <aside className="fleet-map-overlay" aria-label="Map status panel">
+            <p className="zone-pill">DFW Class B - Active</p>
+            <p className="zone-count">Aircraft online: {aircraftCount}</p>
+            <p className="zone-count" aria-live="polite" aria-atomic="true">
+              Active missions: {activeMissions.length}
+            </p>
+          </aside>
+        </div>
+
+        {selectedAircraft ? (
+          <DetailPanel
+            variant="dock"
+            aircraft={selectedAircraft}
+            isOpen
+            onClose={closeDetailPanel}
+          />
+        ) : null}
       </div>
 
       <div className="fleet-map-toolbar" aria-label="Aircraft quick select">
@@ -518,11 +531,6 @@ function FleetMap({ fleetState, socket, token }) {
         ))}
       </ul>
 
-      <DetailPanel
-        aircraft={selectedAircraft}
-        isOpen={Boolean(selectedAircraft)}
-        onClose={closeDetailPanel}
-      />
     </section>
   );
 }

@@ -5,6 +5,10 @@ const { DEMO_MODE } = require('../src/config');
 
 const TELEMETRY_CHANNEL = 'telemetry:update';
 const TICK_MS = 1000;
+/** Lower = slower markers along routes (fraction of segment per tick). Tuned for map readability. */
+const ROUTE_ADVANCE_EVTOL = 0.22 * 0.32;
+const ROUTE_ADVANCE_DRONE = 0.38 * 0.32;
+const CHARGE_RATE_PCT_PER_TICK = 0.85;
 
 const DFW_CENTER = { lat: 32.7767, lng: -96.797 };
 
@@ -136,6 +140,7 @@ function createAircraftState(aircraft, index) {
           : Math.round(defaultAltitude * 0.15),
     speed_kts: status === 'in-flight' ? defaultSpeed : 0,
     battery_pct: batteryPct,
+    battery_float: batteryPct,
     status,
     holdTicks: 0,
   };
@@ -145,7 +150,7 @@ function moveAlongRoute(state) {
   const current = state.route[state.routeIndex];
   const next = state.route[(state.routeIndex + 1) % state.route.length];
 
-  const speedFactor = state.type === 'evtol' ? 0.22 : 0.38;
+  const speedFactor = state.type === 'evtol' ? ROUTE_ADVANCE_EVTOL : ROUTE_ADVANCE_DRONE;
   const nextProgress = state.routeProgress + speedFactor;
 
   if (nextProgress >= 1) {
@@ -176,7 +181,12 @@ function updateDynamicState(state) {
   if (state.status === 'charging') {
     state.speed_kts = 0;
     state.altitude_ft = 0;
-    state.battery_pct = clamp(state.battery_pct + 0.8, 0, 100);
+    state.battery_float = clamp(
+      (state.battery_float ?? state.battery_pct) + CHARGE_RATE_PCT_PER_TICK,
+      0,
+      100
+    );
+    state.battery_pct = state.battery_float;
     if (state.battery_pct >= 85) {
       state.status = 'ready';
     }
@@ -199,7 +209,12 @@ function updateDynamicState(state) {
   const waypointReached = moveAlongRoute(state);
   state.speed_kts = state.type === 'evtol' ? 110 : 38;
   state.altitude_ft = state.type === 'evtol' ? 1200 : 260;
-  state.battery_pct = clamp(state.battery_pct - sampleRandom(0.3, 0.5), 0, 100);
+  state.battery_float = clamp(
+    (state.battery_float ?? state.battery_pct) - sampleRandom(0.3, 0.55),
+    0,
+    100
+  );
+  state.battery_pct = state.battery_float;
 
   if (state.battery_pct <= 20) {
     state.status = 'charging';
@@ -263,7 +278,7 @@ function buildPayload(state) {
     altitude_ft: Math.round(state.altitude_ft),
     speed_kts: Math.round(state.speed_kts),
     heading_deg: Math.round(state.heading_deg),
-    battery_pct: Math.round(state.battery_pct),
+    battery_pct: Math.min(100, Math.round(Number(state.battery_pct) || 0)),
     status: state.status,
     timestamp: new Date().toISOString(),
   };
@@ -277,6 +292,8 @@ async function tick(states) {
     if (DEMO_MODE) {
       applyDemoScenarioOverrides(state, demoTick);
     }
+    state.battery_float = clamp(Number(state.battery_pct), 0, 100);
+    state.battery_pct = state.battery_float;
     const payload = buildPayload(state);
     await redis.publish(TELEMETRY_CHANNEL, JSON.stringify(payload));
   }

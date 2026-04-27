@@ -17,16 +17,35 @@ function haversineKm(lat1, lng1, lat2, lng2) {
   return earthRadiusKm * c;
 }
 
+function isDispatchEligible(aircraft) {
+  if (
+    !aircraft ||
+    !Number.isFinite(aircraft.battery_pct) ||
+    !Number.isFinite(aircraft.lat) ||
+    !Number.isFinite(aircraft.lng)
+  ) {
+    return false;
+  }
+
+  const batt = Number(aircraft.battery_pct);
+  if (batt < 40) {
+    return false;
+  }
+
+  if (aircraft.status === 'ready') {
+    return true;
+  }
+
+  // Nearly charged aircraft at the pad can accept the next mission without waiting for "ready" flip.
+  if (aircraft.status === 'charging' && batt >= 82) {
+    return true;
+  }
+
+  return false;
+}
+
 function selectAircraft(originLat, originLng) {
-  const candidates = Object.values(fleetState).filter(
-    (aircraft) =>
-      aircraft &&
-      aircraft.status === 'ready' &&
-      Number.isFinite(aircraft.battery_pct) &&
-      aircraft.battery_pct >= 40 &&
-      Number.isFinite(aircraft.lat) &&
-      Number.isFinite(aircraft.lng)
-  );
+  const candidates = Object.values(fleetState).filter(isDispatchEligible);
 
   if (candidates.length === 0) {
     return null;

@@ -38,7 +38,8 @@ function relativeTime(isoTimestamp, nowMs) {
   return `Updated ${diffSec}s ago`;
 }
 
-function DetailPanel({ aircraft, isOpen, onClose }) {
+function DetailPanel({ aircraft, isOpen, onClose, variant = 'overlay' }) {
+  const isDock = variant === 'dock';
   const closeButtonRef = useRef(null);
   const [nowMs, setNowMs] = useState(0);
 
@@ -91,15 +92,17 @@ function DetailPanel({ aircraft, isOpen, onClose }) {
 
   return (
     <>
-      <button
-        type="button"
-        className={`detail-panel-backdrop ${isOpen ? 'detail-panel-backdrop--open' : ''}`}
-        onClick={onClose}
-        aria-label="Close aircraft details"
-      />
+      {!isDock && (
+        <button
+          type="button"
+          className={`detail-panel-backdrop ${isOpen ? 'detail-panel-backdrop--open' : ''}`}
+          onClick={onClose}
+          aria-label="Close aircraft details"
+        />
+      )}
 
       <aside
-        className={`detail-panel ${isOpen ? 'detail-panel--open' : ''}`}
+        className={`detail-panel ${isOpen ? 'detail-panel--open' : ''} ${isDock ? 'detail-panel--dock' : ''}`}
         aria-labelledby="detail-panel-title"
       >
         {aircraft ? (
