@@ -6,7 +6,7 @@ tags: [tasks, priorities, slice-1]
 
 # Volant Task List
 
-_Last updated: Apr 26, 2026 19:35 CDT_
+_Last updated: Apr 27, 2026 16:35 CDT_
 
 ---
 
@@ -49,27 +49,27 @@ _Last updated: Apr 26, 2026 19:35 CDT_
   - Frontend feature/shared entry points + import boundary lint guardrail
   - CI workflow (`.github/workflows/platform-ci.yml`)
   - Contributor docs: `ARCHITECTURE.md`, `CONTRIBUTING.md`, ADR template
-- [ ] **Slice 2 Step 1** — Schema (missions + users) + BullMQ queue setup 🔥 _(briefed in CURSOR_TASKS.md)_
-- [ ] **Slice 2 Step 2** — Assignment Engine (haversine, best aircraft selection)
-- [ ] **Slice 2 Step 3** — Deconfliction Service (spatial/temporal conflict check)
-- [ ] **Slice 2 Step 4** — Dispatch REST API (POST/GET/PATCH /api/missions)
-- [ ] **Slice 2 Step 5** — Auth layer (JWT, login endpoint, bcrypt, Socket.io handshake)
-- [ ] **Slice 2 Step 6** — BullMQ worker + mission state machine
-- [ ] **Slice 2 Step 7** — Dispatch UI (login view + dispatch form + mission queue)
-- [ ] **Slice 2 Step 8** — Mission map overlay (route LineString on Fleet Map)
-- [ ] **Slice 2 Step 9** — Demo scenario update (dispatch sequence in npm run demo)
+- [x] **Slice 2 Step 1** — Schema (missions + users) + BullMQ queue setup ✅ _(Cursor, Apr 27)_
+- [x] **Slice 2 Step 2** — Assignment Engine (haversine, best aircraft selection) ✅ _(Cursor, Apr 27)_
+- [x] **Slice 2 Step 3** — Deconfliction Service (spatial/temporal conflict check) ✅ _(Cursor, Apr 27)_
+- [x] **Slice 2 Step 4** — Dispatch REST API (POST/GET/PATCH /api/missions) ✅ _(Cursor, Apr 27)_
+- [x] **Slice 2 Step 5** — Auth layer (JWT, login endpoint, bcrypt, Socket.io handshake) ✅ _(Cursor, Apr 27)_
+- [x] **Slice 2 Step 6** — BullMQ worker + mission state machine ✅ _(Cursor, Apr 27)_
+- [x] **Slice 2 Step 7** — Dispatch UI (login view + dispatch form + mission queue) ✅ _(Cursor + Claude, Apr 27)_
+- [x] **Slice 2 Step 8** — Mission map overlay (selected-aircraft route focus + mission path) ✅ _(Cursor, Apr 27)_
+- [x] **Slice 2 Step 9** — Demo scenario update (dispatch sequence in npm run demo) ✅ _(Cursor, Apr 27)_
   - One-command verify scripts + backend smoke health script
 - [ ] **Slice 2 kickoff** — Mission Dispatch planning + implementation brief
 - [ ] **Frontend bundle-size optimization (non-blocking)** — split/lazy-load heavy frontend chunks after hardening pass
 
 ### Claude Handoff — Finish Slice 2 Step 7 (Dispatch UI)
 
-- [ ] **Finish Step 7 in Claude Code CLI** (Cursor session blocked by stale UI a11y gate despite rule update)
+- [x] **Finish Step 7 in Claude Code CLI** ✅ completed Apr 27
 - [x] **Already completed in codebase:**
   - `platform/backend/src/repositories/missionRepository.js` — JSDoc added above `getMissionByIdAnyOperator`
   - `platform/frontend/src/hooks/useFleetSocket.js` — now returns `socket` for shared mission subscriptions
   - `platform/frontend/src/hooks/useMissionSocket.js` — added (initial `GET /api/missions`, `mission:update` upsert, reconnect refetch, sorted `missionsList`)
-- [ ] **Claude should implement remaining Step 7 files:**
+- [x] **Claude should implement remaining Step 7 files:** ✅ done
   - `platform/frontend/src/features/auth/Login.jsx`
   - `platform/frontend/src/features/auth/index.js`
   - `platform/frontend/src/features/dispatch/Dispatch.jsx`
@@ -77,7 +77,7 @@ _Last updated: Apr 26, 2026 19:35 CDT_
   - `platform/frontend/src/App.jsx` (auth guard + `/login` + `/dispatch` routes)
   - `platform/frontend/src/components/Sidebar.jsx` (unlock Mission Dispatch nav link)
   - `platform/frontend/src/index.css` (login + dispatch styles)
-- [ ] **Step 7 behavior to verify in Claude run:**
+- [x] **Step 7 behavior to verify in Claude run:** ✅ verified
   - unauthenticated `/` redirects to `/login`
   - login (`dispatcher@volant.demo` / `dispatch123`) redirects to `/`
   - sidebar shows clickable `Mission Dispatch` link
