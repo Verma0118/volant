@@ -6,7 +6,7 @@ tags: [tasks, priorities, slice-1]
 
 # Volant Task List
 
-_Last updated: Apr 27, 2026 18:46 CDT_
+_Last updated: Apr 27, 2026 20:45 CDT_
 
 ---
 
@@ -59,6 +59,7 @@ _Last updated: Apr 27, 2026 18:46 CDT_
 - [x] **Slice 2 Step 8** — Mission map overlay (selected-aircraft route focus + mission path) ✅ _(Cursor, Apr 27)_
 - [x] **Slice 2 Step 9** — Demo scenario update (dispatch sequence in npm run demo) ✅ _(Cursor, Apr 27)_
 - [x] **Fleet Map mission overlay polish** — START/LZ markers, landing clearance ring (~420 m), demo mission duration tuning, stable battery during guided path (no 0% mid-flight) ✅ _(Cursor, Apr 27, `2467abc`)_
+- [x] **Security hardening pass** — fail-fast JWT secret, login rate limiting, HttpOnly cookie auth session flow, stricter CORS controls ✅ _(Cursor, Apr 27, `4a03470`)_
 - [x] **Slice 3 Step 1** — Maintenance schema (migration 006) + `maintenance_events` / `maintenance_due` ✅ _(Cursor, Apr 27)_
 - [ ] **Slice 3 Step 2** — Accrue flight minutes on completed missions (idempotent) 🔥
 - [ ] **Frontend bundle-size optimization (non-blocking)** — split/lazy-load heavy frontend chunks
