@@ -34,7 +34,9 @@ jobs:
       - name: Prepare env
         run: |
           cp platform/.env.example platform/.env
+          cp platform/backend/.env.example platform/backend/.env
           echo "JWT_SECRET=ci_jwt_secret_for_pipeline_only" >> platform/.env
+          echo "JWT_SECRET=ci_jwt_secret_for_pipeline_only" >> platform/backend/.env
 
       - name: Install root tooling
         run: npm ci
