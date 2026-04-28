@@ -6,6 +6,7 @@ const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authResolved, setAuthResolved] = useState(false);
+  const [csrfToken, setCsrfToken] = useState('');
 
   useEffect(() => {
     const syncSession = async () => {
@@ -14,8 +15,11 @@ export function useAuth() {
           credentials: 'include',
         });
         setIsAuthenticated(response.ok);
+        const payload = await response.json().catch(() => ({}));
+        setCsrfToken(response.ok ? payload.csrfToken || '' : '');
       } catch {
         setIsAuthenticated(false);
+        setCsrfToken('');
       } finally {
         setAuthResolved(true);
       }
@@ -46,6 +50,7 @@ export function useAuth() {
     }
 
     setIsAuthenticated(true);
+    setCsrfToken(payload.csrfToken || '');
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
   }, []);
 
@@ -53,18 +58,21 @@ export function useAuth() {
     try {
       await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'POST',
+        headers: csrfToken ? { 'x-csrf-token': csrfToken } : {},
         credentials: 'include',
       });
     } catch {
       // Best-effort logout.
     }
     setIsAuthenticated(false);
+    setCsrfToken('');
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
-  }, []);
+  }, [csrfToken]);
 
   return {
     isAuthenticated,
     authResolved,
+    csrfToken,
     login,
     logout,
   };

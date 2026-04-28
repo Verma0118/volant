@@ -56,6 +56,7 @@ function AuthenticatedLayout({
   announcement,
   socket,
   isAuthenticated,
+  csrfToken,
 }) {
   return (
     <>
@@ -94,6 +95,7 @@ function AuthenticatedLayout({
                   <Dispatch
                     socket={socket}
                     isAuthenticated={isAuthenticated}
+                    csrfToken={csrfToken}
                     fleetState={fleetState}
                   />
                 }
@@ -112,7 +114,7 @@ function AuthenticatedLayout({
 }
 
 function App() {
-  const { isAuthenticated, authResolved } = useAuth();
+  const { isAuthenticated, authResolved, csrfToken } = useAuth();
   const { fleetState, connectionState, announcement, socket } = useFleetSocket(isAuthenticated);
   const activeAircraftCount = useMemo(
     () => dedupeFleetRowsByTail(Object.values(fleetState)).length,
@@ -141,6 +143,7 @@ function App() {
               announcement={announcement}
               socket={socket}
               isAuthenticated={isAuthenticated}
+              csrfToken={csrfToken}
             />
           ) : (
             <Navigate to="/login" replace />

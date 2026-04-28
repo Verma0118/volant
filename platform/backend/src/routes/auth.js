@@ -3,8 +3,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 
-const { JWT_SECRET, JWT_COOKIE_NAME, NODE_ENV } = require('../config');
+const { JWT_SECRET, JWT_COOKIE_NAME, CSRF_COOKIE_NAME, NODE_ENV } = require('../config');
 const { authMiddleware } = require('../middleware/auth');
+const { issueCsrfToken, ensureCsrfToken, requireCsrfToken } = require('../middleware/csrf');
 const { getUserByEmail } = require('../repositories/userRepository');
 
 const router = express.Router();
@@ -56,17 +57,24 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     const token = jwt.sign(buildTokenPayload(user), JWT_SECRET, { expiresIn: '8h' });
     res.cookie(JWT_COOKIE_NAME, token, authCookieOptions());
+    const csrfToken = issueCsrfToken(res);
 
-    return res.json({ ok: true });
+    return res.json({ ok: true, csrfToken });
   } catch (err) {
     console.error('POST /api/auth/login failed', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.post('/logout', (_req, res) => {
+router.post('/logout', authMiddleware, requireCsrfToken, (_req, res) => {
   res.clearCookie(JWT_COOKIE_NAME, {
     httpOnly: true,
+    sameSite: 'lax',
+    secure: NODE_ENV === 'production',
+    path: '/',
+  });
+  res.clearCookie(CSRF_COOKIE_NAME, {
+    httpOnly: false,
     sameSite: 'lax',
     secure: NODE_ENV === 'production',
     path: '/',
@@ -75,8 +83,10 @@ router.post('/logout', (_req, res) => {
 });
 
 router.get('/session', authMiddleware, (req, res) => {
+  const csrfToken = ensureCsrfToken(req, res);
   return res.json({
     authenticated: true,
+    csrfToken,
     user: {
       userId: req.userId,
       operatorId: req.operatorId,

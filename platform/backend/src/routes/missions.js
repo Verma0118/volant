@@ -1,7 +1,9 @@
 const express = require('express');
+const rateLimit = require('express-rate-limit');
 
 const { missionQueue } = require('../queues/missionQueue');
 const { selectAircraft, checkConflict } = require('../services');
+const { requireCsrfToken } = require('../middleware/csrf');
 const { validateMissionPayload } = require('./missionValidation');
 const {
   createMission,
@@ -12,6 +14,13 @@ const {
 } = require('../repositories/missionRepository');
 
 const router = express.Router();
+const missionWriteLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many mission write requests. Try again shortly.' },
+});
 
 function toDispatchedMinute(dispatchedAt) {
   if (!dispatchedAt) {
@@ -26,7 +35,7 @@ function toDispatchedMinute(dispatchedAt) {
   return time / 60000;
 }
 
-router.post('/', async (req, res) => {
+router.post('/', missionWriteLimiter, requireCsrfToken, async (req, res) => {
   try {
     const operatorId = req.operatorId;
     const validation = validateMissionPayload(req.body || {});
@@ -160,7 +169,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.patch('/:id/cancel', async (req, res) => {
+router.patch('/:id/cancel', missionWriteLimiter, requireCsrfToken, async (req, res) => {
   try {
     const mission = await getMissionById(req.params.id, req.operatorId);
     if (!mission) {

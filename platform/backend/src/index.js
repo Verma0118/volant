@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const http = require('http');
 
 const {
@@ -47,6 +48,7 @@ app.use(
     credentials: true,
   })
 );
+app.use(helmet());
 app.use(express.json());
 
 app.get('/health', (_req, res) => {

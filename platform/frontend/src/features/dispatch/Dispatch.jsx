@@ -50,7 +50,7 @@ function relativeTime(isoString) {
   return `${Math.floor(mins / 60)}h ago`;
 }
 
-export default function Dispatch({ socket, isAuthenticated, fleetState }) {
+export default function Dispatch({ socket, isAuthenticated, csrfToken, fleetState }) {
   const { missionsList } = useMissionSocket(socket, isAuthenticated);
 
   const originLegendId = useId();
@@ -128,6 +128,7 @@ export default function Dispatch({ socket, isAuthenticated, fleetState }) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'x-csrf-token': csrfToken,
           },
           credentials: 'include',
           body: JSON.stringify({
@@ -158,7 +159,7 @@ export default function Dispatch({ socket, isAuthenticated, fleetState }) {
         setSubmitting(false);
       }
     },
-    [availableAircraft.length, form],
+    [availableAircraft.length, csrfToken, form],
   );
 
   return (

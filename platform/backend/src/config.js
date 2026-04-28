@@ -13,6 +13,7 @@ const CURRENT_OPERATOR_ID = process.env.CURRENT_OPERATOR_ID || '';
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const SECURITY_HARDENED = process.env.SECURITY_HARDENED === 'true';
 const JWT_COOKIE_NAME = process.env.JWT_COOKIE_NAME || 'volant_auth';
+const CSRF_COOKIE_NAME = process.env.CSRF_COOKIE_NAME || 'volant_csrf';
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || '';
 const ALLOW_MISSING_ORIGIN = process.env.ALLOW_MISSING_ORIGIN !== 'false';
 
@@ -38,6 +39,7 @@ module.exports = {
   NODE_ENV,
   SECURITY_HARDENED,
   JWT_COOKIE_NAME,
+  CSRF_COOKIE_NAME,
   FRONTEND_ORIGIN,
   ALLOW_MISSING_ORIGIN,
 };
