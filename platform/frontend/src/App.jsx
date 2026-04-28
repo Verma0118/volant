@@ -49,7 +49,14 @@ function RouteTitle() {
   return null;
 }
 
-function AuthenticatedLayout({ fleetState, activeAircraftCount, connectionState, announcement, socket, token }) {
+function AuthenticatedLayout({
+  fleetState,
+  activeAircraftCount,
+  connectionState,
+  announcement,
+  socket,
+  isAuthenticated,
+}) {
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -72,12 +79,24 @@ function AuthenticatedLayout({ fleetState, activeAircraftCount, connectionState,
             <Routes>
               <Route
                 path="/"
-                element={<FleetMap fleetState={fleetState} socket={socket} token={token} />}
+                element={
+                  <FleetMap
+                    fleetState={fleetState}
+                    socket={socket}
+                    isAuthenticated={isAuthenticated}
+                  />
+                }
               />
               <Route path="/status" element={<FleetStatus fleetState={fleetState} />} />
               <Route
                 path="/dispatch"
-                element={<Dispatch socket={socket} token={token} fleetState={fleetState} />}
+                element={
+                  <Dispatch
+                    socket={socket}
+                    isAuthenticated={isAuthenticated}
+                    fleetState={fleetState}
+                  />
+                }
               />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -93,8 +112,8 @@ function AuthenticatedLayout({ fleetState, activeAircraftCount, connectionState,
 }
 
 function App() {
-  const { token, isAuthenticated } = useAuth();
-  const { fleetState, connectionState, announcement, socket } = useFleetSocket(token);
+  const { isAuthenticated, authResolved } = useAuth();
+  const { fleetState, connectionState, announcement, socket } = useFleetSocket(isAuthenticated);
   const activeAircraftCount = useMemo(
     () => dedupeFleetRowsByTail(Object.values(fleetState)).length,
     [fleetState]
@@ -104,20 +123,24 @@ function App() {
     applyThemeVariables();
   }, []);
 
+  if (!authResolved) {
+    return null;
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route
         path="/*"
         element={
-          isAuthenticated ? (
+          authResolved && isAuthenticated ? (
             <AuthenticatedLayout
               fleetState={fleetState}
               activeAircraftCount={activeAircraftCount}
               connectionState={connectionState}
               announcement={announcement}
               socket={socket}
-              token={token}
+              isAuthenticated={isAuthenticated}
             />
           ) : (
             <Navigate to="/login" replace />

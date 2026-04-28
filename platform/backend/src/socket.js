@@ -1,26 +1,47 @@
 const { Server } = require('socket.io');
-const { verifyAccessToken } = require('./middleware/auth');
+const { verifyAccessToken, extractCookieToken } = require('./middleware/auth');
+const {
+  ALLOW_MISSING_ORIGIN,
+  FRONTEND_ORIGIN,
+  SECURITY_HARDENED,
+} = require('./config');
 
 let io;
 
 const FRONTEND_ORIGIN_REGEX = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return ALLOW_MISSING_ORIGIN;
+  }
+  if (FRONTEND_ORIGIN && origin === FRONTEND_ORIGIN) {
+    return true;
+  }
+  if (!SECURITY_HARDENED && FRONTEND_ORIGIN_REGEX.test(origin)) {
+    return true;
+  }
+  return false;
+}
+
 function initSocket(httpServer) {
   io = new Server(httpServer, {
     cors: {
       origin(origin, callback) {
-        if (!origin || FRONTEND_ORIGIN_REGEX.test(origin)) {
+        if (isAllowedOrigin(origin)) {
           callback(null, true);
           return;
         }
 
         callback(new Error(`Socket CORS blocked for origin: ${origin}`));
       },
+      credentials: true,
     },
   });
 
   io.use((socket, next) => {
-    const token = socket.handshake?.auth?.token;
+    const token =
+      socket.handshake?.auth?.token ||
+      extractCookieToken(socket.handshake?.headers?.cookie);
     if (!token) {
       next(new Error('No token'));
       return;

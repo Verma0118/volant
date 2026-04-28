@@ -159,9 +159,9 @@ function buildMissionOverlayGeoJson(mission, selectedAircraft) {
   };
 }
 
-function FleetMap({ fleetState, socket, token }) {
+function FleetMap({ fleetState, socket, isAuthenticated }) {
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
-  const { missionsList } = useMissionSocket(socket, token);
+  const { missionsList } = useMissionSocket(socket, isAuthenticated);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markerStoreRef = useRef(new Map());

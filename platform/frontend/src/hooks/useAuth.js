@@ -1,31 +1,33 @@
 import { useCallback, useEffect, useState } from 'react';
 
-const TOKEN_STORAGE_KEY = 'volant_token';
 const AUTH_CHANGE_EVENT = 'volant-auth-changed';
 const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
 
 export function useAuth() {
-  const [token, setToken] = useState(() => localStorage.getItem(TOKEN_STORAGE_KEY) || '');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authResolved, setAuthResolved] = useState(false);
 
   useEffect(() => {
-    const syncFromStorage = () => {
-      setToken(localStorage.getItem(TOKEN_STORAGE_KEY) || '');
-    };
-
-    const onStorage = (event) => {
-      if (event.key === TOKEN_STORAGE_KEY) {
-        setToken(event.newValue || '');
+    const syncSession = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
+          credentials: 'include',
+        });
+        setIsAuthenticated(response.ok);
+      } catch {
+        setIsAuthenticated(false);
+      } finally {
+        setAuthResolved(true);
       }
     };
 
     const onAuthChanged = () => {
-      syncFromStorage();
+      syncSession();
     };
 
-    window.addEventListener('storage', onStorage);
     window.addEventListener(AUTH_CHANGE_EVENT, onAuthChanged);
+    syncSession();
     return () => {
-      window.removeEventListener('storage', onStorage);
       window.removeEventListener(AUTH_CHANGE_EVENT, onAuthChanged);
     };
   }, []);
@@ -34,29 +36,35 @@ export function useAuth() {
     const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
 
     const payload = await response.json().catch(() => ({}));
-    if (!response.ok || !payload.token) {
+    if (!response.ok) {
       throw new Error(payload.error || 'Invalid credentials');
     }
 
-    localStorage.setItem(TOKEN_STORAGE_KEY, payload.token);
+    setIsAuthenticated(true);
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
-    setToken(payload.token);
-    return payload.token;
   }, []);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
+  const logout = useCallback(async () => {
+    try {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch {
+      // Best-effort logout.
+    }
+    setIsAuthenticated(false);
     window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
-    setToken('');
   }, []);
 
   return {
-    token,
-    isAuthenticated: Boolean(token),
+    isAuthenticated,
+    authResolved,
     login,
     logout,
   };

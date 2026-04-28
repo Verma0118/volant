@@ -4,14 +4,14 @@ import { io } from 'socket.io-client';
 const SOCKET_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
 const MAX_RECONNECT_DELAY_MS = 10000;
 
-export function useFleetSocket(token) {
+export function useFleetSocket(isAuthenticated) {
   const [activeSocket, setActiveSocket] = useState(null);
   const [fleetState, setFleetState] = useState({});
   const [connectionState, setConnectionState] = useState(
-    token ? 'connecting' : 'unauthenticated'
+    isAuthenticated ? 'connecting' : 'unauthenticated'
   );
   const [announcement, setAnnouncement] = useState(
-    token ? 'Connecting to live telemetry...' : 'Sign in to connect telemetry.'
+    isAuthenticated ? 'Connecting to live telemetry...' : 'Sign in to connect telemetry.'
   );
   const [criticalAnnouncement, setCriticalAnnouncement] = useState('');
 
@@ -20,7 +20,7 @@ export function useFleetSocket(token) {
   const flushScheduledRef = useRef(false);
 
   useEffect(() => {
-    if (!token) {
+    if (!isAuthenticated) {
       pendingUpdatesRef.current.clear();
       flushScheduledRef.current = false;
       queueMicrotask(() => {
@@ -60,8 +60,8 @@ export function useFleetSocket(token) {
     };
 
     const socket = io(SOCKET_URL, {
-      auth: { token },
       transports: ['websocket'],
+      withCredentials: true,
       reconnection: true,
       reconnectionDelay: 500,
       reconnectionDelayMax: MAX_RECONNECT_DELAY_MS,
@@ -111,7 +111,7 @@ export function useFleetSocket(token) {
       socket.removeAllListeners();
       socket.close();
     };
-  }, [token]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!announcement) {

@@ -1,11 +1,31 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 
-const { JWT_SECRET } = require('../config');
+const { JWT_SECRET, JWT_COOKIE_NAME, NODE_ENV } = require('../config');
+const { authMiddleware } = require('../middleware/auth');
 const { getUserByEmail } = require('../repositories/userRepository');
 
 const router = express.Router();
+const LOGIN_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const loginLimiter = rateLimit({
+  windowMs: LOGIN_LIMIT_WINDOW_MS,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many login attempts. Try again in 10 minutes.' },
+});
+
+function authCookieOptions() {
+  return {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: NODE_ENV === 'production',
+    path: '/',
+    maxAge: 8 * 60 * 60 * 1000,
+  };
+}
 
 function buildTokenPayload(user) {
   return {
@@ -15,7 +35,7 @@ function buildTokenPayload(user) {
   };
 }
 
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const email = (req.body?.email || '').trim().toLowerCase();
     const password = req.body?.password || '';
@@ -35,12 +55,34 @@ router.post('/login', async (req, res) => {
     }
 
     const token = jwt.sign(buildTokenPayload(user), JWT_SECRET, { expiresIn: '8h' });
+    res.cookie(JWT_COOKIE_NAME, token, authCookieOptions());
 
-    return res.json({ token });
+    return res.json({ ok: true });
   } catch (err) {
     console.error('POST /api/auth/login failed', err);
     return res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+router.post('/logout', (_req, res) => {
+  res.clearCookie(JWT_COOKIE_NAME, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: NODE_ENV === 'production',
+    path: '/',
+  });
+  return res.json({ ok: true });
+});
+
+router.get('/session', authMiddleware, (req, res) => {
+  return res.json({
+    authenticated: true,
+    user: {
+      userId: req.userId,
+      operatorId: req.operatorId,
+      role: req.userRole || 'dispatcher',
+    },
+  });
 });
 
 module.exports = {

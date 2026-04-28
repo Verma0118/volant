@@ -2,7 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 
-const { PORT } = require('./config');
+const {
+  PORT,
+  ALLOW_MISSING_ORIGIN,
+  FRONTEND_ORIGIN,
+  SECURITY_HARDENED,
+} = require('./config');
 const { connectPostgres, resolveOperator, initSchema } = require('./db');
 const { connectRedis } = require('./redis');
 const { initSocket } = require('./socket');
@@ -16,16 +21,30 @@ const app = express();
 
 const FRONTEND_ORIGIN_REGEX = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
+function isAllowedOrigin(origin) {
+  if (!origin) {
+    return ALLOW_MISSING_ORIGIN;
+  }
+  if (FRONTEND_ORIGIN && origin === FRONTEND_ORIGIN) {
+    return true;
+  }
+  if (!SECURITY_HARDENED && FRONTEND_ORIGIN_REGEX.test(origin)) {
+    return true;
+  }
+  return false;
+}
+
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || FRONTEND_ORIGIN_REGEX.test(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }
 
       callback(new Error(`CORS blocked for origin: ${origin}`));
     },
+    credentials: true,
   })
 );
 app.use(express.json());

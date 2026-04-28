@@ -29,11 +29,11 @@ function toMissionMap(missions) {
   return next;
 }
 
-export function useMissionSocket(socket, token) {
+export function useMissionSocket(socket, isAuthenticated) {
   const [missionsState, setMissionsState] = useState({});
 
   useEffect(() => {
-    if (!token) {
+    if (!isAuthenticated) {
       queueMicrotask(() => {
         setMissionsState({});
       });
@@ -43,7 +43,7 @@ export function useMissionSocket(socket, token) {
     async function fetchMissions() {
       try {
         const response = await fetch(`${API_BASE_URL}/api/missions`, {
-          headers: { Authorization: `Bearer ${token}` },
+          credentials: 'include',
         });
         const payload = await response.json().catch(() => []);
         if (!response.ok || !Array.isArray(payload)) {
@@ -85,7 +85,7 @@ export function useMissionSocket(socket, token) {
       socket.off('mission:update', onMissionUpdate);
       socket.off('connect', onReconnect);
     };
-  }, [socket, token]);
+  }, [socket, isAuthenticated]);
 
   const missionsList = useMemo(
     () =>

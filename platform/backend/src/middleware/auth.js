@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config');
+const { JWT_SECRET, JWT_COOKIE_NAME } = require('../config');
 
 function extractBearerToken(authHeader) {
   if (!authHeader || typeof authHeader !== 'string') {
@@ -14,12 +14,39 @@ function extractBearerToken(authHeader) {
   return token;
 }
 
+function parseCookieHeader(cookieHeader) {
+  if (!cookieHeader || typeof cookieHeader !== 'string') {
+    return {};
+  }
+
+  return cookieHeader.split(';').reduce((acc, part) => {
+    const [rawKey, ...rest] = part.trim().split('=');
+    if (!rawKey || rest.length === 0) {
+      return acc;
+    }
+    acc[rawKey] = decodeURIComponent(rest.join('='));
+    return acc;
+  }, {});
+}
+
+function extractCookieToken(cookieHeader) {
+  const cookies = parseCookieHeader(cookieHeader);
+  return cookies[JWT_COOKIE_NAME] || null;
+}
+
+function extractAccessToken(headers = {}) {
+  return (
+    extractBearerToken(headers.authorization) ||
+    extractCookieToken(headers.cookie)
+  );
+}
+
 function verifyAccessToken(token) {
   return jwt.verify(token, JWT_SECRET);
 }
 
 function authMiddleware(req, res, next) {
-  const token = extractBearerToken(req.headers.authorization);
+  const token = extractAccessToken(req.headers);
   if (!token) {
     return res.status(401).json({ error: 'No token' });
   }
@@ -38,5 +65,8 @@ function authMiddleware(req, res, next) {
 module.exports = {
   authMiddleware,
   extractBearerToken,
+  extractCookieToken,
+  extractAccessToken,
+  parseCookieHeader,
   verifyAccessToken,
 };
