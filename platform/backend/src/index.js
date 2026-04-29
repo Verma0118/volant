@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const http = require('http');
 
 const {
@@ -49,11 +50,22 @@ app.use(
   })
 );
 app.use(helmet());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Try again shortly.' },
+});
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Rate limit all HTTP API traffic (auth is also rate-limited separately where needed).
+app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api', authMiddleware);
 app.use('/api/aircraft', aircraftRoutes);

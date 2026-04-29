@@ -38,7 +38,41 @@ function initSocket(httpServer) {
     },
   });
 
+  // Basic anti-bot throttle for new Socket.io connections.
+  // Prevents connection floods from hammering auth/telemetry endpoints.
+  const CONNECTION_WINDOW_MS = 60_000;
+  const MAX_CONNECTIONS_PER_IP = 12;
+  const connectionBuckets = new Map(); // ip -> { count, resetAtMs }
+
+  function getClientIp(socket) {
+    return socket?.handshake?.address || '';
+  }
+
+  function isConnectionAllowed(ip) {
+    if (!ip) return true;
+    const now = Date.now();
+    const existing = connectionBuckets.get(ip);
+    if (!existing || now >= existing.resetAtMs) {
+      connectionBuckets.set(ip, { count: 1, resetAtMs: now + CONNECTION_WINDOW_MS });
+      return true;
+    }
+
+    if (existing.count >= MAX_CONNECTIONS_PER_IP) {
+      return false;
+    }
+
+    existing.count += 1;
+    connectionBuckets.set(ip, existing);
+    return true;
+  }
+
   io.use((socket, next) => {
+    const ip = getClientIp(socket);
+    if (!isConnectionAllowed(ip)) {
+      next(new Error('Too many connections'));
+      return;
+    }
+
     const token =
       socket.handshake?.auth?.token ||
       extractCookieToken(socket.handshake?.headers?.cookie);
