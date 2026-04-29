@@ -1,47 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import BatteryBar from './BatteryBar';
-import StatusPill from './StatusPill';
+import { useEffect, useMemo, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-function formatNumber(value) {
-  if (typeof value !== 'number') {
-    return '--';
-  }
-
-  return new Intl.NumberFormat('en-US').format(Math.round(value));
-}
-
-function formatPosition(lat, lng) {
-  if (typeof lat !== 'number' || typeof lng !== 'number') {
-    return '--';
-  }
-
-  const latLabel = `${Math.abs(lat).toFixed(4)}° ${lat >= 0 ? 'N' : 'S'}`;
-  const lngLabel = `${Math.abs(lng).toFixed(4)}° ${lng >= 0 ? 'E' : 'W'}`;
-  return `${latLabel}, ${lngLabel}`;
-}
-
-function relativeTime(isoTimestamp, nowMs) {
-  if (!isoTimestamp) {
-    return 'No live timestamp';
-  }
-
-  const ts = Date.parse(isoTimestamp);
-  if (Number.isNaN(ts)) {
-    return 'Unknown update time';
-  }
-
-  const diffSec = Math.max(0, Math.floor((nowMs - ts) / 1000));
-  if (diffSec <= 1) {
-    return 'Updated just now';
-  }
-
-  return `Updated ${diffSec}s ago`;
-}
+// (intentionally no formatting helpers here; telemetry tiles format directly)
 
 function DetailPanel({ aircraft, isOpen, onClose, variant = 'overlay' }) {
   const isDock = variant === 'dock';
+  const navigate = useNavigate();
   const closeButtonRef = useRef(null);
-  const [nowMs, setNowMs] = useState(0);
 
   useEffect(() => {
     if (!isOpen) {
@@ -56,39 +21,34 @@ function DetailPanel({ aircraft, isOpen, onClose, variant = 'overlay' }) {
       }
     };
 
-    const tick = setInterval(() => {
-      setNowMs(Date.now());
-    }, 1000);
-
     window.addEventListener('keydown', handleEscape);
 
     return () => {
-      clearInterval(tick);
       window.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
 
-  const detailRows = useMemo(() => {
-    if (!aircraft) {
-      return [];
-    }
+  const telemetry = useMemo(() => {
+    if (!aircraft) return null;
 
-    return [
-      { label: 'Altitude', value: `${formatNumber(aircraft.altitude_ft)} ft` },
-      { label: 'Speed', value: `${formatNumber(aircraft.speed_kts)} kts` },
-      { label: 'Heading', value: `${formatNumber(aircraft.heading_deg)}°` },
-      { label: 'Position', value: formatPosition(aircraft.lat, aircraft.lng) },
-      {
-        label: 'Type',
-        value: `${(aircraft.type || '--').toString().toUpperCase()} — ${aircraft.model || '--'}`,
-      },
-      { label: 'Operator', value: aircraft.operator || aircraft.operator_name || '--' },
-      {
-        label: 'Last update',
-        value: relativeTime(aircraft.last_update || aircraft.timestamp, nowMs),
-      },
-    ];
-  }, [aircraft, nowMs]);
+    const batteryPct = Math.max(0, Math.min(100, Number(aircraft.battery_pct) || 0));
+    const altitudeFt = Math.round(aircraft.altitude_ft ?? 0);
+    const speedKts = Math.round(aircraft.speed_kts ?? 0);
+    const status = aircraft.status || 'ready';
+
+    const statusLabel =
+      status === 'in-flight'
+        ? 'Active'
+        : status === 'charging'
+          ? 'Charging'
+          : status === 'maintenance'
+            ? 'Maintenance'
+            : status === 'grounded'
+              ? 'Grounded'
+              : 'Ready';
+
+    return { batteryPct, altitudeFt, speedKts, status, statusLabel };
+  }, [aircraft]);
 
   return (
     <>
@@ -105,14 +65,14 @@ function DetailPanel({ aircraft, isOpen, onClose, variant = 'overlay' }) {
         className={`detail-panel ${isOpen ? 'detail-panel--open' : ''} ${isDock ? 'detail-panel--dock' : ''}`}
         aria-labelledby="detail-panel-title"
       >
-        {aircraft ? (
+        {aircraft && telemetry ? (
           <>
             <div className="detail-panel-header">
               <div>
                 <h2 id="detail-panel-title" className="detail-panel-tail">
                   {aircraft.tail_number}
                 </h2>
-                <StatusPill status={aircraft.status} />
+                <p className="detail-panel-subtitle">Detailed telemetry</p>
               </div>
               <button
                 ref={closeButtonRef}
@@ -125,19 +85,59 @@ function DetailPanel({ aircraft, isOpen, onClose, variant = 'overlay' }) {
               </button>
             </div>
 
-            <section className="detail-section" aria-label="Battery status">
-              <p className="detail-label">Battery</p>
-              <BatteryBar batteryPct={aircraft.battery_pct} />
+            <section className="detail-telemetry-grid" aria-label="Telemetry metrics">
+              <div className="detail-telemetry-card">
+                <p className="detail-telemetry-label">Status</p>
+                <div className="detail-telemetry-value-row">
+                  <span
+                    className={`telemetry-status-dot telemetry-status-dot--${telemetry.status}`}
+                    aria-hidden="true"
+                  />
+                  <p className="detail-telemetry-value">{telemetry.statusLabel}</p>
+                </div>
+              </div>
+
+              <div className="detail-telemetry-card">
+                <p className="detail-telemetry-label">Battery Level</p>
+                <p className="detail-telemetry-value">
+                  {telemetry.batteryPct}%
+                </p>
+              </div>
+
+              <div className="detail-telemetry-card">
+                <p className="detail-telemetry-label">Altitude MSL</p>
+                <p className="detail-telemetry-value">{telemetry.altitudeFt} ft</p>
+              </div>
+
+              <div className="detail-telemetry-card">
+                <p className="detail-telemetry-label">Ground Speed</p>
+                <p className="detail-telemetry-value">{telemetry.speedKts} kts</p>
+              </div>
             </section>
 
-            <dl className="detail-grid">
-              {detailRows.map((row) => (
-                <div key={row.label} className="detail-row">
-                  <dt className="detail-label">{row.label}</dt>
-                  <dd className="detail-value">{row.value}</dd>
-                </div>
-              ))}
-            </dl>
+            {!isDock ? (
+              <div className="detail-actions" role="group" aria-label="Detail actions">
+                <button
+                  type="button"
+                  className="btn-secondary detail-action-btn"
+                  onClick={() => {
+                    navigate('/fleet-map', {
+                      state: { aircraftId: aircraft.aircraft_id },
+                    });
+                    onClose();
+                  }}
+                >
+                  View on Map
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary detail-action-btn"
+                  onClick={() => navigate('/missions')}
+                >
+                  Send Command
+                </button>
+              </div>
+            ) : null}
           </>
         ) : (
           <p className="detail-empty">Select an aircraft to inspect live details.</p>

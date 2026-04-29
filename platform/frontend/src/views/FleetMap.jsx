@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { colors } from '../design/tokens';
@@ -160,6 +161,8 @@ function buildMissionOverlayGeoJson(mission, selectedAircraft) {
 }
 
 function FleetMap({ fleetState, socket, isAuthenticated }) {
+  const navigate = useNavigate();
+  const location = useLocation();
   const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
   const { missionsList } = useMissionSocket(socket, isAuthenticated);
   const mapContainerRef = useRef(null);
@@ -178,6 +181,25 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
     return merged.sort((a, b) => a.tail_number.localeCompare(b.tail_number));
   }, [fleetState]);
   const aircraftCount = aircraftRows.length;
+  const statusCounts = useMemo(() => {
+    const next = { 'in-flight': 0, charging: 0, maintenance: 0, grounded: 0 };
+    for (const row of aircraftRows) {
+      const status = row.status || 'ready';
+      if (Object.prototype.hasOwnProperty.call(next, status)) {
+        next[status] += 1;
+      }
+    }
+    return next;
+  }, [aircraftRows]);
+
+  const aircraftIdFromState = location?.state?.aircraftId;
+  useEffect(() => {
+    if (!aircraftIdFromState) return undefined;
+    queueMicrotask(() => {
+      setSelectedAircraftId(aircraftIdFromState);
+    });
+    return undefined;
+  }, [aircraftIdFromState]);
   const activeMissions = useMemo(
     () =>
       missionsList.filter(
@@ -290,6 +312,7 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
           'line-color': colors.accent,
           'line-width': 1.5,
           'line-opacity': colors.mission.landingOutlineOpacity,
+          'line-blur': 0.6,
         },
       });
 
@@ -335,7 +358,10 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
             colors.mission.endpointFillDestination,
             colors.mission.endpointFillFallback,
           ],
-          'circle-stroke-width': 2,
+          'circle-stroke-width': 1.75,
+          'circle-blur': 0.45,
+          'circle-stroke-blur': 0.35,
+          'circle-stroke-opacity': 0.9,
           'circle-stroke-color': colors.accent,
         },
       });
@@ -353,7 +379,7 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
         paint: {
           'text-color': colors.text.secondary,
           'text-halo-color': colors.bg.primary,
-          'text-halo-width': 1,
+          'text-halo-width': 1.25,
         },
       });
     });
@@ -553,10 +579,67 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
   };
 
   return (
-    <section className="fleet-map-layout" aria-labelledby="fleet-map-title">
-      <h1 id="fleet-map-title" className="fleet-map-title">
-        Fleet Map
-      </h1>
+    <section className="fleet-map-page" aria-labelledby="fleet-map-title">
+      <div className="kpi-row" aria-label="Fleet status counts">
+        <div className="kpi-card">
+          <p className="kpi-card__label">In Flight</p>
+          <div className="kpi-card__value-row">
+            <p className="kpi-card__value">{statusCounts['in-flight']}</p>
+            <span className="kpi-card__icon" aria-hidden="true">
+              ↗
+            </span>
+          </div>
+          <p className="kpi-card__sub">active flight count</p>
+        </div>
+
+        <div className="kpi-card">
+          <p className="kpi-card__label">Charging</p>
+          <div className="kpi-card__value-row">
+            <p className="kpi-card__value">{statusCounts.charging}</p>
+            <span className="kpi-card__icon" aria-hidden="true">
+              ⧉
+            </span>
+          </div>
+          <p className="kpi-card__sub">awaiting readiness</p>
+        </div>
+
+        <div className="kpi-card">
+          <p className="kpi-card__label">Maintenance</p>
+          <div className="kpi-card__value-row">
+            <p className="kpi-card__value">{statusCounts.maintenance}</p>
+            <span className="kpi-card__icon" aria-hidden="true">
+              ⛭
+            </span>
+          </div>
+          <p className="kpi-card__sub">scheduled checks</p>
+        </div>
+
+        <div className="kpi-card">
+          <p className="kpi-card__label">Grounded</p>
+          <div className="kpi-card__value-row">
+            <p className="kpi-card__value">{statusCounts.grounded}</p>
+            <span className="kpi-card__icon" aria-hidden="true">
+              ⦿
+            </span>
+          </div>
+          <p className="kpi-card__sub">not dispatchable</p>
+        </div>
+      </div>
+
+      <div className="fleet-map-topbar">
+        <div>
+          <h1 id="fleet-map-title" className="fleet-map-title">
+            Fleet Map
+          </h1>
+        </div>
+        <button
+          type="button"
+          className="btn-primary fleet-status-new-mission"
+          onClick={() => navigate('/missions')}
+        >
+          New Mission
+        </button>
+      </div>
 
       <div
         className={`fleet-map-stack ${selectedAircraftId ? 'fleet-map-stack--split' : ''}`}
@@ -574,42 +657,9 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
         </div>
 
         {selectedAircraft ? (
-          <DetailPanel
-            variant="dock"
-            aircraft={selectedAircraft}
-            isOpen
-            onClose={closeDetailPanel}
-          />
+          <DetailPanel variant="dock" aircraft={selectedAircraft} isOpen onClose={closeDetailPanel} />
         ) : null}
       </div>
-
-      <div className="fleet-map-toolbar" aria-label="Aircraft quick select">
-        {aircraftRows.map((aircraft) => (
-          <button
-            key={aircraft.aircraft_id}
-            type="button"
-            className={`aircraft-chip ${
-              selectedAircraftId === aircraft.aircraft_id ? 'aircraft-chip--active' : ''
-            }`}
-            onClick={(event) => {
-              lastTriggerRef.current = event.currentTarget;
-              setSelectedAircraftId((current) =>
-                current === aircraft.aircraft_id ? null : aircraft.aircraft_id
-              );
-            }}
-          >
-            {aircraft.tail_number}
-          </button>
-        ))}
-      </div>
-
-      <p className="fleet-map-selection" aria-live="polite">
-        {selectedAircraft
-          ? selectedActiveMission
-            ? `Selected ${selectedAircraft.tail_number} (${selectedAircraft.status}, ${selectedAircraft.battery_pct}%). Mission route, START and LZ markers, and landing clearance circle shown on map.`
-            : `Selected ${selectedAircraft.tail_number} (${selectedAircraft.status}, ${selectedAircraft.battery_pct}%). No active dispatched mission for this aircraft.`
-          : 'Select an aircraft marker or chip to inspect its live state.'}
-      </p>
 
       <ul className="visually-hidden" aria-label="Active mission routes">
         {(selectedActiveMission ? [selectedActiveMission] : []).map((mission) => (

@@ -16,7 +16,7 @@ export default function Login() {
     document.title = 'Sign In - Volant';
   }, []);
 
-  if (isAuthenticated) return <Navigate to="/" replace />;
+  if (isAuthenticated) return <Navigate to="/fleet" replace />;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -24,7 +24,7 @@ export default function Login() {
     setSubmitting(true);
     try {
       await login(email, password);
-      navigate('/', { replace: true });
+      navigate('/fleet', { replace: true });
     } catch (err) {
       setError(err.message || 'Invalid credentials');
     } finally {

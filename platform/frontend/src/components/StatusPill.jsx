@@ -1,5 +1,5 @@
 const STATUS_TO_LABEL = {
-  'in-flight': 'In Flight',
+  'in-flight': 'Active',
   charging: 'Charging',
   maintenance: 'Maintenance',
   grounded: 'Grounded',

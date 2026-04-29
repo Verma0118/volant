@@ -1,8 +1,8 @@
 export const colors = {
   bg: {
-    primary: '#0A0A0A',
+    primary: '#FDFDFD',
     secondary: '#262626',
-    panel: '#262626',
+    panel: '#FDFDFD',
     border: '#A0A0A0',
   },
   status: {
@@ -13,8 +13,8 @@ export const colors = {
     ready: '#A0A0A0',
   },
   text: {
-    primary: '#FDFDFD',
-    secondary: '#A0A0A0',
+    primary: '#0A0A0A',
+    secondary: '#262626',
     muted: '#A0A0A0',
   },
   accent: '#C5B382',

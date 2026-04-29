@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { colors, fonts } from './design/tokens';
 import { useAuth } from './hooks/useAuth';
@@ -7,8 +7,7 @@ import { FleetMap } from './features/fleet-map';
 import { FleetStatus } from './features/fleet-status';
 import { Login } from './features/auth';
 import { Dispatch } from './features/dispatch';
-import { Sidebar } from './shared/components';
-import { dedupeFleetRowsByTail } from './utils/fleetDedupe';
+import TopNav from './components/TopNav';
 
 function applyThemeVariables() {
   const root = document.documentElement;
@@ -36,28 +35,49 @@ function applyThemeVariables() {
 function RouteTitle() {
   const location = useLocation();
   useEffect(() => {
-    if (location.pathname === '/status') {
-      document.title = 'Fleet Status - Volant';
+    if (location.pathname === '/fleet') {
+      document.title = 'Fleet - Volant';
       return;
     }
-    if (location.pathname === '/dispatch') {
+    if (location.pathname === '/fleet-map') {
+      document.title = 'Fleet Map - Volant';
+      return;
+    }
+    if (location.pathname === '/missions') {
       document.title = 'Mission Dispatch - Volant';
       return;
     }
-    document.title = 'Fleet Map - Volant';
+    if (location.pathname === '/analytics') {
+      document.title = 'Analytics - Volant';
+      return;
+    }
+    if (location.pathname === '/maintenance') {
+      document.title = 'Maintenance - Volant';
+      return;
+    }
+    document.title = 'Volant - Fleet Ops';
   }, [location.pathname]);
   return null;
 }
 
+function LockedPlaceholder({ title }) {
+  return (
+    <section className="view-panel" aria-labelledby="locked-title">
+      <h1 id="locked-title">{title}</h1>
+      <p>This section is not available in the MVP build yet.</p>
+    </section>
+  );
+}
+
 function AuthenticatedLayout({
   fleetState,
-  activeAircraftCount,
   connectionState,
   announcement,
   socket,
   isAuthenticated,
   csrfToken,
 }) {
+  const location = useLocation();
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -66,44 +86,32 @@ function AuthenticatedLayout({
       <RouteTitle />
 
       <div className="layout-shell">
-        <Sidebar activeAircraftCount={activeAircraftCount} />
+        <TopNav connectionState={connectionState} />
 
-        <div className="content-shell">
-          <header className="top-bar">
-            <p className="wordmark">Volant Fleet Ops</p>
-            <p className="connection-copy">
-              Connection: <span>{connectionState}</span>
-            </p>
-          </header>
-
-          <main id="main-content" tabIndex={-1}>
+        <main id="main-content" tabIndex={-1}>
+          <div key={location.pathname} className="route-transition">
             <Routes>
               <Route
                 path="/"
-                element={
-                  <FleetMap
-                    fleetState={fleetState}
-                    socket={socket}
-                    isAuthenticated={isAuthenticated}
-                  />
-                }
+                element={<Navigate to="/fleet" replace />}
               />
-              <Route path="/status" element={<FleetStatus fleetState={fleetState} />} />
+              <Route path="/fleet" element={<FleetStatus fleetState={fleetState} />} />
               <Route
-                path="/dispatch"
+                path="/fleet-map"
+                element={<FleetMap fleetState={fleetState} socket={socket} isAuthenticated={isAuthenticated} />}
+              />
+              <Route
+                path="/missions"
                 element={
-                  <Dispatch
-                    socket={socket}
-                    isAuthenticated={isAuthenticated}
-                    csrfToken={csrfToken}
-                    fleetState={fleetState}
-                  />
+                  <Dispatch socket={socket} isAuthenticated={isAuthenticated} csrfToken={csrfToken} fleetState={fleetState} />
                 }
               />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="/analytics" element={<LockedPlaceholder title="Analytics" />} />
+              <Route path="/maintenance" element={<LockedPlaceholder title="Maintenance" />} />
+              <Route path="*" element={<Navigate to="/fleet" replace />} />
             </Routes>
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
 
       <div className="visually-hidden" aria-live="polite">
@@ -116,10 +124,6 @@ function AuthenticatedLayout({
 function App() {
   const { isAuthenticated, authResolved, csrfToken } = useAuth();
   const { fleetState, connectionState, announcement, socket } = useFleetSocket(isAuthenticated);
-  const activeAircraftCount = useMemo(
-    () => dedupeFleetRowsByTail(Object.values(fleetState)).length,
-    [fleetState]
-  );
 
   useEffect(() => {
     applyThemeVariables();
@@ -138,7 +142,6 @@ function App() {
           authResolved && isAuthenticated ? (
             <AuthenticatedLayout
               fleetState={fleetState}
-              activeAircraftCount={activeAircraftCount}
               connectionState={connectionState}
               announcement={announcement}
               socket={socket}

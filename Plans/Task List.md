@@ -6,7 +6,7 @@ tags: [tasks, priorities, slice-1]
 
 # Volant Task List
 
-_Last updated: Apr 29, 2026 02:09 CDT_
+_Last updated: Apr 29, 2026 03:58 CDT_
 
 ---
 
@@ -26,6 +26,7 @@ _Last updated: Apr 29, 2026 02:09 CDT_
 - [x] Claude PowerPoint prompt written (9-slide deck, color scheme locked)
 - [x] **Archer email sent** — Rushil's dad, concept email + deck _(assumed done Apr 20)_
 - [x] **Pitch deck finalized and sent** _(assumed done Apr 20)_
+- [x] Premium minimal UI refresh — Fleet dashboard + telemetry panel redesign (top nav, KPI cards, squared vehicle cards, hover + selection, “View on Map” vehicle routing) ✅
 
 ---
 
