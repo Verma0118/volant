@@ -76,6 +76,7 @@ function AuthenticatedLayout({
   socket,
   isAuthenticated,
   csrfToken,
+  onLogout,
 }) {
   const location = useLocation();
   return (
@@ -86,7 +87,7 @@ function AuthenticatedLayout({
       <RouteTitle />
 
       <div className="layout-shell">
-        <TopNav connectionState={connectionState} />
+        <TopNav connectionState={connectionState} onLogout={onLogout} />
 
         <main id="main-content" tabIndex={-1}>
           <div key={location.pathname} className="route-transition">
@@ -122,7 +123,7 @@ function AuthenticatedLayout({
 }
 
 function App() {
-  const { isAuthenticated, authResolved, csrfToken } = useAuth();
+  const { isAuthenticated, authResolved, csrfToken, logout } = useAuth();
   const { fleetState, connectionState, announcement, socket } = useFleetSocket(isAuthenticated);
 
   useEffect(() => {
@@ -147,6 +148,7 @@ function App() {
               socket={socket}
               isAuthenticated={isAuthenticated}
               csrfToken={csrfToken}
+              onLogout={logout}
             />
           ) : (
             <Navigate to="/login" replace />

@@ -115,29 +115,27 @@ function DetailPanel({ aircraft, isOpen, onClose, variant = 'overlay' }) {
               </div>
             </section>
 
-            {!isDock ? (
-              <div className="detail-actions" role="group" aria-label="Detail actions">
-                <button
-                  type="button"
-                  className="btn-secondary detail-action-btn"
-                  onClick={() => {
-                    navigate('/fleet-map', {
-                      state: { aircraftId: aircraft.aircraft_id },
-                    });
-                    onClose();
-                  }}
-                >
-                  View on Map
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary detail-action-btn"
-                  onClick={() => navigate('/missions')}
-                >
-                  Send Command
-                </button>
-              </div>
-            ) : null}
+            <div className="detail-actions" role="group" aria-label="Detail actions">
+              <button
+                type="button"
+                className="btn-secondary detail-action-btn"
+                onClick={() => {
+                  navigate('/fleet-map', {
+                    state: { aircraftId: aircraft.aircraft_id },
+                  });
+                  onClose();
+                }}
+              >
+                View on Map
+              </button>
+              <button
+                type="button"
+                className="btn-primary detail-action-btn"
+                onClick={() => navigate('/missions')}
+              >
+                Send Command
+              </button>
+            </div>
           </>
         ) : (
           <p className="detail-empty">Select an aircraft to inspect live details.</p>

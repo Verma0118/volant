@@ -1,12 +1,14 @@
 const { haversineKm } = require('../services/assignmentEngine');
 const { DEMO_MODE } = require('../config');
 
-const DEFAULT_CRUISE_SPEED_KMPH = 120;
-const MIN_FLIGHT_DURATION_MS = 5_000;
-const MAX_FLIGHT_DURATION_MS = 180_000;
-const DEMO_MAX_FLIGHT_DURATION_MS = 15_000;
-/** Tighter pacing for demo flights without snapping to instant hops. */
-const DEMO_FLIGHT_DURATION_SCALE = 0.78;
+/** Higher than real eVTOL cruise so map missions finish in a watchable window. */
+const DEFAULT_CRUISE_SPEED_KMPH = 220;
+const MIN_FLIGHT_DURATION_MS = 2_500;
+/** Long routes: cap so the worker + map leg finishes in under a minute (snappy dispatch UX). */
+const MAX_FLIGHT_DURATION_MS = 42_000;
+const DEMO_MAX_FLIGHT_DURATION_MS = 7_000;
+/** Extra compression in demo so `npm run demo` stays brisk. */
+const DEMO_FLIGHT_DURATION_SCALE = 0.55;
 
 function estimateFlightDurationMs({
   originLat,

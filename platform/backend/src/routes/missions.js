@@ -12,6 +12,8 @@ const {
   getMissionById,
   updateMissionStatus,
 } = require('../repositories/missionRepository');
+const { emitMissionUpdate } = require('../socket');
+const { toMissionUpdatePayload } = require('../workers/missionWorkerHelpers');
 
 const router = express.Router();
 const missionWriteLimiter = rateLimit({
@@ -189,6 +191,11 @@ router.patch('/:id/cancel', missionWriteLimiter, requireCsrfToken, async (req, r
       'cancelled',
       { completed_at: new Date() }
     );
+
+    const latest = await getMissionById(req.params.id, req.operatorId);
+    if (latest) {
+      emitMissionUpdate(toMissionUpdatePayload(latest));
+    }
 
     return res.json(updatedMission);
   } catch (err) {

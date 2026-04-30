@@ -9,6 +9,9 @@ import { useMissionSocket } from '../hooks/useMissionSocket';
 import { dedupeFleetRowsByTail } from '../utils/fleetDedupe';
 
 const DFW_CENTER = [-96.797, 32.776];
+/** Approximate Dallas–Fort Worth metro drone ops envelope for map overlay (meters). */
+const DRONE_OPS_RADIUS_METERS = 40_000;
+const DRONE_OPS_SOURCE = 'drone-ops-envelope';
 const LERP = 0.32;
 const MISSION_ROUTE_SOURCE = 'selected-mission-route';
 const MISSION_ENDPOINT_SOURCE = 'selected-mission-endpoints';
@@ -21,7 +24,13 @@ function clamp(value, min, max) {
   return Math.max(min, Math.min(max, value));
 }
 
-function circlePolygonGeoJson(centerLng, centerLat, radiusM, steps = 56) {
+function circlePolygonGeoJson(
+  centerLng,
+  centerLat,
+  radiusM,
+  steps = 56,
+  kind = 'landing_clearance'
+) {
   const ring = [];
   const latRad = (centerLat * Math.PI) / 180;
   const metersPerDegLat = 111320;
@@ -36,13 +45,26 @@ function circlePolygonGeoJson(centerLng, centerLat, radiusM, steps = 56) {
 
   return {
     type: 'Feature',
-    properties: { kind: 'landing_clearance' },
+    properties: { kind },
     geometry: {
       type: 'Polygon',
       coordinates: [ring],
     },
   };
 }
+
+const DRONE_OPS_ENVELOPE_GEOJSON = {
+  type: 'FeatureCollection',
+  features: [
+    circlePolygonGeoJson(
+      DFW_CENTER[0],
+      DFW_CENTER[1],
+      DRONE_OPS_RADIUS_METERS,
+      72,
+      'drone_operational_envelope'
+    ),
+  ],
+};
 
 const STATUS_CLASS = {
   'in-flight': 'fleet-marker--inflight',
@@ -288,6 +310,30 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
           'line-color': colors.status.grounded,
           'line-width': 1.25,
           'line-opacity': 0.7,
+        },
+      });
+
+      map.addSource(DRONE_OPS_SOURCE, {
+        type: 'geojson',
+        data: DRONE_OPS_ENVELOPE_GEOJSON,
+      });
+      map.addLayer({
+        id: 'drone-ops-envelope-fill',
+        type: 'fill',
+        source: DRONE_OPS_SOURCE,
+        paint: {
+          'fill-color': colors.map.droneOpsFill,
+          'fill-opacity': 1,
+        },
+      });
+      map.addLayer({
+        id: 'drone-ops-envelope-outline',
+        type: 'line',
+        source: DRONE_OPS_SOURCE,
+        paint: {
+          'line-color': colors.map.droneOpsOutline,
+          'line-width': 2.25,
+          'line-opacity': 0.92,
         },
       });
 
@@ -585,8 +631,8 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
           <p className="kpi-card__label">In Flight</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts['in-flight']}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ↗
+            <span className="kpi-card__icon kpi-card__icon--inflight" aria-hidden="true">
+              ✈
             </span>
           </div>
           <p className="kpi-card__sub">active flight count</p>
@@ -596,8 +642,8 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
           <p className="kpi-card__label">Charging</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts.charging}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ⧉
+            <span className="kpi-card__icon kpi-card__icon--charging" aria-hidden="true">
+              ϟ
             </span>
           </div>
           <p className="kpi-card__sub">awaiting readiness</p>
@@ -607,8 +653,8 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
           <p className="kpi-card__label">Maintenance</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts.maintenance}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ⛭
+            <span className="kpi-card__icon kpi-card__icon--maintenance" aria-hidden="true">
+              ✣
             </span>
           </div>
           <p className="kpi-card__sub">scheduled checks</p>
@@ -618,8 +664,8 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
           <p className="kpi-card__label">Grounded</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts.grounded}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ⦿
+            <span className="kpi-card__icon kpi-card__icon--grounded" aria-hidden="true">
+              ⦻
             </span>
           </div>
           <p className="kpi-card__sub">not dispatchable</p>
@@ -649,6 +695,9 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
 
           <aside className="fleet-map-overlay" aria-label="Map status panel">
             <p className="zone-pill">DFW Class B - Active</p>
+            <p className="zone-count zone-count--muted">
+              Red ring: demo drone ops envelope (~{(DRONE_OPS_RADIUS_METERS / 1000).toFixed(0)} km)
+            </p>
             <p className="zone-count">Aircraft online: {aircraftCount}</p>
             <p className="zone-count" aria-live="polite" aria-atomic="true">
               Active missions: {activeMissions.length}

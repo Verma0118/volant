@@ -5,7 +5,7 @@ function formatClock(d) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-function TopNav({ connectionState }) {
+function TopNav({ connectionState, onLogout }) {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -62,6 +62,9 @@ function TopNav({ connectionState }) {
           {statusText}
         </p>
         <p className="topnav-time">{formatClock(now)}</p>
+        <button type="button" className="topnav-logout" onClick={onLogout}>
+          Logout
+        </button>
       </div>
     </header>
   );

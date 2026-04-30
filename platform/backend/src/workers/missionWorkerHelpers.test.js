@@ -14,7 +14,7 @@ test('estimateFlightDurationMs clamps to minimum for very short routes', () => {
     destLng: -96.7971,
   });
 
-  assert.equal(duration, 5000);
+  assert.equal(duration, 2500);
 });
 
 test('estimateFlightDurationMs scales with route distance', () => {
@@ -25,8 +25,8 @@ test('estimateFlightDurationMs scales with route distance', () => {
     destLng: -97.0403,
   });
 
-  assert.ok(duration >= 5000);
-  assert.ok(duration <= 180000);
+  assert.ok(duration >= 2500);
+  assert.ok(duration <= 42000);
 });
 
 test('toMissionUpdatePayload returns socket-safe mission status payload', () => {

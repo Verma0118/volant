@@ -65,8 +65,8 @@ function FleetStatus({ fleetState }) {
           <p className="kpi-card__label">In Flight</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts['in-flight']}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ↗
+            <span className="kpi-card__icon kpi-card__icon--inflight" aria-hidden="true">
+              ✈
             </span>
           </div>
           <p className="kpi-card__sub">active flight count</p>
@@ -76,8 +76,8 @@ function FleetStatus({ fleetState }) {
           <p className="kpi-card__label">Charging</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts.charging}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ⧉
+            <span className="kpi-card__icon kpi-card__icon--charging" aria-hidden="true">
+              ϟ
             </span>
           </div>
           <p className="kpi-card__sub">number charging</p>
@@ -87,8 +87,8 @@ function FleetStatus({ fleetState }) {
           <p className="kpi-card__label">Maintenance</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts.maintenance}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ⛭
+            <span className="kpi-card__icon kpi-card__icon--maintenance" aria-hidden="true">
+              ✣
             </span>
           </div>
           <p className="kpi-card__sub">in maintenance</p>
@@ -98,8 +98,8 @@ function FleetStatus({ fleetState }) {
           <p className="kpi-card__label">Grounded</p>
           <div className="kpi-card__value-row">
             <p className="kpi-card__value">{statusCounts.grounded}</p>
-            <span className="kpi-card__icon" aria-hidden="true">
-              ⦿
+            <span className="kpi-card__icon kpi-card__icon--grounded" aria-hidden="true">
+              ⦻
             </span>
           </div>
           <p className="kpi-card__sub">number grounded</p>
