@@ -8,6 +8,8 @@ import { FleetStatus } from './features/fleet-status';
 import { Login } from './features/auth';
 import { Dispatch } from './features/dispatch';
 import { Maintenance } from './features/maintenance';
+import { Compliance } from './features/compliance';
+import { Analytics } from './features/analytics';
 import TopNav from './components/TopNav';
 
 function applyThemeVariables() {
@@ -48,6 +50,10 @@ function RouteTitle() {
       document.title = 'Mission Dispatch - Volant';
       return;
     }
+    if (location.pathname === '/compliance') {
+      document.title = 'Compliance Log - Volant';
+      return;
+    }
     if (location.pathname === '/analytics') {
       document.title = 'Analytics - Volant';
       return;
@@ -61,14 +67,6 @@ function RouteTitle() {
   return null;
 }
 
-function LockedPlaceholder({ title }) {
-  return (
-    <section className="view-panel" aria-labelledby="locked-title">
-      <h1 id="locked-title">{title}</h1>
-      <p>This section is not available in the MVP build yet.</p>
-    </section>
-  );
-}
 
 function AuthenticatedLayout({
   fleetState,
@@ -108,7 +106,11 @@ function AuthenticatedLayout({
                   <Dispatch socket={socket} isAuthenticated={isAuthenticated} csrfToken={csrfToken} fleetState={fleetState} />
                 }
               />
-              <Route path="/analytics" element={<LockedPlaceholder title="Analytics" />} />
+              <Route path="/analytics" element={<Analytics isAuthenticated={isAuthenticated} />} />
+              <Route
+                path="/compliance"
+                element={<Compliance isAuthenticated={isAuthenticated} />}
+              />
               <Route
                 path="/maintenance"
                 element={<Maintenance isAuthenticated={isAuthenticated} csrfToken={csrfToken} />}

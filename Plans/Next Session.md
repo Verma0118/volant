@@ -1,12 +1,43 @@
 ---
-date: 2026-04-27
+date: 2026-05-07
 type: context-brief
-active_blueprint: Plans/slice-3-maintenance-tracker.md
-active_slice: 3
-tags: [next-session, build, slice-3]
+active_blueprint: null
+active_slice: complete
+tags: [next-session, mvp-complete, polish]
 ---
 
 # Next Session — Context Brief
+
+**MVP IS COMPLETE. All 5 slices shipped.**
+
+## State
+
+| Slice | Feature | Status |
+|-------|---------|--------|
+| 1 | Fleet Overview | ✅ |
+| 2 | Mission Dispatch | ✅ |
+| 3 | Maintenance Tracker | ✅ |
+| 4 | Compliance Log | ✅ |
+| 5 | Analytics | ✅ |
+
+## First Action Next Session
+
+Pick one of:
+1. **Demo polish** — screen record the full flow for investor deck / YC app
+2. **Bundle optimization** — lazy-load Mapbox GL (large chunk warning)
+3. **Cost model** — add cost-per-flight-hour input to Analytics
+4. **GitHub push** — make sure all commits are on remote
+5. **Investor materials** — update pitch deck with live MVP screenshots
+
+## Run Commands
+
+```bash
+cd platform && npm run stack:up
+npm run db:init
+npm run dev
+```
+
+Login: `dispatcher@volant.demo` / `dispatch123`
 
 **Claude: read this file at startup, then read the active blueprint and print it. See CLAUDE.md rule 4.**
 

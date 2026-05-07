@@ -17,7 +17,7 @@ const { startFleetMap } = require('./services');
 const { initMissionQueue } = require('./queues/missionQueue');
 const { worker } = require('./workers/missionWorker');
 const { authMiddleware } = require('./middleware/auth');
-const { authRoutes, aircraftRoutes, missionsRoutes, maintenanceRoutes } = require('./routes');
+const { authRoutes, aircraftRoutes, missionsRoutes, maintenanceRoutes, complianceRoutes, analyticsRoutes } = require('./routes');
 
 const app = express();
 
@@ -71,6 +71,8 @@ app.use('/api', authMiddleware);
 app.use('/api/aircraft', aircraftRoutes);
 app.use('/api/missions', missionsRoutes);
 app.use('/api/maintenance', maintenanceRoutes);
+app.use('/api/compliance', complianceRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 const server = http.createServer(app);
 initSocket(server);

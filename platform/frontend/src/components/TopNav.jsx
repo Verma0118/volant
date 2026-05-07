@@ -54,6 +54,12 @@ function TopNav({ connectionState, onLogout }) {
         >
           Maintenance
         </NavLink>
+        <NavLink
+          to="/compliance"
+          className={({ isActive }) => `topnav-link ${isActive ? 'topnav-link--active' : ''}`}
+        >
+          Compliance
+        </NavLink>
       </nav>
 
       <div className="topnav-right" aria-label="System status">

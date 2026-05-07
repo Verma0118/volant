@@ -2907,11 +2907,12 @@ main:focus {
 
 .maint-table-row {
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background 150ms ease, box-shadow 150ms ease;
 }
 
 .maint-table-row:hover {
-  background: color-mix(in srgb, var(--color-accent) 6%, transparent);
+  background: color-mix(in srgb, var(--glass-bg-1) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glass-border) 80%, transparent);
 }
 
 .maint-table-row:focus-visible {
@@ -3229,5 +3230,487 @@ main:focus {
 
   .maint-detail-pane {
     padding: 1.5rem;
+  }
+}
+
+/* ─── Compliance Log ──────────────────────────────────────────────── */
+
+.comp-view {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 2rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.comp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.comp-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.comp-title {
+  font-family: var(--font-ui);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.comp-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.comp-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.comp-btn {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.4rem 0.9rem;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.comp-btn--primary {
+  background: var(--color-accent);
+  color: var(--color-bg-secondary);
+}
+
+.comp-btn--primary:hover {
+  background: color-mix(in srgb, var(--color-accent) 85%, white);
+}
+
+.comp-btn--secondary {
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-bg-border);
+}
+
+.comp-btn--secondary:hover {
+  background: var(--color-bg-border);
+}
+
+.comp-filters {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.comp-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.comp-filter-label {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.comp-select {
+  font-family: var(--font-ui);
+  font-size: 0.8rem;
+  padding: 0.35rem 0.6rem;
+  background: var(--color-bg-panel);
+  border: 1px solid var(--color-bg-border);
+  color: var(--color-text-primary);
+  min-width: 130px;
+}
+
+.comp-select:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.comp-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+}
+
+.comp-loading {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.comp-empty {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+  padding: 2rem 0;
+}
+
+.comp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-bg-border);
+}
+
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.comp-th {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  padding: 0.6rem 0.85rem;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-bg-border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.comp-tr {
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+
+.comp-tr:nth-child(even) {
+  background: color-mix(in srgb, var(--color-bg-secondary) 30%, transparent);
+}
+
+.comp-tr:hover {
+  background: color-mix(in srgb, var(--glass-bg-1) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glass-border) 80%, transparent);
+}
+
+.comp-td {
+  padding: 0.55rem 0.85rem;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-bg-border) 40%, transparent);
+  white-space: nowrap;
+}
+
+.comp-td--mono {
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+}
+
+.comp-badge {
+  font-family: var(--font-data);
+  font-size: 0.7rem;
+  padding: 0.2rem 0.45rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.comp-badge--part_107 {
+  background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+  color: var(--color-accent);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 50%, transparent);
+}
+
+.comp-badge--part_135 {
+  background: color-mix(in srgb, #3b82f6 15%, transparent);
+  color: #3b82f6;
+  border: 1px solid color-mix(in srgb, #3b82f6 50%, transparent);
+}
+
+.comp-badge--laanc-authorized {
+  background: color-mix(in srgb, #22c55e 15%, transparent);
+  color: #22c55e;
+  border: 1px solid color-mix(in srgb, #22c55e 50%, transparent);
+}
+
+.comp-badge--laanc-not-required {
+  background: color-mix(in srgb, var(--color-bg-border) 30%, transparent);
+  color: var(--color-text-muted);
+  border: 1px solid color-mix(in srgb, var(--color-bg-border) 60%, transparent);
+}
+
+.comp-badge--laanc-pending {
+  background: color-mix(in srgb, #f59e0b 15%, transparent);
+  color: #f59e0b;
+  border: 1px solid color-mix(in srgb, #f59e0b 50%, transparent);
+}
+
+@media (max-width: 700px) {
+  .comp-view {
+    padding: 1rem;
+  }
+
+  .comp-header {
+    flex-direction: column;
+  }
+}
+
+/* ─── Analytics ───────────────────────────────────────────────────── */
+
+.anly-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.anly-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.anly-title {
+  font-family: var(--font-ui);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.anly-subtitle {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.anly-error {
+  color: #dc2626;
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  background: #fef2f2;
+  border-left: 3px solid #dc2626;
+}
+
+.anly-loading {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.anly-empty {
+  color: var(--color-text-muted);
+  font-size: 0.88rem;
+}
+
+/* KPI cards */
+.anly-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.anly-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--color-bg-panel);
+  border: 1px solid color-mix(in srgb, var(--color-bg-border) 40%, transparent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-text-primary) 10%, transparent);
+  transition: transform 160ms ease, box-shadow 220ms ease, border-color 180ms ease;
+}
+
+.anly-kpi:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-bg-border));
+  box-shadow:
+    0 14px 40px color-mix(in srgb, var(--color-text-primary) 10%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 58%, transparent);
+  transform: translateY(-2px);
+}
+
+.anly-kpi__value {
+  font-family: var(--font-data);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+
+.anly-kpi__unit {
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.anly-kpi__label {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+/* Section titles */
+.anly-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.anly-section-title {
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-bg-border);
+}
+
+/* Missions by day bar chart */
+.anly-chart {
+  margin: 0;
+  border: 1px solid var(--color-bg-border);
+  background: color-mix(in srgb, var(--color-bg-secondary) 25%, transparent);
+  overflow: hidden;
+}
+
+.anly-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 80px;
+  padding: 6px 6px 0;
+}
+
+.anly-chart__col {
+  flex: 1 0 10px;
+  max-width: 28px;
+  display: flex;
+  align-items: flex-end;
+  height: 100%;
+}
+
+.anly-chart__bar {
+  width: 100%;
+  background: var(--color-accent);
+  min-height: 2px;
+  transition: opacity 120ms ease;
+}
+
+.anly-chart__bar:hover {
+  opacity: 0.72;
+}
+
+.anly-chart__labels {
+  display: flex;
+  gap: 2px;
+  padding: 3px 6px 4px;
+}
+
+.anly-chart__label-cell {
+  flex: 1 0 10px;
+  max-width: 28px;
+  font-family: var(--font-data);
+  font-size: 0.48rem;
+  color: var(--color-text-muted);
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Aircraft utilization table */
+.anly-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-bg-border);
+}
+
+.anly-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.anly-th {
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  padding: 0.6rem 0.85rem;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-bg-border);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.anly-th--wide {
+  min-width: 130px;
+}
+
+.anly-tr {
+  transition: background 150ms ease, box-shadow 150ms ease;
+}
+
+.anly-tr:nth-child(even) {
+  background: color-mix(in srgb, var(--color-bg-secondary) 30%, transparent);
+}
+
+.anly-tr:hover {
+  background: color-mix(in srgb, var(--glass-bg-1) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--glass-border) 80%, transparent);
+}
+
+.anly-td {
+  padding: 0.55rem 0.85rem;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-bg-border) 40%, transparent);
+  white-space: nowrap;
+}
+
+.anly-td--mono {
+  font-family: var(--font-data);
+  font-size: 0.78rem;
+}
+
+/* Inline bar */
+.anly-bar-track {
+  height: 6px;
+  background: color-mix(in srgb, var(--color-bg-border) 40%, transparent);
+  width: 100%;
+  min-width: 80px;
+}
+
+.anly-bar-fill {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.anly-bar-label {
+  font-family: var(--font-data);
+  font-size: 0.68rem;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .anly-kpi-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .anly-view {
+    padding: 1rem;
   }
 }

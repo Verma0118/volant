@@ -8,6 +8,7 @@ const {
   updateMissionStatus,
 } = require('../repositories/missionRepository');
 const { accrueFlightMinutes } = require('../services/maintenanceAccrual');
+const { createComplianceRecord } = require('../services/complianceService');
 const {
   estimateFlightDurationMs,
   toMissionUpdatePayload,
@@ -116,6 +117,12 @@ async function processMissionJob(job) {
     aircraftId,
     flightDurationMs,
   });
+  createComplianceRecord({
+    missionId,
+    operatorId: effectiveOperatorId,
+    aircraftId,
+    flightDurationMs,
+  }).catch((err) => console.error('compliance record failed', err.message));
   updateFleetAircraftStatus(aircraftId, 'charging');
   await clearMissionPath(String(aircraftId), 'charging');
   {
