@@ -7,6 +7,7 @@ const {
   getMissionByIdAnyOperator,
   updateMissionStatus,
 } = require('../repositories/missionRepository');
+const { accrueFlightMinutes } = require('../services/maintenanceAccrual');
 const {
   estimateFlightDurationMs,
   toMissionUpdatePayload,
@@ -108,6 +109,12 @@ async function processMissionJob(job) {
 
   await updateMissionStatus(missionId, effectiveOperatorId, 'completed', {
     completed_at: new Date(),
+  });
+  await accrueFlightMinutes({
+    missionId,
+    operatorId: effectiveOperatorId,
+    aircraftId,
+    flightDurationMs,
   });
   updateFleetAircraftStatus(aircraftId, 'charging');
   await clearMissionPath(String(aircraftId), 'charging');

@@ -20,6 +20,8 @@
 
 **Blueprint:** `Plans/slice-3-maintenance-tracker.md`
 
+**Run the MVP stack:** `cd platform && npm run dev` (demo script removed; this is now the canonical one-command full stack).
+
 ### Slice 3 Step 1 — Schema (migration `006`)
 
 **Status:** `[✅] Done`
@@ -48,9 +50,101 @@
 
 **Status:** `[ ] Not started`
 
-- On transition to `completed`, add mission flight duration (same estimate as worker / `estimateFlightDurationMs` → minutes) to `aircraft.total_flight_minutes` in an **idempotent** way (e.g. only if mission not already counted — `missions` column `maintenance_minutes_applied` or a `maintenance_accrual` ledger row).
-- Keep `operator_id` scoping; unit test the accrual helper.
-- **Exit:** `npm run verify` + one backend test for idempotency.
+#### What to build
+
+**1. Migration `007_accrual_flag.js`** — `platform/backend/migrations/007_accrual_flag.js`
+
+```js
+// up
+await db.query(`
+  ALTER TABLE missions
+  ADD COLUMN IF NOT EXISTS maintenance_minutes_applied boolean NOT NULL DEFAULT false
+`);
+
+// down
+await db.query(`
+  ALTER TABLE missions DROP COLUMN IF EXISTS maintenance_minutes_applied
+`);
+```
+
+**2. New service** — `platform/backend/src/services/maintenanceAccrual.js`
+
+```js
+const { pool } = require('../db');
+
+/**
+ * Atomically adds flight minutes to aircraft.total_flight_minutes.
+ * Idempotent: skips if missions.maintenance_minutes_applied is already true.
+ * Uses SELECT FOR UPDATE to prevent double-count on worker retry.
+ */
+async function accrueFlightMinutes({ missionId, operatorId, aircraftId, flightDurationMs }) {
+  const minutes = flightDurationMs / 1000 / 60;
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const { rows } = await client.query(
+      'SELECT maintenance_minutes_applied FROM missions WHERE id = $1 AND operator_id = $2 FOR UPDATE',
+      [missionId, operatorId]
+    );
+
+    if (!rows.length || rows[0].maintenance_minutes_applied) {
+      await client.query('ROLLBACK');
+      return;
+    }
+
+    await client.query(
+      'UPDATE aircraft SET total_flight_minutes = total_flight_minutes + $1 WHERE id = $2 AND operator_id = $3',
+      [minutes, aircraftId, operatorId]
+    );
+
+    await client.query(
+      'UPDATE missions SET maintenance_minutes_applied = true WHERE id = $1 AND operator_id = $2',
+      [missionId, operatorId]
+    );
+
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}
+
+module.exports = { accrueFlightMinutes };
+```
+
+**3. Wire into worker** — `platform/backend/src/workers/missionWorker.js`
+
+At top, add import:
+```js
+const { accrueFlightMinutes } = require('../services/maintenanceAccrual');
+```
+
+After the `updateMissionStatus(missionId, effectiveOperatorId, 'completed', ...)` call (line ~109), add:
+```js
+  await accrueFlightMinutes({
+    missionId,
+    operatorId: effectiveOperatorId,
+    aircraftId,
+    flightDurationMs,
+  });
+```
+
+**4. Unit test** — `platform/backend/src/services/maintenanceAccrual.test.js`
+
+Test that calling `accrueFlightMinutes` twice on the same mission only increments `total_flight_minutes` once. Mock `pool` — return `maintenance_minutes_applied = false` on first call, `true` on second. Assert second call does not issue UPDATE.
+
+#### Exit criteria
+
+- `cd platform/backend && npm run migrate` — migration `007_accrual_flag` applied cleanly
+- `npm run test` — all existing tests pass + new idempotency test passes
+- `cd platform && npm run verify` — full suite still green
+- Manual smoke: dispatch mission via UI → mission completes → `SELECT total_flight_minutes FROM aircraft WHERE id = '<id>'` shows incremented value
+
+**When done:** mark `[✅] Done` here + short notes; commit `feat(slice-3): flight-minute accrual on mission completed, idempotent`.
 
 ---
 
