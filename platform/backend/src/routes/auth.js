@@ -1,7 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const rateLimit = require('express-rate-limit');
 
 const { JWT_SECRET, JWT_COOKIE_NAME, CSRF_COOKIE_NAME, NODE_ENV } = require('../config');
 const { authMiddleware } = require('../middleware/auth');
@@ -9,14 +8,6 @@ const { issueCsrfToken, ensureCsrfToken, requireCsrfToken } = require('../middle
 const { getUserByEmail } = require('../repositories/userRepository');
 
 const router = express.Router();
-const LOGIN_LIMIT_WINDOW_MS = 10 * 60 * 1000;
-const loginLimiter = rateLimit({
-  windowMs: LOGIN_LIMIT_WINDOW_MS,
-  max: 8,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { error: 'Too many login attempts. Try again in 10 minutes.' },
-});
 
 function authCookieOptions() {
   return {
@@ -36,7 +27,7 @@ function buildTokenPayload(user) {
   };
 }
 
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const email = (req.body?.email || '').trim().toLowerCase();
     const password = req.body?.password || '';

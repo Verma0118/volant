@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { getApiOrigin } from '../config/apiOrigin.js';
 
 const AUTH_CHANGE_EVENT = 'volant-auth-changed';
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
 
 export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -11,7 +11,7 @@ export function useAuth() {
   useEffect(() => {
     const syncSession = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/session`, {
+        const response = await fetch(`${getApiOrigin()}/api/auth/session`, {
           credentials: 'include',
         });
         setIsAuthenticated(response.ok);
@@ -37,7 +37,7 @@ export function useAuth() {
   }, []);
 
   const login = useCallback(async (email, password) => {
-    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+    const response = await fetch(`${getApiOrigin()}/api/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -56,7 +56,7 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      await fetch(`${getApiOrigin()}/api/auth/logout`, {
         method: 'POST',
         headers: csrfToken ? { 'x-csrf-token': csrfToken } : {},
         credentials: 'include',

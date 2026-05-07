@@ -11,7 +11,7 @@ Fleet operations MVP: live map + fleet status (**Slice 1**) and mission dispatch
 | **Simulator** (`npm run simulator`) | Publishes fake telemetry → Redis → backend | _(no HTTP)_ |
 | **Frontend** (`npm run dev`) | Vite UI | **http://127.0.0.1:5173** |
 
-The backend **does not** start the simulator or the frontend. Use three terminals for daily dev (or **one-command demo** below).
+From **`platform/`**, **`npm run dev`** starts **backend + simulator + frontend** together (`DEMO_MODE=false`). Or use three terminals for the same processes manually.
 
 ---
 
@@ -103,21 +103,38 @@ Open **http://127.0.0.1:5173**
 
 ---
 
-## One-command demo (optional)
+## One command — full stack (from `platform/`)
 
-From **`platform/`**, after `.env` is configured and Docker is up (and migrate + seed done once):
+After `.env` is configured, Docker is up, and migrate + seed have been run at least once:
 
 ```bash
+cd platform
 npm install
-npm run demo
+npm run dev
 ```
 
-This runs **backend + simulator + frontend + scripted demo scenario** together with `DEMO_MODE=true`, then exits when the scenario finishes (other processes stop with it). Use the **three-terminal** flow above when you want the stack to stay up while you click around.
+This runs **backend + simulator + frontend** with **`DEMO_MODE=false`** (production-like simulator and mission timing).
 
-### Scripted demo highlights (`npm run demo`)
+---
 
-- Scripted dispatch / mission lifecycle (see `backend/simulator/demoScenario.js`)
-- Demo telemetry behavior (e.g. timed status transitions for selected tails)
+## Full reset (Docker off, wipe DB/Redis volumes, start clean)
+
+**Stops containers and deletes Postgres + Redis data** so you get a truly empty slate. You must run **migrate + seed** again afterward.
+
+```bash
+cd platform
+npm run stack:reset
+npm run stack:up
+# wait until healthy: docker compose ps
+npm run db:init
+npm run dev
+```
+
+To stop Docker **without** deleting data:
+
+```bash
+npm run stack:down
+```
 
 ---
 
@@ -145,6 +162,9 @@ From `platform/frontend`:
 
 From `platform`:
 
+- `npm run dev` — backend + simulator + frontend (MVP stack)
+- `npm run stack:up` / `stack:down` / `stack:reset` — Docker Postgres + Redis
+- `npm run db:init` — migrate + seed (after reset or fresh DB)
 - `npm run verify` — backend tests + frontend lint/build
 - `npm run verify:full` — migrate + seed + verify
 

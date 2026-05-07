@@ -51,7 +51,7 @@ Frontend “Maintenance” view  ──►  table + detail + “log event” for
 | 4 | **REST API** — `GET/POST` maintenance events, `GET` summary per aircraft, operator-scoped |
 | 5 | **UI** — `/maintenance` route, unlock sidebar, list + filter + create event (matches tokens.css) |
 | 6 | **(Optional)** — Timescale hypertable for time-series battery samples; retention policy |
-| 7 | **Demo** — `npm run demo` log line or script segment showing hours accrued after mission |
+| 7 | **Runbook** — verify accrual by running `cd platform && npm run dev`, dispatching a mission, and confirming aircraft hours changed |
 
 Full step-1 task detail lives in `CURSOR_TASKS.md` so Cursor can execute without re-reading this file.
 

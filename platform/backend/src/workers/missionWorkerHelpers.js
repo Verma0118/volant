@@ -1,14 +1,16 @@
 const { haversineKm } = require('../services/assignmentEngine');
 const { DEMO_MODE } = require('../config');
 
-/** Higher than real eVTOL cruise so map missions finish in a watchable window. */
+/** Demo missions use a modest cruise so legs are visible but not instant. */
 const DEFAULT_CRUISE_SPEED_KMPH = 220;
 const MIN_FLIGHT_DURATION_MS = 2_500;
-/** Long routes: cap so the worker + map leg finishes in under a minute (snappy dispatch UX). */
+/** Long routes: cap so prod missions do not block the worker unreasonably. */
 const MAX_FLIGHT_DURATION_MS = 42_000;
-const DEMO_MAX_FLIGHT_DURATION_MS = 7_000;
-/** Extra compression in demo so `npm run demo` stays brisk. */
-const DEMO_FLIGHT_DURATION_SCALE = 0.55;
+/** Demo: long enough to follow on the map; short enough for investor loops. */
+const DEMO_MIN_FLIGHT_DURATION_MS = 14_000;
+const DEMO_MAX_FLIGHT_DURATION_MS = 72_000;
+/** Slight compression vs raw physics; pair with DEMO_MIN so short hops are not ~2s. */
+const DEMO_FLIGHT_DURATION_SCALE = 0.82;
 
 function estimateFlightDurationMs({
   originLat,
@@ -24,8 +26,9 @@ function estimateFlightDurationMs({
     durationMs *= DEMO_FLIGHT_DURATION_SCALE;
   }
   const maxDurationMs = DEMO_MODE ? DEMO_MAX_FLIGHT_DURATION_MS : MAX_FLIGHT_DURATION_MS;
+  const minDurationMs = DEMO_MODE ? DEMO_MIN_FLIGHT_DURATION_MS : MIN_FLIGHT_DURATION_MS;
 
-  return Math.max(MIN_FLIGHT_DURATION_MS, Math.min(maxDurationMs, durationMs));
+  return Math.max(minDurationMs, Math.min(maxDurationMs, durationMs));
 }
 
 function toMissionUpdatePayload(mission) {

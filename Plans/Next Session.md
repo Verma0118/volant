@@ -47,11 +47,19 @@ Slice 2 (Mission Dispatch) is complete. **Slice 3** blueprint: `Plans/slice-3-ma
 | 4 | REST — maintenance events + summaries, operator-scoped |
 | 5 | UI — `/maintenance` + sidebar unlock |
 | 6 | (Optional) Timescale battery history |
-| 7 | Demo — show hours/events in `npm run demo` story |
+| 7 | Runbook — validate hours/events via `cd platform && npm run dev` (demo script removed) |
 
 Full narrative + invariants: `Plans/slice-3-maintenance-tracker.md`
 
 ---
+
+## Recent Execution Changes (important)
+
+- `npm run demo` was removed. Full-stack is now **one command**:
+  - `cd platform && npm run dev` (runs backend + simulator + frontend, `DEMO_MODE=false`)
+- Docker helpers:
+  - `cd platform && npm run stack:up` / `stack:down` / `stack:reset` (reset wipes volumes)
+  - After `stack:reset`, run `npm run db:init` (migrate + seed) before `npm run dev`.
 
 ## Where Aarav Wants to Take This
 

@@ -1,9 +1,10 @@
 const { pool: defaultPool } = require('../db');
 
 /**
- * Atomically adds flight minutes to aircraft.total_flight_minutes.
+ * Atomically accrues flight minutes and bumps battery cycle count on mission completion.
  * Idempotent: no-op if missions.maintenance_minutes_applied is already true.
  * Uses SELECT FOR UPDATE to prevent double-count on BullMQ worker retry.
+ * Each completed mission = 1 battery cycle (MVP approximation: one discharge per flight).
  *
  * @param {object} opts
  * @param {string} opts.missionId
@@ -35,7 +36,8 @@ async function accrueFlightMinutes({ missionId, operatorId, aircraftId, flightDu
 
     await client.query(
       `UPDATE aircraft
-       SET total_flight_minutes = total_flight_minutes + $1
+       SET total_flight_minutes = total_flight_minutes + $1,
+           battery_cycle_count  = battery_cycle_count + 1
        WHERE id = $2 AND operator_id = $3`,
       [minutes, aircraftId, operatorId]
     );

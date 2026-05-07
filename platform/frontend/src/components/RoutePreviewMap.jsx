@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { colors } from '../design/tokens';
@@ -6,9 +6,68 @@ import { colors } from '../design/tokens';
 const SOURCE_ROUTE = 'dispatch-preview-route';
 const SOURCE_ENDPOINTS = 'dispatch-preview-endpoints';
 
+function projectToSchematic(originLat, originLng, destLat, destLng) {
+  const minLng = Math.min(originLng, destLng);
+  const maxLng = Math.max(originLng, destLng);
+  const minLat = Math.min(originLat, destLat);
+  const maxLat = Math.max(originLat, destLat);
+  let dx = maxLng - minLng;
+  let dy = maxLat - minLat;
+  if (dx < 1e-9) dx = 1e-9;
+  if (dy < 1e-9) dy = 1e-9;
+  const pad = 10;
+  const w = 100;
+  const h = 100;
+  const x = (lng) => pad + ((lng - minLng) / dx) * (w - 2 * pad);
+  const y = (lat) => pad + (1 - (lat - minLat) / dy) * (h - 2 * pad);
+  return {
+    x1: x(originLng),
+    y1: y(originLat),
+    x2: x(destLng),
+    y2: y(destLat),
+  };
+}
+
+function RoutePreviewSchematic({ originLat, originLng, destLat, destLng }) {
+  const pts = useMemo(
+    () => projectToSchematic(originLat, originLng, destLat, destLng),
+    [originLat, originLng, destLat, destLng]
+  );
+
+  return (
+    <div
+      className="dispatch-preview-map dispatch-preview-map--schematic"
+      role="img"
+      aria-label="Schematic preview: aircraft position, destination, and straight-line path"
+    >
+      <svg
+        className="dispatch-preview-map__svg"
+        viewBox="0 0 100 100"
+        preserveAspectRatio="xMidYMid meet"
+        aria-hidden="true"
+      >
+        <line
+          className="dispatch-preview-map__route-line"
+          x1={pts.x1}
+          y1={pts.y1}
+          x2={pts.x2}
+          y2={pts.y2}
+        />
+        <circle className="dispatch-preview-map__point dispatch-preview-map__point--origin" cx={pts.x1} cy={pts.y1} r={4} />
+        <circle className="dispatch-preview-map__point dispatch-preview-map__point--dest" cx={pts.x2} cy={pts.y2} r={4} />
+      </svg>
+      <p className="dispatch-preview-map__schematic-hint">
+        Straight-line path (no Mapbox token). Add <code>VITE_MAPBOX_TOKEN</code> to{' '}
+        <code>platform/.env</code> for satellite imagery.
+      </p>
+    </div>
+  );
+}
+
 export default function RoutePreviewMap({ originLat, originLng, destLat, destLng }) {
   const containerRef = useRef(null);
-  const token = import.meta.env.VITE_MAPBOX_TOKEN;
+  const rawToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  const token = typeof rawToken === 'string' ? rawToken.trim() : '';
 
   useEffect(() => {
     if (!token || !containerRef.current) return undefined;
@@ -126,11 +185,12 @@ export default function RoutePreviewMap({ originLat, originLng, destLat, destLng
 
   if (!token) {
     return (
-      <div className="dispatch-preview-map dispatch-preview-map--placeholder">
-        <p className="dispatch-preview-map__placeholder-copy">
-          Set <code>VITE_MAPBOX_TOKEN</code> to preview the route on a map.
-        </p>
-      </div>
+      <RoutePreviewSchematic
+        originLat={originLat}
+        originLng={originLng}
+        destLat={destLat}
+        destLng={destLng}
+      />
     );
   }
 

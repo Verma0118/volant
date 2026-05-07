@@ -24,7 +24,7 @@ B2B SaaS fleet ops platform for eVTOL and drone operators. "What Samsara built f
 
 ## What You Are Building (Slices 1–3+)
 
-**Slices 1–2 shipped:** Fleet map + status, mission dispatch (JWT, BullMQ, map route overlay, `npm run demo`).
+**Slices 1–2 shipped:** Fleet map + status, mission dispatch (JWT, BullMQ, map route overlay). Run full stack from `platform/`: `npm run dev`.
 
 **Active slice (see `CURSOR_TASKS.md`):** Slice 3 — Maintenance Tracker (schema, flight-hour accrual, events API, `/maintenance` UI).
 

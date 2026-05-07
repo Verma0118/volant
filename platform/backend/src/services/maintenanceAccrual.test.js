@@ -37,6 +37,24 @@ test('accrueFlightMinutes adds correct minutes to aircraft', async () => {
   assert.equal(updateAircraft.params[2], 'op1');
 });
 
+test('accrueFlightMinutes bumps battery_cycle_count in same query', async () => {
+  const pool = makeMockPool(false);
+
+  await accrueFlightMinutes(
+    { missionId: 'm1', operatorId: 'op1', aircraftId: 'ac1', flightDurationMs: 60_000 },
+    pool
+  );
+
+  const updateAircraft = pool._client.queries.find((q) =>
+    q.sql.includes('UPDATE aircraft')
+  );
+  assert.ok(updateAircraft, 'aircraft UPDATE should be issued');
+  assert.ok(
+    updateAircraft.sql.includes('battery_cycle_count'),
+    'UPDATE aircraft should include battery_cycle_count increment'
+  );
+});
+
 test('accrueFlightMinutes marks mission as applied', async () => {
   const pool = makeMockPool(false);
 

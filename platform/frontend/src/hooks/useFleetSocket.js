@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
-
-const SOCKET_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
+import { getApiOrigin } from '../config/apiOrigin.js';
 const MAX_RECONNECT_DELAY_MS = 10000;
 
 export function useFleetSocket(isAuthenticated) {
@@ -59,7 +58,7 @@ export function useFleetSocket(isAuthenticated) {
       requestAnimationFrame(flushPendingUpdates);
     };
 
-    const socket = io(SOCKET_URL, {
+    const socket = io(getApiOrigin(), {
       transports: ['websocket'],
       withCredentials: true,
       reconnection: true,

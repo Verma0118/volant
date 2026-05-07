@@ -49,8 +49,9 @@ const DRONE_ROUTES = [
 const DEMO_STATUS_BY_TAIL = {
   N301VL: 'in-flight',
   N302VL: 'in-flight',
-  N303VL: 'in-flight',
-  N304VL: 'in-flight',
+  /** Ground-ready pool: multiple tails so dispatch is not dominated by one aircraft. */
+  N303VL: 'ready',
+  N304VL: 'ready',
   N305VL: 'charging',
   N306VL: 'maintenance',
   N307VL: 'grounded',
@@ -62,8 +63,8 @@ const DEMO_STATUS_BY_TAIL = {
 const DEMO_START_BATTERY_BY_TAIL = {
   N301VL: 74,
   N302VL: 66,
-  N303VL: 59,
-  N304VL: 30,
+  N303VL: 88,
+  N304VL: 90,
   N305VL: 34,
   N306VL: 63,
   N307VL: 12,
@@ -235,7 +236,6 @@ function updateDynamicState(state) {
 }
 
 const demoEvents = {
-  transition30sLogged: false,
   transition60sLogged: false,
 };
 
@@ -265,18 +265,6 @@ function applyMissionPathInterpolation(state, g) {
 }
 
 function applyDemoScenarioOverrides(state, demoTick) {
-  if (state.tail_number === 'N304VL' && demoTick >= 30) {
-    if (demoTick === 30 && !demoEvents.transition30sLogged) {
-      console.log('Demo event T+30s: N304VL landed and entered charging at 18%');
-      demoEvents.transition30sLogged = true;
-    }
-
-    state.status = 'charging';
-    state.speed_kts = 0;
-    state.altitude_ft = 0;
-    state.battery_pct = clamp(Math.max(state.battery_pct, 18), 0, 100);
-  }
-
   if (state.tail_number === 'N308VL' && demoTick <= 60) {
     const demoBattery = clamp(33 + demoTick * 0.8, 0, 81);
     state.battery_pct = demoBattery;

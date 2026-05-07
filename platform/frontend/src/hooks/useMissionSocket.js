@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
+import { getApiOrigin } from '../config/apiOrigin.js';
 
 function toMissionMap(missions) {
   const next = {};
@@ -42,7 +41,7 @@ export function useMissionSocket(socket, isAuthenticated) {
 
     async function fetchMissions() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/missions`, {
+        const response = await fetch(`${getApiOrigin()}/api/missions`, {
           credentials: 'include',
         });
         const payload = await response.json().catch(() => []);

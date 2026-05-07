@@ -64,7 +64,7 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Rate limit all HTTP API traffic (auth is also rate-limited separately where needed).
+// Rate limit general API traffic (login is not separately capped — OK for demos).
 app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api', authMiddleware);

@@ -11,8 +11,7 @@ import {
   parseDestinationCoords,
   parseRouteCoords,
 } from '../../utils/routePreview';
-
-const API_BASE_URL = `${window.location.protocol}//${window.location.hostname}:3001`;
+import { getApiOrigin } from '../../config/apiOrigin.js';
 
 const PRIORITY_LABELS = { urgent: 'Urgent', normal: 'Normal', low: 'Low' };
 const PRIORITY_CLASSES = {
@@ -295,7 +294,7 @@ export default function Dispatch({ socket, isAuthenticated, csrfToken, fleetStat
       }
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/missions`, {
+        const res = await fetch(`${getApiOrigin()}/api/missions`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -341,7 +340,7 @@ export default function Dispatch({ socket, isAuthenticated, csrfToken, fleetStat
   const cancelMissionById = useCallback(
     async (missionId) => {
       const res = await fetch(
-        `${API_BASE_URL}/api/missions/${encodeURIComponent(missionId)}/cancel`,
+        `${getApiOrigin()}/api/missions/${encodeURIComponent(missionId)}/cancel`,
         {
           method: 'PATCH',
           headers: {

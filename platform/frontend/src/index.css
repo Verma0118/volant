@@ -2383,6 +2383,53 @@ main:focus {
   min-height: 220px;
 }
 
+.dispatch-preview-map--schematic {
+  background: color-mix(in srgb, var(--color-bg-primary) 88%, var(--color-bg-border));
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.dispatch-preview-map__svg {
+  display: block;
+  flex: 1 1 auto;
+  min-height: 160px;
+  width: 100%;
+}
+
+.dispatch-preview-map__route-line {
+  stroke: var(--color-accent);
+  stroke-linecap: round;
+  stroke-width: 2.25;
+}
+
+.dispatch-preview-map__point {
+  stroke: var(--color-bg-primary);
+  stroke-width: 1.5;
+}
+
+.dispatch-preview-map__point--origin {
+  fill: var(--color-text-secondary);
+}
+
+.dispatch-preview-map__point--dest {
+  fill: var(--color-accent);
+}
+
+.dispatch-preview-map__schematic-hint {
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  margin: 0;
+  padding: 0.4rem 0.65rem 0.6rem;
+  text-align: center;
+}
+
+.dispatch-preview-map__schematic-hint code {
+  font-family: var(--font-data);
+  font-size: 0.7rem;
+}
+
 .dispatch-preview-map--placeholder {
   align-items: center;
   display: flex;
