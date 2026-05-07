@@ -7,6 +7,7 @@ import { FleetMap } from './features/fleet-map';
 import { FleetStatus } from './features/fleet-status';
 import { Login } from './features/auth';
 import { Dispatch } from './features/dispatch';
+import { Maintenance } from './features/maintenance';
 import TopNav from './components/TopNav';
 
 function applyThemeVariables() {
@@ -108,7 +109,10 @@ function AuthenticatedLayout({
                 }
               />
               <Route path="/analytics" element={<LockedPlaceholder title="Analytics" />} />
-              <Route path="/maintenance" element={<LockedPlaceholder title="Maintenance" />} />
+              <Route
+                path="/maintenance"
+                element={<Maintenance isAuthenticated={isAuthenticated} csrfToken={csrfToken} />}
+              />
               <Route path="*" element={<Navigate to="/fleet" replace />} />
             </Routes>
           </div>
