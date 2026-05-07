@@ -92,6 +92,25 @@ async function createMaintenanceDue({ aircraftId, operatorId, kind, label, dueAt
   return res.rows[0];
 }
 
+async function getBatteryHistory(aircraftId, operatorId, hours = 24) {
+  const res = await pool.query(
+    `SELECT
+       time_bucket('5 minutes', recorded_at) AS bucket,
+       round(avg(battery_pct)::numeric, 1)   AS avg_pct,
+       min(battery_pct)                       AS min_pct,
+       max(battery_pct)                       AS max_pct,
+       mode() WITHIN GROUP (ORDER BY status)  AS dominant_status
+     FROM battery_samples
+     WHERE aircraft_id = $1
+       AND operator_id = $2
+       AND recorded_at > now() - ($3 || ' hours')::interval
+     GROUP BY bucket
+     ORDER BY bucket ASC`,
+    [aircraftId, operatorId, hours]
+  );
+  return res.rows;
+}
+
 module.exports = {
   getMaintenanceSummary,
   getAircraftMaintenanceSummary,
@@ -99,4 +118,5 @@ module.exports = {
   createMaintenanceEvent,
   listMaintenanceDue,
   createMaintenanceDue,
+  getBatteryHistory,
 };

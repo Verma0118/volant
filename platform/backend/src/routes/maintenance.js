@@ -8,6 +8,7 @@ const {
   createMaintenanceEvent,
   listMaintenanceDue,
   createMaintenanceDue,
+  getBatteryHistory,
 } = require('../repositories/maintenanceRepository');
 const { validateEventPayload, validateDuePayload } = require('./maintenanceValidation');
 
@@ -76,6 +77,17 @@ router.get('/aircraft/:aircraftId/due', async (req, res) => {
     res.json(due);
   } catch (err) {
     console.error('GET /api/maintenance/aircraft/:id/due failed', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.get('/aircraft/:aircraftId/battery-history', async (req, res) => {
+  try {
+    const hours = Math.min(Number(req.query.hours) || 24, 168);
+    const rows = await getBatteryHistory(req.params.aircraftId, req.operatorId, hours);
+    res.json(rows);
+  } catch (err) {
+    console.error('GET /api/maintenance/aircraft/:id/battery-history failed', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

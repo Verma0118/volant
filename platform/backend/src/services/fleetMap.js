@@ -3,6 +3,7 @@ const { createClient } = require('redis');
 const { getIO } = require('../socket');
 const { REDIS_URL } = require('../config');
 const { getAircraft } = require('../repositories/aircraftRepository');
+const { recordBatterySample } = require('./batteryHistoryService');
 
 const TELEMETRY_CHANNEL = 'telemetry:update';
 const FLEET_STATE_KEY = 'fleet:state';
@@ -100,6 +101,16 @@ async function startFleetMap() {
       fleetState[id] = payload;
       await writerClient.hSet(FLEET_STATE_KEY, id, JSON.stringify(payload));
       getIO().emit('aircraft:update', payload);
+
+      const operatorId = process.env.CURRENT_OPERATOR_ID;
+      if (operatorId && payload.battery_pct != null) {
+        recordBatterySample({
+          aircraftId: id,
+          operatorId,
+          batteryPct: payload.battery_pct,
+          status: payload.status,
+        });
+      }
     } catch (err) {
       console.error('FleetMap telemetry processing error', err);
     }
