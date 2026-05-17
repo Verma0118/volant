@@ -1490,9 +1490,11 @@ cd platform/frontend && npm run dev
 
 ---
 
-## DEMO POLISH (active — May 2026)
+## DEMO POLISH ✅ (complete — May 16, 2026)
 
 **Goal:** Screen-record-ready MVP for investor demo / YC app. Make the story self-evident to someone watching cold.
+
+**Shipped:** `af1b7de` on `main` — all 4 steps below done and pushed.
 
 ---
 

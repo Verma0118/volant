@@ -4,21 +4,14 @@ Carry-forward items that are known issues but not blockers for current build mom
 
 ## Open
 
-- [ ] Frontend bundle-size optimization pass (non-blocking)
-  - Context: Vite build passes but warns main chunk exceeds 500 kB.
-  - Goal: reduce initial JS payload before broader team onboarding.
-  - Plan:
-    - lazy-load route views (`FleetMap`, `FleetStatus`) with `React.lazy`
-    - split map-specific dependencies from initial route load where possible
+- [ ] Frontend route-level code-splitting (non-blocking)
+  - Context: Mapbox GL lazy-loaded May 16 — main JS ~351 kB; mapbox in separate chunk (`af1b7de`). Mapbox chunk may still warn >500 kB when loaded.
+  - Remaining:
+    - optional `React.lazy` for `FleetMap` / `FleetStatus` route views
     - re-run `npm run build` and compare chunk/gzip output
-    - keep current chunk warning threshold unless payload remains intentionally large
 
-- [ ] Slice 2 kickoff brief and Step 1 task breakdown
-  - Goal: move from Slice 1 hardening into Mission Dispatch implementation.
-  - Deliverables:
-    - architecture + queue model brief
-    - `CURSOR_TASKS.md` Step 1 executable checklist
-    - implementation start notes for Cursor handoff
+- [ ] Slice 3 Step 2 — flight-minute accrual on mission completed (idempotent)
+  - See `CURSOR_TASKS.md` → Slice 3 Step 2
 
 ## Related
 

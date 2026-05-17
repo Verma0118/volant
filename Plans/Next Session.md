@@ -13,7 +13,8 @@ tags: [next-session, mvp-complete, polish, telemetry-adapter]
 ## Done this session (May 16)
 
 - **Telemetry ingest endpoint** — `POST /api/telemetry/ingest` live. Real hardware POSTs to it with `X-Volant-Api-Key` header. Auth via `TELEMETRY_API_KEY` env var. Contract doc at `platform/docs/TELEMETRY_CONTRACT.md`.
-- **Demo polish tasks** — written to `CURSOR_TASKS.md` (4 steps: scenario banner, N308VL glow, Mapbox lazy-load, screen record cleanup).
+- **Demo polish (all 4 steps)** ✅ — scenario banner on fleet map, N308VL charging glow, Mapbox lazy-load (~351 kB main chunk), route titles + favicon + nav accent. Shipped in `af1b7de`, pushed to `origin/main`.
+- **Git** — all local work committed + pushed; `.cursor/rules/git-push-always.mdc` added so Cursor pushes by default after tasks.
 - **Hardware plan saved** — 5 palm-sized drones → telemetry adapter is already the integration point.
 
 
@@ -30,11 +31,11 @@ tags: [next-session, mvp-complete, polish, telemetry-adapter]
 ## First Action Next Session
 
 Pick one of:
-1. **Demo polish** — screen record the full flow for investor deck / YC app
-2. **Bundle optimization** — lazy-load Mapbox GL (large chunk warning)
+1. **Screen record** — full demo flow for investor deck / YC app (polish is shipped; record cold)
+2. **Slice 3 Step 2** — flight-minute accrual on mission `completed` (`CURSOR_TASKS.md`)
 3. **Cost model** — add cost-per-flight-hour input to Analytics
-4. **GitHub push** — make sure all commits are on remote
-5. **Investor materials** — update pitch deck with live MVP screenshots
+4. **Investor materials** — update pitch deck with live MVP screenshots
+5. **Route code-split** — optional `React.lazy` on FleetMap/FleetStatus (Mapbox already split)
 
 ## Run Commands
 

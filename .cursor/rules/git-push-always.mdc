@@ -19,3 +19,11 @@ Only skip commit/push when:
 - Files contain secrets that must not be committed
 
 After push, confirm with the commit hash and branch name in your reply.
+
+**Obsidian vault (same session):** When a slice/step or handoff task is finished, also update:
+- `Plans/Task List.md` — move item to Done with date + commit hash
+- `Plans/Next Session.md` — "Done this session" + revise "First Action"
+- `CURSOR_TASKS.md` — mark step ✅ (if applicable)
+- `Unfinished Tasks.md` — close or narrow open items
+
+Commit vault updates in the same push (or immediately after code push).

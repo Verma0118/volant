@@ -6,7 +6,7 @@ tags: [tasks, priorities, slice-1]
 
 # Volant Task List
 
-_Last updated: Apr 29, 2026 03:58 CDT_
+_Last updated: May 16, 2026 19:17 PDT_
 
 ---
 
@@ -27,6 +27,8 @@ _Last updated: Apr 29, 2026 03:58 CDT_
 - [x] **Archer email sent** — Rushil's dad, concept email + deck _(assumed done Apr 20)_
 - [x] **Pitch deck finalized and sent** _(assumed done Apr 20)_
 - [x] Premium minimal UI refresh — Fleet dashboard + telemetry panel redesign (top nav, KPI cards, squared vehicle cards, hover + selection, “View on Map” vehicle routing) ✅
+- [x] **Demo polish (screen-record MVP)** — LIVE DEMO map callout, N308VL charging glow, lazy Mapbox split chunk, route titles + Volant favicon, nav active accent ✅ _(Cursor, May 16, `af1b7de`)_
+- [x] **Telemetry ingest API** — `POST /api/telemetry/ingest`, API key auth, contract doc `platform/docs/TELEMETRY_CONTRACT.md` ✅ _(Cursor, May 16, `af1b7de`)_
 
 ---
 
@@ -65,7 +67,7 @@ _Last updated: Apr 29, 2026 03:58 CDT_
 - [x] **Security pass (abuse throttling)** — global `/api` rate limiting + Socket.io connection throttling ✅ _(Cursor, Apr 29, `54440eb`)_
 - [x] **Slice 3 Step 1** — Maintenance schema (migration 006) + `maintenance_events` / `maintenance_due` ✅ _(Cursor, Apr 27)_
 - [ ] **Slice 3 Step 2** — Accrue flight minutes on completed missions (idempotent) 🔥
-- [ ] **Frontend bundle-size optimization (non-blocking)** — split/lazy-load heavy frontend chunks
+- [ ] **Frontend bundle-size optimization (non-blocking)** — route-level `React.lazy` for FleetMap/FleetStatus (Mapbox already code-split ✅ May 16)
 
 ### Claude Handoff — Finish Slice 2 Step 7 (Dispatch UI)
 
@@ -98,7 +100,7 @@ _Last updated: Apr 29, 2026 03:58 CDT_
 
 - [ ] **Slice 3** — Maintenance Tracker (see `Plans/slice-3-maintenance-tracker.md`, `CURSOR_TASKS.md`)
 - [ ] **Slice 4** — Compliance log (FAA / LAANC) — after Slice 3 core
-- [ ] Frontend route-level code-splitting (`FleetMap` / `FleetStatus`) to reduce main bundle
+- [ ] Frontend route-level code-splitting (`FleetMap` / `FleetStatus`) — Mapbox lazy-loaded; optional React.lazy on routes remains
 
 ---
 
