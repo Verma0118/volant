@@ -126,6 +126,7 @@ function FleetStatus({ fleetState }) {
             const selected = aircraft.aircraft_id === selectedAircraftId;
             const safeBattery = Math.max(0, Math.min(100, Number(aircraft.battery_pct) || 0));
             const demoChargingHighlight = isN308DemoChargingHighlight(aircraft);
+            const isCharging = aircraft.status === 'charging';
 
             return (
               <button
@@ -172,8 +173,14 @@ function FleetStatus({ fleetState }) {
                   </div>
                 </div>
 
-                <div className="fleet-aircraft-accentbar" aria-hidden="true">
-                  <div className="fleet-aircraft-accentbar__fill" style={{ width: `${safeBattery}%` }} />
+                <div
+                  className={`fleet-aircraft-accentbar ${isCharging ? 'fleet-aircraft-accentbar--charging' : ''}`}
+                  aria-hidden="true"
+                >
+                  <div
+                    className="fleet-aircraft-accentbar__fill"
+                    style={{ width: isCharging ? '100%' : `${safeBattery}%` }}
+                  />
                 </div>
 
                 <div className="fleet-aircraft-footer">

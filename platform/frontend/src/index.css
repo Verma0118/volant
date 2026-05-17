@@ -102,7 +102,8 @@ a {
 }
 
 .route-transition {
-  overflow: clip;
+  overflow-x: clip;
+  overflow-y: visible;
   position: relative;
   animation: routeEnter 260ms ease-out both;
   will-change: transform, opacity;
@@ -553,6 +554,8 @@ main:focus {
   display: grid;
   gap: 1.35rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Room for demo-charging box-shadow so right-column cards are not clipped */
+  padding: 4px 8px 8px;
 }
 
 @media (max-width: 900px) {
@@ -672,13 +675,26 @@ main:focus {
 .fleet-aircraft-accentbar {
   background: color-mix(in srgb, var(--color-bg-border) 55%, transparent);
   border-radius: 0;
+  box-sizing: border-box;
   height: 3px;
   overflow: hidden;
+  width: 100%;
 }
 
 .fleet-aircraft-accentbar__fill {
   background: var(--color-accent);
   height: 100%;
+  min-width: 0;
+}
+
+.fleet-aircraft-accentbar--charging {
+  background: color-mix(in srgb, var(--color-demo-charging-glow) 22%, transparent);
+}
+
+.fleet-aircraft-accentbar--charging .fleet-aircraft-accentbar__fill {
+  animation: glow-pulse 2s ease-in-out infinite;
+  background: var(--color-demo-charging-glow);
+  width: 100% !important;
 }
 
 .fleet-aircraft-footer {
@@ -1055,9 +1071,13 @@ main:focus {
 
 .fleet-aircraft-card--demo-charging {
   animation: glow-pulse 2s ease-in-out infinite;
+  border-color: var(--color-demo-charging-glow);
   box-shadow:
     0 0 0 2px var(--color-demo-charging-glow),
     0 0 12px color-mix(in srgb, var(--color-demo-charging-glow) 30%, transparent);
+  /* border participates in layout; shadow still needs grid padding above */
+  position: relative;
+  z-index: 1;
 }
 
 .detail-panel--demo-charging {
