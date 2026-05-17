@@ -1,0 +1,21 @@
+---
+description: After completing implementation work, commit and push to origin without waiting to be asked.
+alwaysApply: true
+---
+
+# Git — Commit and Push by Default
+
+When you finish a coding session task (features, fixes, polish, refactors in this repo):
+
+1. **Stage and commit** all related changes with a clear message (HEREDOC format).
+2. **Push** to `origin` on the current branch (`git push`) immediately after a successful commit.
+3. Do **not** leave work only on disk unless the user explicitly says not to commit/push, or the changes contain secrets (`.env`, credentials).
+
+If push fails (auth, hooks, CI), report the error and fix or retry — do not assume the user will push later.
+
+Only skip commit/push when:
+- The user explicitly says "don't commit" or "don't push"
+- There are zero file changes
+- Files contain secrets that must not be committed
+
+After push, confirm with the commit hash and branch name in your reply.

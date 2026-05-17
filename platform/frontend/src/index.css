@@ -232,8 +232,9 @@ a {
 }
 
 .topnav-link--active {
-  border-bottom-color: var(--color-accent);
-  color: var(--color-text-primary);
+  border-bottom-color: var(--color-demo-pill-bg, var(--color-accent));
+  color: var(--color-demo-pill-bg, var(--color-accent));
+  font-weight: 600;
 }
 
 .topnav-link--locked {
@@ -349,10 +350,12 @@ a {
   text-decoration: none;
 }
 
-.sidebar-link[aria-current='page'] {
-  border-left-color: var(--color-accent);
+.sidebar-link[aria-current='page'],
+.sidebar-link.active {
+  border-left: 2px solid var(--color-demo-pill-bg, var(--color-accent));
+  border-left-color: var(--color-demo-pill-bg, var(--color-accent));
   border-color: color-mix(in srgb, var(--color-accent) 40%, var(--color-bg-border));
-  color: var(--color-text-primary);
+  color: var(--color-demo-pill-bg, var(--color-accent));
   font-weight: 600;
 }
 
@@ -982,6 +985,86 @@ main:focus {
   position: absolute;
   right: 0.75rem;
   top: 0.75rem;
+  z-index: 2;
+}
+
+.fleet-map-overlay--left {
+  left: 0.75rem;
+  right: auto;
+}
+
+.demo-scenario-callout {
+  backdrop-filter: blur(8px);
+  background: var(--color-demo-banner-bg);
+  border: 1px solid var(--color-demo-banner-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elev-1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-width: min(22rem, calc(100% - 1.5rem));
+  padding: 0.55rem 0.65rem;
+  position: absolute;
+  right: 0.75rem;
+  top: 0.75rem;
+  z-index: 3;
+}
+
+.demo-scenario-callout__pill {
+  align-self: flex-start;
+  background: var(--color-demo-pill-bg);
+  border-radius: 999px;
+  color: var(--color-demo-pill-text);
+  font-family: var(--font-ui);
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 0.28rem 0.5rem;
+  text-transform: uppercase;
+}
+
+.demo-scenario-callout__body {
+  color: var(--color-demo-body-text);
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.demo-scenario-callout__link {
+  color: var(--color-demo-pill-bg);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.demo-scenario-callout__link:hover {
+  text-decoration: underline;
+}
+
+@keyframes glow-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.fleet-aircraft-card--demo-charging {
+  animation: glow-pulse 2s ease-in-out infinite;
+  box-shadow:
+    0 0 0 2px var(--color-demo-charging-glow),
+    0 0 12px color-mix(in srgb, var(--color-demo-charging-glow) 30%, transparent);
+}
+
+.detail-panel--demo-charging {
+  animation: glow-pulse 2s ease-in-out infinite;
+  box-shadow:
+    0 0 0 2px var(--color-demo-charging-glow),
+    0 0 12px color-mix(in srgb, var(--color-demo-charging-glow) 30%, transparent);
 }
 
 .zone-pill {
@@ -1073,6 +1156,12 @@ main:focus {
   .fleet-map-overlay {
     left: 0.75rem;
     right: auto;
+  }
+}
+
+@media (max-width: 639px) {
+  .demo-scenario-callout__body {
+    display: none;
   }
 }
 

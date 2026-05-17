@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors } from '../design/tokens';
 import dfwClassB from '../assets/dfwClassB';
 import DetailPanel from '../components/DetailPanel';
@@ -189,6 +187,7 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
   const { missionsList } = useMissionSocket(socket, isAuthenticated);
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
+  const mapboxglRef = useRef(null);
   const markerStoreRef = useRef(new Map());
   const rafRef = useRef(0);
   const selectedAircraftIdRef = useRef(null);
@@ -253,40 +252,51 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
 
   useEffect(() => {
     if (!mapboxToken || !mapContainerRef.current || mapRef.current) {
-      return;
+      return undefined;
     }
 
+    let cancelled = false;
+    let map = null;
+    let handleZoom = null;
     const markerStore = markerStoreRef.current;
 
-    mapboxgl.accessToken = mapboxToken;
+    import('mapbox-gl').then(async (mod) => {
+      if (cancelled) {
+        return;
+      }
 
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/dark-v11',
-      center: DFW_CENTER,
-      zoom: 9.7,
-      pitch: 0,
-      bearing: 0,
-      attributionControl: true,
-    });
+      await import('mapbox-gl/dist/mapbox-gl.css');
+      const mapboxgl = mod.default;
+      mapboxglRef.current = mapboxgl;
+      mapboxgl.accessToken = mapboxToken;
 
-    mapRef.current = map;
-
-    const applyMarkerScale = () => {
-      const zoom = map.getZoom();
-      const scale = clamp(0.35 + (zoom - 7.5) * 0.22, 0.35, 2.2);
-      markerStore.forEach((entry) => {
-        entry.element.style.setProperty('--marker-scale', String(scale));
+      map = new mapboxgl.Map({
+        container: mapContainerRef.current,
+        style: 'mapbox://styles/mapbox/dark-v11',
+        center: DFW_CENTER,
+        zoom: 9.7,
+        pitch: 0,
+        bearing: 0,
+        attributionControl: true,
       });
-    };
 
-    const handleZoom = () => {
-      applyMarkerScale();
-    };
+      mapRef.current = map;
 
-    map.on('zoom', handleZoom);
+      const applyMarkerScale = () => {
+        const zoom = map.getZoom();
+        const scale = clamp(0.35 + (zoom - 7.5) * 0.22, 0.35, 2.2);
+        markerStore.forEach((entry) => {
+          entry.element.style.setProperty('--marker-scale', String(scale));
+        });
+      };
 
-    map.on('load', () => {
+      handleZoom = () => {
+        applyMarkerScale();
+      };
+
+      map.on('zoom', handleZoom);
+
+      map.on('load', () => {
       map.addSource('dfw-class-b', {
         type: 'geojson',
         data: dfwClassB,
@@ -428,67 +438,74 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
           'text-halo-width': 1.25,
         },
       });
-    });
-
-    const animate = () => {
-      markerStore.forEach((entry) => {
-        const dLng = entry.targetLng - entry.currentLng;
-        const dLat = entry.targetLat - entry.currentLat;
-
-        // If jump is large (status transition/route switch), snap to target.
-        if (Math.abs(dLng) + Math.abs(dLat) > 0.028) {
-          entry.currentLng = entry.targetLng;
-          entry.currentLat = entry.targetLat;
-        } else {
-          entry.currentLng += dLng * LERP;
-          entry.currentLat += dLat * LERP;
-        }
-
-        entry.marker.setLngLat([entry.currentLng, entry.currentLat]);
       });
 
-      const selectedMission = selectedMissionRef.current;
-      const selectedAircraftIdCurrent = selectedAircraftIdRef.current;
-      if (selectedMission && selectedAircraftIdCurrent) {
-        const selectedEntry = markerStore.get(selectedAircraftIdCurrent);
-        const routeSource = map.getSource(MISSION_ROUTE_SOURCE);
-        if (selectedEntry && routeSource) {
-          const dynamicRoute = {
-            type: 'FeatureCollection',
-            features: [
-              {
-                type: 'Feature',
-                properties: {
-                  mission_id: selectedMission.mission_id,
-                  priority: selectedMission.priority || 'normal',
+      const animate = () => {
+        markerStore.forEach((entry) => {
+          const dLng = entry.targetLng - entry.currentLng;
+          const dLat = entry.targetLat - entry.currentLat;
+
+          // If jump is large (status transition/route switch), snap to target.
+          if (Math.abs(dLng) + Math.abs(dLat) > 0.028) {
+            entry.currentLng = entry.targetLng;
+            entry.currentLat = entry.targetLat;
+          } else {
+            entry.currentLng += dLng * LERP;
+            entry.currentLat += dLat * LERP;
+          }
+
+          entry.marker.setLngLat([entry.currentLng, entry.currentLat]);
+        });
+
+        const selectedMission = selectedMissionRef.current;
+        const selectedAircraftIdCurrent = selectedAircraftIdRef.current;
+        if (selectedMission && selectedAircraftIdCurrent) {
+          const selectedEntry = markerStore.get(selectedAircraftIdCurrent);
+          const routeSource = map.getSource(MISSION_ROUTE_SOURCE);
+          if (selectedEntry && routeSource) {
+            const dynamicRoute = {
+              type: 'FeatureCollection',
+              features: [
+                {
+                  type: 'Feature',
+                  properties: {
+                    mission_id: selectedMission.mission_id,
+                    priority: selectedMission.priority || 'normal',
+                  },
+                  geometry: {
+                    type: 'LineString',
+                    coordinates: [
+                      [Number(selectedEntry.currentLng), Number(selectedEntry.currentLat)],
+                      [Number(selectedMission.dest_lng), Number(selectedMission.dest_lat)],
+                    ],
+                  },
                 },
-                geometry: {
-                  type: 'LineString',
-                  coordinates: [
-                    [Number(selectedEntry.currentLng), Number(selectedEntry.currentLat)],
-                    [Number(selectedMission.dest_lng), Number(selectedMission.dest_lat)],
-                  ],
-                },
-              },
-            ],
-          };
-          routeSource.setData(dynamicRoute);
+              ],
+            };
+            routeSource.setData(dynamicRoute);
+          }
         }
-      }
+
+        rafRef.current = requestAnimationFrame(animate);
+      };
 
       rafRef.current = requestAnimationFrame(animate);
-    };
-
-    rafRef.current = requestAnimationFrame(animate);
-    applyMarkerScale();
+      applyMarkerScale();
+    });
 
     return () => {
+      cancelled = true;
       cancelAnimationFrame(rafRef.current);
-      map.off('zoom', handleZoom);
+      if (map && handleZoom) {
+        map.off('zoom', handleZoom);
+      }
       markerStore.forEach((entry) => entry.marker.remove());
       markerStore.clear();
-      map.remove();
+      if (map) {
+        map.remove();
+      }
       mapRef.current = null;
+      mapboxglRef.current = null;
     };
   }, [mapboxToken]);
 
@@ -520,7 +537,8 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
 
   useEffect(() => {
     const map = mapRef.current;
-    if (!map) {
+    const mapboxgl = mapboxglRef.current;
+    if (!map || !mapboxgl) {
       return;
     }
 
@@ -693,7 +711,23 @@ function FleetMap({ fleetState, socket, isAuthenticated }) {
         <div className="fleet-map-map-area">
           <div ref={mapContainerRef} className="fleet-map-canvas" />
 
-          <aside className="fleet-map-overlay" aria-label="Map status panel">
+          <div
+            className="demo-scenario-callout"
+            role="note"
+            aria-label="Demo scenario guide"
+          >
+            <span className="demo-scenario-callout__pill">LIVE DEMO</span>
+            <p className="demo-scenario-callout__body">
+              Watch N308VL: charging → 81% → READY at ~T+60s
+              <br />
+              Then dispatch a mission from{' '}
+              <Link to="/missions" className="demo-scenario-callout__link">
+                Mission Dispatch <span aria-hidden="true">→</span>
+              </Link>
+            </p>
+          </div>
+
+          <aside className="fleet-map-overlay fleet-map-overlay--left" aria-label="Map status panel">
             <p className="zone-pill">DFW Class B - Active</p>
             <p className="zone-count zone-count--muted">
               Red ring: demo drone ops envelope (~{(DRONE_OPS_RADIUS_METERS / 1000).toFixed(0)} km)

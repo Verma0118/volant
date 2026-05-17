@@ -33,20 +33,27 @@ function applyThemeVariables() {
 
   root.style.setProperty('--font-data', fonts.data);
   root.style.setProperty('--font-ui', fonts.ui);
+
+  root.style.setProperty('--color-demo-banner-bg', colors.demo.bannerBg);
+  root.style.setProperty('--color-demo-banner-border', colors.demo.bannerBorder);
+  root.style.setProperty('--color-demo-pill-bg', colors.demo.pillBg);
+  root.style.setProperty('--color-demo-pill-text', colors.demo.pillText);
+  root.style.setProperty('--color-demo-body-text', colors.demo.bodyText);
+  root.style.setProperty('--color-demo-charging-glow', colors.demo.chargingGlow);
 }
 
 function RouteTitle() {
   const location = useLocation();
   useEffect(() => {
-    if (location.pathname === '/fleet') {
-      document.title = 'Fleet - Volant';
+    if (location.pathname === '/fleet' || location.pathname === '/status') {
+      document.title = 'Fleet Status - Volant';
       return;
     }
-    if (location.pathname === '/fleet-map') {
+    if (location.pathname === '/' || location.pathname === '/fleet-map') {
       document.title = 'Fleet Map - Volant';
       return;
     }
-    if (location.pathname === '/missions') {
+    if (location.pathname === '/missions' || location.pathname === '/dispatch') {
       document.title = 'Mission Dispatch - Volant';
       return;
     }

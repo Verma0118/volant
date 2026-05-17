@@ -1,14 +1,21 @@
 ---
-date: 2026-05-07
+date: 2026-05-16
 type: context-brief
 active_blueprint: null
 active_slice: complete
-tags: [next-session, mvp-complete, polish]
+tags: [next-session, mvp-complete, polish, telemetry-adapter]
 ---
 
 # Next Session — Context Brief
 
 **MVP IS COMPLETE. All 5 slices shipped.**
+
+## Done this session (May 16)
+
+- **Telemetry ingest endpoint** — `POST /api/telemetry/ingest` live. Real hardware POSTs to it with `X-Volant-Api-Key` header. Auth via `TELEMETRY_API_KEY` env var. Contract doc at `platform/docs/TELEMETRY_CONTRACT.md`.
+- **Demo polish tasks** — written to `CURSOR_TASKS.md` (4 steps: scenario banner, N308VL glow, Mapbox lazy-load, screen record cleanup).
+- **Hardware plan saved** — 5 palm-sized drones → telemetry adapter is already the integration point.
+
 
 ## State
 

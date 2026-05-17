@@ -1487,3 +1487,112 @@ cd platform/frontend && npm run dev
   - around T+62s mission transitions to `in-flight` (N308VL)
   - around T+122s mission transitions to `completed`
   - scenario exits cleanly and shuts down other demo processes
+
+---
+
+## DEMO POLISH (active — May 2026)
+
+**Goal:** Screen-record-ready MVP for investor demo / YC app. Make the story self-evident to someone watching cold.
+
+---
+
+### Demo Polish Step 1 — Demo Scenario Banner on Fleet Map
+
+**Status:** `[✅] Done`
+
+Add a slim scenario callout card to the Fleet Map view. Position: top-right corner of the map, above the map tiles (absolute positioned, z-index above map, below controls).
+
+**What to show:**
+```
+[ LIVE DEMO ]  Watch N308VL: charging → 81% → READY at ~T+60s
+               Then dispatch a mission from Mission Dispatch →
+```
+
+**Requirements:**
+- Background: `rgba(15, 15, 15, 0.85)` with `backdrop-filter: blur(8px)`. Border: `1px solid #333`.
+- "LIVE DEMO" pill: accent blue `#2f7ef5` background, white text, 10px font.
+- Body text: `#f0f0f0`, 12px, Inter.
+- Arrow "→" in dispatch link: styled, no underline unless hover.
+- `role="note"` on the container for screen readers. `aria-label="Demo scenario guide"`.
+- On mobile (< 640px): collapse to just the "LIVE DEMO" pill, no body text.
+
+**File:** `platform/frontend/src/features/fleet-map/FleetMap.jsx` (or wherever the map view renders)
+
+---
+
+### Demo Polish Step 2 — N308VL Battery Highlight
+
+**Status:** `[✅] Done`
+
+When `N308VL` has `status === 'charging'` AND `battery_pct < 85`: add a subtle animated border glow to its entry in the Fleet Status table and its aircraft panel.
+
+**Visual:**
+- Glow: `0 0 0 2px #f59e0b, 0 0 12px rgba(245, 158, 11, 0.3)` (amber)
+- Pulse animation: `@keyframes glow-pulse { 0%,100% { opacity:1 } 50% { opacity:0.5 } }`, 2s ease-in-out infinite
+- Stops when `status` changes to `ready` (natural on data update)
+
+**Files:**
+- Fleet Status table row for N308VL
+- Aircraft detail panel if open
+
+**Note:** Only N308VL during the demo window. Condition: `aircraft.tail_number === 'N308VL' && aircraft.status === 'charging'`.
+
+---
+
+### Demo Polish Step 3 — Lazy-Load Mapbox GL (Bundle Size Fix)
+
+**Status:** `[✅] Done`
+
+Mapbox GL is the large chunk causing the build warning. Lazy-load it so initial bundle is smaller.
+
+**Approach:**
+```js
+// In FleetMap.jsx — replace top-level import:
+// import mapboxgl from 'mapbox-gl';  ← remove
+
+// Replace with dynamic import inside useEffect:
+useEffect(() => {
+  let cancelled = false;
+  import('mapbox-gl').then((mod) => {
+    if (cancelled) return;
+    const mapboxgl = mod.default;
+    // existing map init code here
+  });
+  return () => { cancelled = true; };
+}, []);
+```
+
+**Exit criteria:**
+- `npm run build` from `platform/frontend` — no large chunk warning for mapbox-gl
+- Map still loads and aircraft appear on first navigation to Fleet Map
+
+---
+
+### Demo Polish Step 4 — Screen Record Cleanup
+
+**Status:** `[✅] Done`
+
+Small cosmetic items for a clean screen recording:
+
+1. **Page title** — verify `document.title` is set for every route:
+   - `/` → `Fleet Map - Volant`
+   - `/status` → `Fleet Status - Volant`
+   - `/dispatch` → `Mission Dispatch - Volant`
+   - `/maintenance` → `Maintenance - Volant`
+   - `/compliance` → `Compliance Log - Volant`
+   - `/analytics` → `Analytics - Volant`
+
+2. **Favicon** — if missing/generic, add a simple `V` favicon to `platform/frontend/public/favicon.svg`:
+   ```svg
+   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+     <rect width="32" height="32" rx="6" fill="#0f0f0f"/>
+     <text x="50%" y="72%" text-anchor="middle" fill="#2f7ef5" font-family="Inter,sans-serif" font-weight="700" font-size="20">V</text>
+   </svg>
+   ```
+
+3. **Sidebar active state** — verify the currently active nav item shows the accent blue `#2f7ef5` left border and is visually distinct. If not, add `.sidebar-link.active { border-left: 2px solid #2f7ef5; color: #2f7ef5; }`.
+
+**Exit criteria:** Open localhost:5173, each tab shows correct title, favicon is the V icon, active sidebar link is highlighted.
+
+✅ **Done (May 16):** Fleet map demo callout (top-right, mobile collapses body), N308VL charging glow on fleet cards + detail panel, Mapbox lazy-loaded in `FleetMap.jsx` + `RoutePreviewMap.jsx` (main JS ~351 kB, mapbox in separate chunk), route titles for `/fleet` `/fleet-map` `/missions` + legacy aliases, Volant `V` favicon, top nav + sidebar active accent.
+

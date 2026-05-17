@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DetailPanel from '../components/DetailPanel';
 import StatusPill from '../components/StatusPill';
 import { dedupeFleetRowsByTail } from '../utils/fleetDedupe';
+import { isN308DemoChargingHighlight } from '../utils/demoHighlight';
 
 function relativeTime(isoTimestamp) {
   if (!isoTimestamp) {
@@ -124,13 +125,16 @@ function FleetStatus({ fleetState }) {
           sortedRows.map((aircraft) => {
             const selected = aircraft.aircraft_id === selectedAircraftId;
             const safeBattery = Math.max(0, Math.min(100, Number(aircraft.battery_pct) || 0));
+            const demoChargingHighlight = isN308DemoChargingHighlight(aircraft);
 
             return (
               <button
                 key={aircraft.aircraft_id}
                 type="button"
                 role="listitem"
-                className={`fleet-aircraft-card ${selected ? 'fleet-aircraft-card--selected' : ''}`}
+                className={`fleet-aircraft-card ${selected ? 'fleet-aircraft-card--selected' : ''} ${
+                  demoChargingHighlight ? 'fleet-aircraft-card--demo-charging' : ''
+                }`}
                 aria-pressed={selected}
                 onClick={() =>
                   setSelectedAircraftId((current) => (current === aircraft.aircraft_id ? null : aircraft.aircraft_id))

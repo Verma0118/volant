@@ -17,7 +17,8 @@ const { startFleetMap } = require('./services');
 const { initMissionQueue } = require('./queues/missionQueue');
 const { worker } = require('./workers/missionWorker');
 const { authMiddleware } = require('./middleware/auth');
-const { authRoutes, aircraftRoutes, missionsRoutes, maintenanceRoutes, complianceRoutes, analyticsRoutes } = require('./routes');
+const { apiKeyMiddleware } = require('./middleware/apiKey');
+const { authRoutes, aircraftRoutes, missionsRoutes, maintenanceRoutes, complianceRoutes, analyticsRoutes, telemetryRoutes } = require('./routes');
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.get('/health', (_req, res) => {
 // Rate limit general API traffic (login is not separately capped — OK for demos).
 app.use('/api', apiLimiter);
 app.use('/api/auth', authRoutes);
+app.use('/api/telemetry', apiKeyMiddleware, telemetryRoutes);
 app.use('/api', authMiddleware);
 app.use('/api/aircraft', aircraftRoutes);
 app.use('/api/missions', missionsRoutes);

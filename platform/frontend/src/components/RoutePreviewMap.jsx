@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { colors } from '../design/tokens';
 
 const SOURCE_ROUTE = 'dispatch-preview-route';
@@ -72,12 +70,23 @@ export default function RoutePreviewMap({ originLat, originLng, destLat, destLng
   useEffect(() => {
     if (!token || !containerRef.current) return undefined;
 
-    mapboxgl.accessToken = token;
+    let cancelled = false;
+    let map = null;
+    let resizeObserver;
 
-    const midLng = (originLng + destLng) / 2;
-    const midLat = (originLat + destLat) / 2;
+    import('mapbox-gl').then(async (mod) => {
+      if (cancelled || !containerRef.current) {
+        return;
+      }
 
-    const map = new mapboxgl.Map({
+      await import('mapbox-gl/dist/mapbox-gl.css');
+      const mapboxgl = mod.default;
+      mapboxgl.accessToken = token;
+
+      const midLng = (originLng + destLng) / 2;
+      const midLat = (originLat + destLat) / 2;
+
+      map = new mapboxgl.Map({
       container: containerRef.current,
       style: 'mapbox://styles/mapbox/light-v11',
       center: [midLng, midLat],
@@ -85,15 +94,14 @@ export default function RoutePreviewMap({ originLat, originLng, destLat, destLng
       attributionControl: true,
     });
 
-    let resizeObserver;
-    if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
-      resizeObserver = new ResizeObserver(() => {
-        map.resize();
-      });
-      resizeObserver.observe(containerRef.current);
-    }
+      if (typeof ResizeObserver !== 'undefined' && containerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          map.resize();
+        });
+        resizeObserver.observe(containerRef.current);
+      }
 
-    const lineData = {
+      const lineData = {
       type: 'Feature',
       properties: {},
       geometry: {
@@ -121,8 +129,8 @@ export default function RoutePreviewMap({ originLat, originLng, destLat, destLng
       ],
     };
 
-    map.on('load', () => {
-      map.addSource(SOURCE_ROUTE, { type: 'geojson', data: lineData });
+      map.on('load', () => {
+        map.addSource(SOURCE_ROUTE, { type: 'geojson', data: lineData });
       map.addLayer({
         id: `${SOURCE_ROUTE}-line`,
         type: 'line',
@@ -168,18 +176,22 @@ export default function RoutePreviewMap({ originLat, originLng, destLat, destLng
       const maxLng = Math.max(originLng, destLng);
       const minLat = Math.min(originLat, destLat);
       const maxLat = Math.max(originLat, destLat);
-      map.fitBounds(
-        [
-          [minLng, minLat],
-          [maxLng, maxLat],
-        ],
-        { padding: 40, duration: 0, maxZoom: 11 }
-      );
+        map.fitBounds(
+          [
+            [minLng, minLat],
+            [maxLng, maxLat],
+          ],
+          { padding: 40, duration: 0, maxZoom: 11 }
+        );
+      });
     });
 
     return () => {
+      cancelled = true;
       resizeObserver?.disconnect();
-      map.remove();
+      if (map) {
+        map.remove();
+      }
     };
   }, [token, originLat, originLng, destLat, destLng]);
 

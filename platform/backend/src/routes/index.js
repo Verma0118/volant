@@ -4,6 +4,7 @@ const { missionsRoutes } = require('./missions');
 const { maintenanceRoutes } = require('./maintenance');
 const { complianceRoutes } = require('./compliance');
 const { analyticsRoutes } = require('./analytics');
+const { telemetryRoutes } = require('./telemetry');
 
 module.exports = {
   authRoutes,
@@ -12,4 +13,5 @@ module.exports = {
   maintenanceRoutes,
   complianceRoutes,
   analyticsRoutes,
+  telemetryRoutes,
 };

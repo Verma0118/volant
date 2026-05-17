@@ -42,5 +42,6 @@ module.exports = {
   CSRF_COOKIE_NAME,
   FRONTEND_ORIGIN,
   ALLOW_MISSING_ORIGIN,
+  TELEMETRY_API_KEY: process.env.TELEMETRY_API_KEY || '',
 };
 

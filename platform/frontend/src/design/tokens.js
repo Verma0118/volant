@@ -30,6 +30,15 @@ export const colors = {
     droneOpsFill: 'rgba(239, 68, 68, 0.06)',
     droneOpsOutline: '#ef4444',
   },
+  /** Screen-record demo overlays (map callout, charging highlight). */
+  demo: {
+    bannerBg: 'rgba(15, 15, 15, 0.85)',
+    bannerBorder: '#333333',
+    pillBg: '#2f7ef5',
+    pillText: '#ffffff',
+    bodyText: '#f0f0f0',
+    chargingGlow: '#f59e0b',
+  },
 };
 
 export const fonts = {
