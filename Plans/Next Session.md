@@ -12,10 +12,11 @@ tags: [next-session, mvp-complete, polish, telemetry-adapter]
 
 ## Done this session (May 16)
 
-- **Telemetry ingest endpoint** — `POST /api/telemetry/ingest` live. Real hardware POSTs to it with `X-Volant-Api-Key` header. Auth via `TELEMETRY_API_KEY` env var. Contract doc at `platform/docs/TELEMETRY_CONTRACT.md`.
-- **Demo polish (all 4 steps)** ✅ — scenario banner on fleet map, N308VL charging glow, Mapbox lazy-load (~351 kB main chunk), route titles + favicon + nav accent. Shipped in `af1b7de`, pushed to `origin/main`.
-- **Git** — all local work committed + pushed; `.cursor/rules/git-push-always.mdc` added so Cursor pushes by default after tasks.
-- **Hardware plan saved** — 5 palm-sized drones → telemetry adapter is already the integration point.
+- **Telemetry ingest endpoint** — `POST /api/telemetry/ingest` live. Auth via `X-Volant-Api-Key`. Contract: `platform/docs/TELEMETRY_CONTRACT.md`.
+- **Demo polish** ✅ — scenario banner, N308VL glow, Mapbox lazy-load, screen record cleanup. Shipped `af1b7de`.
+- **Double scrollbar fixed** — `overflow-x: clip` on html/body, removed scroll contexts from page containers. `84842b7`.
+- **MVP locally shipped. No open bugs.**
+- **Hardware plan saved** — 5 palm-sized drones → `/api/telemetry/ingest` is the integration point.
 
 
 ## State
@@ -30,12 +31,11 @@ tags: [next-session, mvp-complete, polish, telemetry-adapter]
 
 ## First Action Next Session
 
-Pick one of:
-1. **Screen record** — full demo flow for investor deck / YC app (polish is shipped; record cold)
-2. **Slice 3 Step 2** — flight-minute accrual on mission `completed` (`CURSOR_TASKS.md`)
-3. **Cost model** — add cost-per-flight-hour input to Analytics
-4. **Investor materials** — update pitch deck with live MVP screenshots
-5. **Route code-split** — optional `React.lazy` on FleetMap/FleetStatus (Mapbox already split)
+1. **Screen record** — full demo flow for investor deck / YC app
+2. **Investor materials** — update pitch deck with live MVP screenshots
+3. **Slice 3 Step 2** — flight-minute accrual (`CURSOR_TASKS.md`)
+4. **Cost model** — cost-per-flight-hour in Analytics
+5. **Palm drone hardware** — way later, telemetry adapter is already the integration point
 
 ## Run Commands
 
