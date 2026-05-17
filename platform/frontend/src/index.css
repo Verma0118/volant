@@ -41,14 +41,20 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 html,
 body,
 #root {
   margin: 0;
   min-height: 100%;
+  max-width: 100%;
 }
 
 body {
+  overflow-x: hidden;
   background:
     radial-gradient(
       1200px 500px at 100% -20%,
@@ -102,7 +108,8 @@ a {
 }
 
 .route-transition {
-  overflow-x: clip;
+  max-width: 100%;
+  overflow-x: hidden;
   overflow-y: visible;
   position: relative;
   animation: routeEnter 260ms ease-out both;
@@ -168,14 +175,17 @@ a {
   border-radius: 0;
   box-shadow: none;
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
+  justify-content: space-between;
+  left: 0;
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
   padding: 1rem 1.1rem;
   position: sticky;
   top: 0;
-  left: 0;
-  margin: 0 -1rem;
-  width: calc(100% + 2rem);
+  width: 100%;
   z-index: 40;
 }
 
@@ -213,7 +223,9 @@ a {
 .topnav-links {
   align-items: center;
   display: flex;
-  gap: 1.6rem;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.2rem;
+  min-width: 0;
 }
 
 .topnav-link {
@@ -300,11 +312,13 @@ a {
 .layout-shell {
   display: flex;
   flex-direction: column;
-  margin: 0 auto;
-  max-width: 1440px;
-  min-height: 100vh;
-  padding: 0.9rem 1rem 1.1rem;
   gap: 1rem;
+  margin: 0 auto;
+  max-width: min(1440px, 100%);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 0.9rem 1rem 1.1rem;
+  width: 100%;
 }
 
 .sidebar {
@@ -449,7 +463,10 @@ main {
   border: 0;
   border-radius: 0;
   box-shadow: none;
+  max-width: 100%;
   min-height: 0;
+  min-width: 0;
+  overflow-x: hidden;
   padding: 0;
 }
 
@@ -463,7 +480,15 @@ main:focus {
 }
 
 .view-panel {
+  max-width: 100%;
+  min-width: 0;
   width: 100%;
+}
+
+.fleet-map-page {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .fleet-status-header {
@@ -554,8 +579,8 @@ main:focus {
   display: grid;
   gap: 1.35rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* Room for demo-charging box-shadow so right-column cards are not clipped */
-  padding: 4px 8px 8px;
+  /* Room for charging border glow on edge cards */
+  padding: 6px 10px 10px;
 }
 
 @media (max-width: 900px) {
@@ -573,11 +598,15 @@ main:focus {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
+  isolation: isolate;
   min-height: 208px;
+  overflow: visible;
   padding: 1.25rem 1.2rem 1rem;
+  position: relative;
   text-align: left;
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
   width: 100%;
+  z-index: 0;
 }
 
 .fleet-aircraft-card:hover {
@@ -685,16 +714,6 @@ main:focus {
   background: var(--color-accent);
   height: 100%;
   min-width: 0;
-}
-
-.fleet-aircraft-accentbar--charging {
-  background: color-mix(in srgb, var(--color-demo-charging-glow) 22%, transparent);
-}
-
-.fleet-aircraft-accentbar--charging .fleet-aircraft-accentbar__fill {
-  animation: glow-pulse 2s ease-in-out infinite;
-  background: var(--color-demo-charging-glow);
-  width: 100% !important;
 }
 
 .fleet-aircraft-footer {
@@ -968,6 +987,8 @@ main:focus {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--elev-1);
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   position: relative;
 }
@@ -986,6 +1007,8 @@ main:focus {
 
 .fleet-map-canvas {
   height: 520px;
+  max-width: 100%;
+  min-width: 0;
   width: 100%;
 }
 
@@ -1058,33 +1081,80 @@ main:focus {
   text-decoration: underline;
 }
 
-@keyframes glow-pulse {
+@keyframes charging-border-breathe {
   0%,
   100% {
-    opacity: 1;
+    border-color: color-mix(in srgb, var(--color-demo-charging-glow) 35%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--color-demo-charging-glow) 20%, transparent),
+      0 0 8px color-mix(in srgb, var(--color-demo-charging-glow) 12%, transparent);
+    opacity: 0.35;
   }
 
   50% {
-    opacity: 0.5;
+    border-color: var(--color-demo-charging-glow);
+    box-shadow:
+      0 0 0 1px var(--color-demo-charging-glow),
+      0 0 16px color-mix(in srgb, var(--color-demo-charging-glow) 55%, transparent),
+      0 0 32px color-mix(in srgb, var(--color-demo-charging-glow) 28%, transparent);
+    opacity: 1;
   }
 }
 
-.fleet-aircraft-card--demo-charging {
-  animation: glow-pulse 2s ease-in-out infinite;
-  border-color: var(--color-demo-charging-glow);
-  box-shadow:
-    0 0 0 2px var(--color-demo-charging-glow),
-    0 0 12px color-mix(in srgb, var(--color-demo-charging-glow) 30%, transparent);
-  /* border participates in layout; shadow still needs grid padding above */
-  position: relative;
+.fleet-aircraft-card--charging {
+  border-color: color-mix(in srgb, var(--color-demo-charging-glow) 45%, var(--color-bg-border));
   z-index: 1;
 }
 
-.detail-panel--demo-charging {
-  animation: glow-pulse 2s ease-in-out infinite;
-  box-shadow:
-    0 0 0 2px var(--color-demo-charging-glow),
-    0 0 12px color-mix(in srgb, var(--color-demo-charging-glow) 30%, transparent);
+.fleet-aircraft-card--charging::after {
+  animation: charging-border-breathe 2.8s ease-in-out infinite;
+  border: 2px solid var(--color-demo-charging-glow);
+  box-sizing: border-box;
+  content: '';
+  inset: -2px;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.fleet-aircraft-card--charging > * {
+  position: relative;
+  z-index: 3;
+}
+
+.fleet-aircraft-card--charging.fleet-aircraft-card--selected::after {
+  inset: -3px;
+}
+
+.detail-panel--charging {
+  isolation: isolate;
+  overflow: visible;
+  position: relative;
+}
+
+.detail-panel--charging::after {
+  animation: charging-border-breathe 2.8s ease-in-out infinite;
+  border: 2px solid var(--color-demo-charging-glow);
+  box-sizing: border-box;
+  content: '';
+  inset: -2px;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.detail-panel--charging > * {
+  position: relative;
+  z-index: 3;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fleet-aircraft-card--charging::after,
+  .detail-panel--charging::after {
+    animation: none;
+    border-color: var(--color-demo-charging-glow);
+    opacity: 0.85;
+  }
 }
 
 .zone-pill {
@@ -3572,12 +3642,16 @@ main:focus {
 /* ─── Analytics ───────────────────────────────────────────────────── */
 
 .anly-view {
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  padding: 2rem;
-  height: 100%;
-  overflow-y: auto;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: visible;
+  padding: 1.25rem 0 2rem;
+  width: 100%;
 }
 
 .anly-header {
@@ -3621,8 +3695,10 @@ main:focus {
 /* KPI cards */
 .anly-kpi-row {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 100%;
+  min-width: 0;
 }
 
 .anly-kpi {
@@ -3673,6 +3749,8 @@ main:focus {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .anly-section-title {
@@ -3687,9 +3765,11 @@ main:focus {
 
 /* Missions by day bar chart */
 .anly-chart {
-  margin: 0;
-  border: 1px solid var(--color-bg-border);
   background: color-mix(in srgb, var(--color-bg-secondary) 25%, transparent);
+  border: 1px solid var(--color-bg-border);
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 
@@ -3740,27 +3820,32 @@ main:focus {
 
 /* Aircraft utilization table */
 .anly-table-wrap {
-  overflow-x: auto;
   border: 1px solid var(--color-bg-border);
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .anly-table {
-  width: 100%;
   border-collapse: collapse;
   font-size: 0.82rem;
+  table-layout: fixed;
+  width: 100%;
 }
 
 .anly-th {
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-bg-border);
+  color: var(--color-text-muted);
   font-family: var(--font-ui);
   font-size: 0.72rem;
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--color-text-muted);
-  padding: 0.6rem 0.85rem;
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-bg-border);
+  overflow: hidden;
+  padding: 0.6rem 0.65rem;
   text-align: left;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
   white-space: nowrap;
 }
 
@@ -3782,9 +3867,11 @@ main:focus {
 }
 
 .anly-td {
-  padding: 0.55rem 0.85rem;
-  color: var(--color-text-primary);
   border-bottom: 1px solid color-mix(in srgb, var(--color-bg-border) 40%, transparent);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  padding: 0.55rem 0.65rem;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -3795,10 +3882,11 @@ main:focus {
 
 /* Inline bar */
 .anly-bar-track {
-  height: 6px;
   background: color-mix(in srgb, var(--color-bg-border) 40%, transparent);
+  height: 6px;
+  max-width: 100%;
+  min-width: 0;
   width: 100%;
-  min-width: 80px;
 }
 
 .anly-bar-fill {
@@ -3816,10 +3904,10 @@ main:focus {
 
 @media (max-width: 900px) {
   .anly-kpi-row {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .anly-view {
-    padding: 1rem;
+    padding: 1rem 0 1.5rem;
   }
 }

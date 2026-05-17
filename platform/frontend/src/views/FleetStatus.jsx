@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import DetailPanel from '../components/DetailPanel';
 import StatusPill from '../components/StatusPill';
 import { dedupeFleetRowsByTail } from '../utils/fleetDedupe';
-import { isN308DemoChargingHighlight } from '../utils/demoHighlight';
 
 function relativeTime(isoTimestamp) {
   if (!isoTimestamp) {
@@ -125,7 +124,6 @@ function FleetStatus({ fleetState }) {
           sortedRows.map((aircraft) => {
             const selected = aircraft.aircraft_id === selectedAircraftId;
             const safeBattery = Math.max(0, Math.min(100, Number(aircraft.battery_pct) || 0));
-            const demoChargingHighlight = isN308DemoChargingHighlight(aircraft);
             const isCharging = aircraft.status === 'charging';
 
             return (
@@ -134,7 +132,7 @@ function FleetStatus({ fleetState }) {
                 type="button"
                 role="listitem"
                 className={`fleet-aircraft-card ${selected ? 'fleet-aircraft-card--selected' : ''} ${
-                  demoChargingHighlight ? 'fleet-aircraft-card--demo-charging' : ''
+                  isCharging ? 'fleet-aircraft-card--charging' : ''
                 }`}
                 aria-pressed={selected}
                 onClick={() =>
@@ -174,12 +172,12 @@ function FleetStatus({ fleetState }) {
                 </div>
 
                 <div
-                  className={`fleet-aircraft-accentbar ${isCharging ? 'fleet-aircraft-accentbar--charging' : ''}`}
+                  className="fleet-aircraft-accentbar"
                   aria-hidden="true"
                 >
                   <div
                     className="fleet-aircraft-accentbar__fill"
-                    style={{ width: isCharging ? '100%' : `${safeBattery}%` }}
+                    style={{ width: `${safeBattery}%` }}
                   />
                 </div>
 

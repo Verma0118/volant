@@ -27,3 +27,5 @@ After push, confirm with the commit hash and branch name in your reply.
 - `Unfinished Tasks.md` — close or narrow open items
 
 Commit vault updates in the same push (or immediately after code push).
+
+**Obsidian on UI/layout fixes:** If the change completes a visible polish item from `CURSOR_TASKS.md`, mark it ✅ there too.

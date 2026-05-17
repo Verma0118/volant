@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { isN308DemoChargingHighlight } from '../utils/demoHighlight';
 
 // (intentionally no formatting helpers here; telemetry tiles format directly)
 
@@ -64,7 +63,7 @@ function DetailPanel({ aircraft, isOpen, onClose, variant = 'overlay' }) {
 
       <aside
         className={`detail-panel ${isOpen ? 'detail-panel--open' : ''} ${isDock ? 'detail-panel--dock' : ''} ${
-          aircraft && isN308DemoChargingHighlight(aircraft) ? 'detail-panel--demo-charging' : ''
+          aircraft?.status === 'charging' ? 'detail-panel--charging' : ''
         }`}
         aria-labelledby="detail-panel-title"
       >
