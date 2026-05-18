@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const { TELEMETRY_API_KEY } = require('../config');
 
 function apiKeyMiddleware(req, res, next) {
@@ -6,7 +7,17 @@ function apiKeyMiddleware(req, res, next) {
   }
 
   const key = req.headers['x-volant-api-key'];
-  if (!key || key !== TELEMETRY_API_KEY) {
+  if (!key) {
+    return res.status(401).json({ error: 'Invalid or missing API key' });
+  }
+
+  const expected = Buffer.from(TELEMETRY_API_KEY);
+  const provided = Buffer.from(key);
+  const valid =
+    expected.length === provided.length &&
+    crypto.timingSafeEqual(expected, provided);
+
+  if (!valid) {
     return res.status(401).json({ error: 'Invalid or missing API key' });
   }
 
